@@ -19,7 +19,9 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <Link href="/" className="navbar-logo">
-        <span className="logo-icon">📐</span>
+        <span className="logo-icon" style={{ overflow: 'hidden' }}>
+          <img src="/logo.png" alt="PTex" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </span>
         <span>PTex Mô Phỏng</span>
       </Link>
 
