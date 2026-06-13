@@ -421,14 +421,390 @@ function updateSimulation(board, params) {
         difficulty: 'basic',
         isPublished: true,
       },
-      // Demo 2.2: Đường tròn lượng giác (Toán 11 - Bài 1.2)
+      // Demo 2.2: Hệ thức Chasles cho các góc lượng giác (Toán 11 - Bài 1.2)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'goc-luong-giac-duong-tron',
+        title: 'Hệ thức Chasles cho các góc lượng giác',
+        description: 'Trực quan hóa hệ thức Chasles: số đo góc (Ou, Ov) + số đo góc (Ov, Ow) = số đo góc (Ou, Ow) + k * 360 độ.',
+        order: 2,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+  // Unit circle
+  board.circle = board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8',
+    strokeWidth: 2,
+    highlight: false,
+    fixed: true
+  });
+
+  // Origin O
+  board.O = board.create('point', [0, 0], {
+    name: math('O'),
+    size: 3,
+    fillColor: '#64748b',
+    strokeColor: '#475569',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+
+  // Point U
+  board.U = board.create('glider', [1, 0, board.circle], {
+    name: math('U'),
+    size: 5,
+    fillColor: '#10b981',
+    strokeColor: '#059669',
+    label: { display: 'html', fontSize: 14, offset: [10, 10] }
+  });
+  registerDragSnapping(board, board.U, 'angleU');
+
+  // Point V
+  board.V = board.create('glider', [0, 1, board.circle], {
+    name: math('V'),
+    size: 5,
+    fillColor: '#f59e0b',
+    strokeColor: '#d97706',
+    label: { display: 'html', fontSize: 14, offset: [-15, 15] }
+  });
+  registerDragSnapping(board, board.V, 'angleV');
+
+  // Point W
+  board.W = board.create('glider', [0, -1, board.circle], {
+    name: math('W'),
+    size: 5,
+    fillColor: '#6366f1',
+    strokeColor: '#4f46e5',
+    label: { display: 'html', fontSize: 14, offset: [10, -10] }
+  });
+  registerDragSnapping(board, board.W, 'angleW');
+
+  // Rays
+  board.OU = board.create('segment', [board.O, board.U], { strokeColor: '#10b981', strokeWidth: 1.5 });
+  board.OV = board.create('segment', [board.O, board.V], { strokeColor: '#f59e0b', strokeWidth: 1.5 });
+  board.OW = board.create('segment', [board.O, board.W], { strokeColor: '#6366f1', strokeWidth: 1.5 });
+
+  // Arcs for directed angles
+  board.arcUV = board.create('arc', [board.O, board.U, board.V], {
+    strokeColor: '#10b981',
+    strokeWidth: 3,
+    withLabel: false,
+    selection: 'minor'
+  });
+
+  board.arcVW = board.create('arc', [board.O, board.V, board.W], {
+    strokeColor: '#f59e0b',
+    strokeWidth: 3,
+    withLabel: false,
+    selection: 'minor'
+  });
+
+  board.arcUW = board.create('arc', [board.O, board.U, board.W], {
+    strokeColor: '#6366f1',
+    strokeWidth: 2,
+    dash: 1,
+    withLabel: false,
+    selection: 'minor'
+  });
+
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  board.suspendUpdate();
+  var mode = params.mode || 'Kéo tự do';
+  var degU = 30, degV = 120, degW = 270;
+  
+  if (mode === 'Kéo tự do') {
+    degU = params.angleU !== undefined ? params.angleU : 30;
+    degV = params.angleV !== undefined ? params.angleV : 120;
+    degW = params.angleW !== undefined ? params.angleW : 270;
+  } else {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idxU = params.specialU !== undefined ? Math.round(params.specialU) : 1;
+    var idxV = params.specialV !== undefined ? Math.round(params.specialV) : 5;
+    var idxW = params.specialW !== undefined ? Math.round(params.specialW) : 12;
+    degU = specialDegVals[idxU] || 0;
+    degV = specialDegVals[idxV] || 0;
+    degW = specialDegVals[idxW] || 0;
+  }
+
+  var radU = degU * Math.PI / 180;
+  var radV = degV * Math.PI / 180;
+  var radW = degW * Math.PI / 180;
+
+  board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
+  board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
+  board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
+
+  var diffUV = ((degV - degU) % 360 + 360) % 360;
+  var diffVW = ((degW - degV) % 360 + 360) % 360;
+  var diffUW = ((degW - degU) % 360 + 360) % 360;
+
+  var sum = diffUV + diffVW;
+  var k = Math.floor((sum - diffUW) / 360);
+
+  var radUV = (diffUV / 180).toFixed(2) + 'π';
+  var radVW = (diffVW / 180).toFixed(2) + 'π';
+  var radUW = (diffUW / 180).toFixed(2) + 'π';
+
+  showReadouts([
+    { label: 'Tia Ou (U):', value: degU + '°' },
+    { label: 'Tia Ov (V):', value: degV + '°' },
+    { label: 'Tia Ow (W):', value: degW + '°' },
+    { label: 'Góc (Ou, Ov) [α]:', value: diffUV + '° (' + radUV + ' rad)', valueStyle: 'color: #10b981; font-weight: bold;' },
+    { label: 'Góc (Ov, Ow) [β]:', value: diffVW + '° (' + radVW + ' rad)', valueStyle: 'color: #f59e0b; font-weight: bold;' },
+    { label: 'Góc (Ou, Ow) [γ]:', value: diffUW + '° (' + radUW + ' rad)', valueStyle: 'color: #6366f1; font-weight: bold;' },
+    { label: 'Hệ thức Chasles:', value: diffUV + '° + ' + diffVW + '° = ' + diffUW + '° + ' + (k * 360) + '° (k = ' + k + ')', valueStyle: 'font-weight: bold; color: #4f46e5;' }
+  ]);
+  board.unsuspendUpdate();
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-1.8, 1.8, 1.8, -1.8],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt'] },
+          { type: 'slider', name: 'angleU', label: 'Góc tia U (độ)', min: 0, max: 360, step: 5, defaultValue: 30, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'angleV', label: 'Góc tia V (độ)', min: 0, max: 360, step: 5, defaultValue: 120, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'angleW', label: 'Góc tia W (độ)', min: 0, max: 360, step: 5, defaultValue: 270, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'specialU', label: 'Góc đặc biệt U', min: 0, max: 16, step: 1, defaultValue: 1, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialV', label: 'Góc đặc biệt V', min: 0, max: 16, step: 1, defaultValue: 5, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialW', label: 'Góc đặc biệt W', min: 0, max: 16, step: 1, defaultValue: 12, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+        ],
+        mathContent: '(Ou, Ov) + (Ov, Ow) \\\\equiv (Ou, Ow) \\\\pmod{2\\\\pi}',
+        explanation: 'Hệ thức Chasles khẳng định rằng với ba tia Ou, Ov, Ow bất kỳ trên mặt phẳng định hướng, tổng số đo của hai góc lượng giác (Ou, Ov) và (Ov, Ow) luôn bằng số đo của góc lượng giác (Ou, Ow) cộng với một bội nguyên của 360 độ (hoặc 2π radian).',
+        keyInsights: [
+          'Hệ thức đúng với mọi góc lượng giác, bất kể thứ tự các tia',
+          'Chênh lệch k * 360° thể hiện số vòng quay bù trừ',
+          'Kéo các điểm U, V, W để kiểm tra hệ thức tự động thay đổi k',
+        ],
+        tags: ['lượng giác', 'hệ thức chasles', 'góc lượng giác'],
+        difficulty: 'intermediate',
+        isPublished: true,
+      },
+      // Demo 2.3: Tính độ dài cung tròn (Toán 11 - Bài 1.3)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'goc-luong-giac-duong-tron',
+        title: 'Tính độ dài cung tròn',
+        description: 'Trực quan hóa công thức tính độ dài cung tròn l = R * a. Thay đổi bán kính R và số đo góc để quan sát cung được duỗi thẳng trên thước đo.',
+        order: 3,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+
+  // Origin O
+  board.O = board.create('point', [0, 0], {
+    name: math('O'),
+    size: 3,
+    fillColor: '#64748b',
+    strokeColor: '#475569',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+
+  // Point A
+  board.A = board.create('point', [
+    function() { var R = params.R !== undefined ? params.R : 0.6; return R; },
+    0
+  ], {
+    name: math('A'),
+    size: 3,
+    fillColor: '#10b981',
+    strokeColor: '#059669',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [10, -10] }
+  });
+
+  // Circle
+  board.circle = board.create('circle', [board.O, board.A], {
+    strokeColor: '#94a3b8',
+    strokeWidth: 2,
+    highlight: false,
+    fixed: true
+  });
+
+  // Point M as a glider on the circle
+  board.M = board.create('glider', [0, 0.6, board.circle], {
+    name: math('M'),
+    size: 5,
+    fillColor: '#6366f1',
+    strokeColor: '#4f46e5',
+    label: { display: 'html', fontSize: 14, offset: [10, 10] }
+  });
+  registerDragSnapping(board, board.M, 'angle');
+
+  // Segments
+  board.create('segment', [board.O, board.M], { strokeColor: '#6366f1', strokeWidth: 1.5 });
+  board.create('segment', [board.O, board.A], { strokeColor: '#10b981', strokeWidth: 1.5 });
+
+  // Arc curve
+  board.arcCurve = board.create('curve', [
+    function(t) {
+      var R = params.R !== undefined ? params.R : 0.6;
+      return R * Math.cos(t);
+    },
+    function(t) {
+      var R = params.R !== undefined ? params.R : 0.6;
+      return R * Math.sin(t);
+    },
+    0,
+    function() {
+      var x = board.M.X();
+      var y = board.M.Y();
+      var rad = Math.atan2(y, x);
+      if (rad < 0) rad += 2 * Math.PI;
+      return rad;
+    }
+  ], {
+    strokeColor: '#10b981',
+    strokeWidth: 4,
+    highlight: false
+  });
+
+  // Ruler Axis
+  board.create('line', [[-1.5, -1.3], [3.5, -1.3]], {
+    strokeColor: '#cbd5e1',
+    strokeWidth: 1.5,
+    fixed: true,
+    highlight: false
+  });
+
+  // Ruler ticks
+  for (var tickX = -1.5; tickX <= 3.51; tickX += 0.5) {
+    var val = (tickX + 1.5).toFixed(1);
+    board.create('segment', [[tickX, -1.3], [tickX, -1.38]], { strokeColor: '#64748b', strokeWidth: 1, fixed: true });
+    if (Math.abs(tickX + 1.5 - Math.round(tickX + 1.5)) < 0.01) {
+      board.create('text', [tickX - 0.08, -1.55, math(Math.round(tickX + 1.5).toString())], { display: 'html', fontSize: 10, color: '#64748b' });
+    }
+  }
+
+  // Label for ruler
+  board.create('text', [-1.5, -1.1, math('\\\\text{Thước đo duỗi thẳng cung tròn l (m):}')], { display: 'html', fontSize: 11, color: '#475569' });
+
+  // Unwrapped segment
+  board.unwrappedStart = board.create('point', [-1.5, -1.3], { visible: false });
+  board.unwrappedEnd = board.create('point', [
+    function() {
+      var R = params.R !== undefined ? params.R : 0.6;
+      var x = board.M.X();
+      var y = board.M.Y();
+      var rad = Math.atan2(y, x);
+      if (rad < 0) rad += 2 * Math.PI;
+      var l = R * rad;
+      return -1.5 + l;
+    },
+    -1.3
+  ], {
+    name: math("M_{duỗi}"),
+    size: 4,
+    fillColor: '#10b981',
+    strokeColor: '#059669',
+    label: { display: 'html', fontSize: 12, offset: [0, 10] }
+  });
+
+  board.unwrappedSeg = board.create('segment', [board.unwrappedStart, board.unwrappedEnd], {
+    strokeColor: '#10b981',
+    strokeWidth: 5,
+    highlight: false
+  });
+
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  board.suspendUpdate();
+  var mode = params.mode || 'Kéo tự do';
+  var R = params.R !== undefined ? params.R : 0.6;
+  var deg = 90;
+  var idx = 4;
+  
+  if (mode === 'Kéo tự do') {
+    deg = params.angle !== undefined ? params.angle : 90;
+  } else if (mode === 'Góc độ đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 4;
+    deg = specialDegVals[idx] || 0;
+  } else if (mode === 'Góc radian đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 4;
+    deg = specialDegVals[idx] || 0;
+  }
+
+  var rad = deg * Math.PI / 180;
+  var px = R * Math.cos(rad);
+  var py = R * Math.sin(rad);
+  board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+
+  var l = R * rad;
+
+  // Radian Text
+  var radText = '';
+  if (mode === 'Góc radian đặc biệt') {
+    var radLabels = ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'];
+    radText = radLabels[idx] || '0';
+  } else {
+    var frac = deg / 180;
+    if (frac === 0) radText = '0';
+    else if (frac === 1) radText = 'π';
+    else radText = frac.toFixed(2) + 'π';
+  }
+
+  showReadouts([
+    { label: 'Bán kính R:', value: R.toFixed(1) },
+    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)' },
+    { label: 'Độ dài cung l (lấy radian):', value: 'l = R × α' },
+    { label: 'Tính toán chi tiết:', value: R.toFixed(1) + ' × ' + rad.toFixed(3) + ' rad', valueStyle: 'font-family: monospace;' },
+    { label: 'Độ dài cung thực tế l:', value: l.toFixed(3), valueStyle: 'color: #10b981; font-weight: bold; font-size: 1rem;' }
+  ]);
+
+  board.unsuspendUpdate();
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-1.8, 1.8, 3.8, -1.8],
+          showAxis: false,
+          showGrid: false,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'slider', name: 'R', label: 'Bán kính R', min: 0.4, max: 0.8, step: 0.1, defaultValue: 0.6 },
+          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt', 'Góc radian đặc biệt'] },
+          { type: 'slider', name: 'angle', label: 'Góc tự do (độ)', min: 0, max: 360, step: 5, defaultValue: 90, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
+        ],
+        mathContent: 'l = R \\\\cdot \\\\alpha \\\\quad (\\\\alpha \\\\text{ tính bằng radian})',
+        explanation: 'Trên đường tròn bán kính R, cung tròn có số đo α radian sẽ có độ dài l bằng tích của R và α. Tính năng duỗi thẳng trực quan hóa cung tròn cong thành một đoạn thẳng thực tế để đo chính xác bằng thước mét.',
+        keyInsights: [
+          'Độ dài cung l tỉ lệ thuận với cả bán kính R và góc ở tâm α',
+          'Bắt buộc phải đổi góc sang đơn vị Radian trước khi tính độ dài cung',
+          'Khi R = 1, độ dài cung l bằng đúng số đo góc lượng giác α (tính bằng radian)',
+        ],
+        tags: ['lượng giác', 'độ dài cung', 'bán kính', 'radian'],
+        difficulty: 'basic',
+        isPublished: true,
+      },
+      // Demo 2.4: Bảng dấu & Giá trị Lượng giác
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
         lessonSlug: 'goc-luong-giac-duong-tron',
         title: 'Bảng dấu & Giá trị Lượng giác',
         description: 'Trực quan hóa giá trị Sin (tung độ), Cos (hoành độ), Tan và Cot. Xác định dấu (+/-) của chúng tùy thuộc vào phần tư (I, II, III, IV) trên đường tròn lượng giác.',
-        order: 2,
+        order: 4,
         simulationCode: `
 function initSimulation(board, params) {
   // Highlight Quadrants
@@ -684,14 +1060,14 @@ function updateSimulation(board, params) {
         difficulty: 'basic',
         isPublished: true,
       },
-      // Demo 2.3: Góc liên quan đặc biệt (Toán 11 - Bài 1.3)
+      // Demo 2.5: Góc liên quan đặc biệt (Toán 11 - Bài 1.3)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
         lessonSlug: 'goc-luong-giac-duong-tron',
         title: 'Góc liên quan đặc biệt (Tính đối xứng)',
         description: 'Trực quan hóa sự liên hệ lượng giác của các cặp góc có tính chất đối xứng đặc biệt: Đối nhau, Bù nhau, Phụ nhau, và Hơn kém π.',
-        order: 3,
+        order: 5,
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
@@ -811,34 +1187,34 @@ function updateSimulation(board, params) {
   // Determine M' based on relation
   var symAngle = 0;
   var relationLabel = '';
-  var latexM = 'M(\\\\alpha)';
-  var latexMPrime = "M'(\\\\beta)";
+  var latexM = 'M(\\alpha)';
+  var latexMPrime = "M'(\\beta)";
 
   if (relation === 'Góc đối nhau (α và -α)') {
     symAngle = -angle;
-    relationLabel = 'Đối nhau (\\\\alpha \\\\text{ và } -\\\\alpha)';
-    latexMPrime = "M'(-\\\\alpha)";
+    relationLabel = 'Đối nhau (\\alpha \\text{ và } -\\alpha)';
+    latexMPrime = "M'(-\\alpha)";
     board.lineYX.setAttribute({ visible: false });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#f43f5e', dash: 2 });
   } else if (relation === 'Góc bù nhau (α và π - α)') {
     symAngle = Math.PI - angle;
-    relationLabel = 'Bù nhau (\\\\alpha \\\\text{ và } \\\\pi - \\\\alpha)';
-    latexMPrime = "M'(\\\\pi - \\\\alpha)";
+    relationLabel = 'Bù nhau (\\alpha \\text{ và } \\pi - \\alpha)';
+    latexMPrime = "M'(\\pi - \\alpha)";
     board.lineYX.setAttribute({ visible: false });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#10b981', dash: 2 });
   } else if (relation === 'Góc phụ nhau (α và π/2 - α)') {
     symAngle = Math.PI / 2 - angle;
-    relationLabel = 'Phụ nhau (\\\\alpha \\\\text{ và } \\\\pi/2 - \\\\alpha)';
-    latexMPrime = "M'(\\\\pi/2 - \\\\alpha)";
+    relationLabel = 'Phụ nhau (\\alpha \\text{ và } \\pi/2 - \\alpha)';
+    latexMPrime = "M'(\\pi/2 - \\alpha)";
     board.lineYX.setAttribute({ visible: true });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#f59e0b', dash: 2 });
   } else if (relation === 'Góc hơn kém π (α và π + α)') {
     symAngle = angle + Math.PI;
-    relationLabel = 'Hơn kém \\\\pi (\\\\alpha \\\\text{ và } \\\\pi + \\\\alpha)';
-    latexMPrime = "M'(\\\\alpha + \\\\pi)";
+    relationLabel = 'Hơn kém \\pi (\\alpha \\text{ và } \\pi + \\alpha)';
+    latexMPrime = "M'(\\alpha + \\pi)";
     board.lineYX.setAttribute({ visible: false });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#8b5cf6', dash: 2 });
@@ -911,7 +1287,7 @@ function updateSimulation(board, params) {
     fCos = math('\\\\cos(\\\\pi - \\\\alpha) = -\\\\cos\\\\alpha');
     fSin = math('\\\\sin(\\\\pi - \\\\alpha) = \\\\sin\\\\alpha');
     fTan = math('\\\\tan(\\\\pi - \\\\alpha) = -\\\\tan\\\\alpha');
-    fCot = math('\\\\cot(\\\\pi - \\\\alpha) = -\\\\cot\\\\alpha');
+    fCot = math('\\\\cot(\\pi - \\\\alpha) = -\\\\cot\\\\alpha');
   } else if (relation === 'Góc phụ nhau (α và π/2 - α)') {
     fCos = math('\\\\cos(\\\\pi/2 - \\\\alpha) = \\\\sin\\\\alpha');
     fSin = math('\\\\sin(\\\\pi/2 - \\\\alpha) = \\\\cos\\\\alpha');
@@ -962,8 +1338,7 @@ function updateSimulation(board, params) {
         tags: ['lượng giác', 'đối xứng', 'góc lượng giác', 'liên hệ đặc biệt'],
         difficulty: 'intermediate',
         isPublished: true,
-      },
-      // Demo 3: Khảo sát hàm số bậc 3 (Toán 12)
+      },      // Demo 3: Khảo sát hàm số bậc 3 (Toán 12)
       {
         grade: 12,
         chapterSlug: 'ung-dung-dao-ham-ksdt',

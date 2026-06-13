@@ -197,6 +197,17 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         var params = window.currentParams || {};
         var mode = params.mode || 'Kéo tự do';
         
+        var targetSlider = '';
+        if (sliderName === 'angleU') {
+          targetSlider = (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') ? 'specialU' : 'angleU';
+        } else if (sliderName === 'angleV') {
+          targetSlider = (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') ? 'specialV' : 'angleV';
+        } else if (sliderName === 'angleW') {
+          targetSlider = (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') ? 'specialW' : 'angleW';
+        } else {
+          targetSlider = (mode === 'Góc độ đặc biệt') ? 'specialDeg' : 'specialRad';
+        }
+        
         if (mode === 'Kéo tự do') {
           var val = Math.round(deg);
           if (sliderName === 'deg') {
@@ -209,7 +220,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
             }
             val = Math.max(-720, Math.min(720, targetVal));
             val = Math.round(val / 10) * 10;
-          } else if (sliderName === 'angle') {
+          } else if (sliderName === 'angle' || sliderName === 'angleU' || sliderName === 'angleV' || sliderName === 'angleW') {
             val = Math.round(val / 5) * 5;
           }
           
@@ -235,7 +246,6 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
           point.setPosition(JXG.COORDS_BY_USER, [Math.cos(snapRad), Math.sin(snapRad)]);
           board.update();
           
-          var targetSlider = (mode === 'Góc độ đặc biệt') ? 'specialDeg' : 'specialRad';
           window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: targetSlider, value: closestIdx }, '*');
         }
       });
