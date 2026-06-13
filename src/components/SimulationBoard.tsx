@@ -48,7 +48,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [playingControl, setPlayingControl] = useState<string | null>(null);
   const [readoutRows, setReadoutRows] = useState<any[]>([]);
-  const [controlsOpen, setControlsOpen] = useState(false);
+
 
   // Clear autoplay state and readouts when switching simulations
   useEffect(() => {
@@ -253,32 +253,22 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
      * ============================================================= */
     function createCustomSlider(board, p1, p2, min, start, max, label, step, color, displayValues) {
       color = color || '#6366f1';
+      /* Create slider but HIDDEN — the web overlay handles the UI.
+         The slider object still exists for simulation code to read/write values. */
       var s = board.create('slider', [p1, p2, [min, start, max]], {
         name: label,
         snapWidth: step,
-        size: 4,
-        strokeColor: '#cbd5e1',
-        fillColor: color,
-        highlightFillColor: color,
-        highlightStrokeColor: color,
-        point1: { visible: true, size: 1.5, strokeColor: '#cbd5e1', fillColor: '#cbd5e1', fixed: true },
-        point2: { visible: true, size: 1.5, strokeColor: '#cbd5e1', fillColor: '#cbd5e1', fixed: true },
-        baseline: { strokeColor: '#cbd5e1', strokeWidth: 3, fixed: true },
-        highline: { strokeColor: color, strokeWidth: 4, fixed: true },
-        label: {
-          fontSize: 12,
-          color: '#475569',
-          strokeColor: 'none',
-          offset: [-15, 12],
-          formatter: function() {
-            var val = s.Value();
-            if (displayValues && displayValues.length > 0) {
-              var idx = Math.min(displayValues.length - 1, Math.max(0, Math.round(val)));
-              return label + ': ' + displayValues[idx];
-            }
-            return label + ': ' + val.toFixed(step < 1 ? (step < 0.1 ? 2 : 1) : 0);
-          }
-        }
+        visible: false,
+        size: 0,
+        strokeColor: 'transparent',
+        fillColor: 'transparent',
+        highlightFillColor: 'transparent',
+        highlightStrokeColor: 'transparent',
+        point1: { visible: false, fixed: true },
+        point2: { visible: false, fixed: true },
+        baseline: { visible: false, strokeColor: 'transparent', fixed: true },
+        highline: { visible: false, strokeColor: 'transparent', fixed: true },
+        label: { visible: false }
       });
       /* Track isDragging on the slider itself.
          JSXGraph sliders are composite: the draggable knob is a sub-point.
@@ -509,116 +499,37 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
               title={simulation.title}
             />
 
-            {/* Integrated compact controls block inside graph box */}
+            {/* Frosted glass overlay control bar at bottom of graph */}
             {simulation.controls.length > 0 && (
-              !controlsOpen ? (
-                <button
-                  type="button"
-                  onClick={() => setControlsOpen(true)}
-                  className="control-panel-toggle-btn"
-                  title="Mở bảng điều chỉnh"
-                >
-                  <span>⚙️</span>
-                  <span>Điều chỉnh</span>
-                  <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>▼</span>
-                </button>
-              ) : (
-                <div className="board-control-panel">
-                  {/* Expanded Header */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                    paddingBottom: '6px',
-                    marginBottom: '8px'
-                  }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span>⚙️</span> Điều chỉnh
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setControlsOpen(false)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        fontSize: '0.75rem',
-                        cursor: 'pointer',
-                        padding: '2px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        transition: 'color 0.2s'
-                      }}
-                      title="Ẩn bảng điều chỉnh"
-                      onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
+              <div className="glass-control-bar">
+                {simulation.controls.map((ctrl) => {
+                  if (ctrl.showIf) {
+                    const dependVal = controlValues[ctrl.showIf.control];
+                    if (dependVal !== ctrl.showIf.value) {
+                      return null;
+                    }
+                  }
+                  const themeColor = getControlThemeColor(ctrl.name);
+                  return (
+                    <div
+                      key={ctrl.name}
+                      className="glass-control-item"
+                      style={{ '--ctrl-color': themeColor } as React.CSSProperties}
                     >
-                      ▲ Ẩn
-                    </button>
-                  </div>
-                  <div className="control-list-horizontal">
-                    {simulation.controls.map((ctrl) => {
-                      if (ctrl.showIf) {
-                        const dependVal = controlValues[ctrl.showIf.control];
-                        if (dependVal !== ctrl.showIf.value) {
-                          return null;
-                        }
-                      }
-                      const themeColor = getControlThemeColor(ctrl.name);
-                      const themeColorLight = themeColor + '20'; // 12% opacity hex representation
-                      return (
-                        <div 
-                          key={ctrl.name} 
-                          className="control-item"
-                          style={{
-                            '--control-theme-color': themeColor,
-                            '--control-theme-color-light': themeColorLight
-                          } as React.CSSProperties}
-                        >
-                          {ctrl.type === 'slider' && (
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              background: 'rgba(255,255,255,0.06)',
-                              border: '1px solid rgba(255,255,255,0.1)',
-                              borderRadius: '20px',
-                              padding: '4px 10px 4px 12px',
-                              height: '32px',
-                              width: '100%'
-                            }}>
-                              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                                {ctrl.label}
-                              </span>
+                      {ctrl.type === 'slider' && (
+                        <>
+                          <div className="glass-slider-header">
+                            <span className="glass-slider-label">{ctrl.label}</span>
+                            <div className="glass-slider-actions">
                               <button
                                 type="button"
                                 onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
-                                className={`play-btn ${playingControl === ctrl.name ? 'playing' : ''}`}
-                                style={{
-                                  background: 'none', border: 'none', cursor: 'pointer',
-                                  fontSize: '0.8rem', padding: '0 2px',
-                                  display: 'inline-flex', alignItems: 'center',
-                                  transition: 'color 0.2s', color: playingControl === ctrl.name ? 'var(--control-theme-color)' : '#94a3b8'
-                                }}
-                                title={playingControl === ctrl.name ? "Tạm dừng chạy tự động" : "Chạy tự động"}
+                                className={`glass-play-btn ${playingControl === ctrl.name ? 'active' : ''}`}
+                                title={playingControl === ctrl.name ? 'Tạm dừng' : 'Chạy tự động'}
                               >
                                 {playingControl === ctrl.name ? '⏸' : '▶'}
                               </button>
-                              <span 
-                                className="value" 
-                                style={{ 
-                                  fontWeight: 700, 
-                                  fontVariantNumeric: 'tabular-nums',
-                                  color: 'var(--control-theme-color, #818cf8)',
-                                  background: 'var(--control-theme-color-light, rgba(99, 102, 241, 0.12))',
-                                  padding: '1px 6px',
-                                  borderRadius: '4px',
-                                  fontSize: '0.75rem',
-                                  marginLeft: 'auto'
-                                }}
-                              >
+                              <span className="glass-slider-value">
                                 {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
                                   ? ctrl.displayValues[controlValues[ctrl.name] as number]
                                   : typeof controlValues[ctrl.name] === 'number'
@@ -628,51 +539,46 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                                   : String(controlValues[ctrl.name])}
                               </span>
                             </div>
-                          )}
-                          {ctrl.type === 'checkbox' && (
-                            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', height: '32px', color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>
-                              <input
-                                type="checkbox"
-                                checked={controlValues[ctrl.name] as boolean}
-                                onChange={(e) =>
-                                  handleControlChange(ctrl.name, e.target.checked)
-                                }
-                              />
-                              {ctrl.label}
-                            </label>
-                          )}
-                          {ctrl.type === 'select' && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '32px' }}>
-                              <label style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 500, whiteSpace: 'nowrap' }}>{ctrl.label}</label>
-                              <select
-                                value={controlValues[ctrl.name] as string}
-                                onChange={(e) =>
-                                  handleControlChange(ctrl.name, e.target.value)
-                                }
-                                style={{
-                                  background: 'rgba(15, 23, 42, 0.6)',
-                                  border: '1px solid rgba(255,255,255,0.12)',
-                                  borderRadius: '6px',
-                                  color: '#f8fafc',
-                                  padding: '2px 8px',
-                                  fontSize: '0.78rem',
-                                  outline: 'none',
-                                  cursor: 'pointer',
-                                  height: '26px'
-                                }}
-                              >
-                                {ctrl.options?.map((opt) => (
-                                  <option key={opt} value={opt} style={{ background: '#0f172a', color: '#f8fafc' }}>{opt}</option>
-                                ))}
-                              </select>
-                            </div>
-                          )}
+                          </div>
+                          <input
+                            type="range"
+                            min={ctrl.min ?? 0}
+                            max={ctrl.max ?? 100}
+                            step={ctrl.step ?? 1}
+                            value={Number(controlValues[ctrl.name] ?? ctrl.defaultValue)}
+                            onChange={(e) => handleControlChange(ctrl.name, Number(e.target.value))}
+                            className="glass-range"
+                          />
+                        </>
+                      )}
+                      {ctrl.type === 'checkbox' && (
+                        <label className="glass-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={controlValues[ctrl.name] as boolean}
+                            onChange={(e) => handleControlChange(ctrl.name, e.target.checked)}
+                          />
+                          <span>{ctrl.label}</span>
+                        </label>
+                      )}
+                      {ctrl.type === 'select' && (
+                        <div className="glass-select-row">
+                          <label>{ctrl.label}</label>
+                          <select
+                            value={controlValues[ctrl.name] as string}
+                            onChange={(e) => handleControlChange(ctrl.name, e.target.value)}
+                            className="glass-select"
+                          >
+                            {ctrl.options?.map((opt) => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
