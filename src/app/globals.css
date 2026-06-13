@@ -315,13 +315,13 @@ body::after {
 /* ===== Frosted Glass Overlay Control Bar ===== */
 .glass-control-bar {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   right: 0;
   z-index: 10;
   padding: 10px 16px 12px;
   background: rgba(15, 23, 42, 0.45);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
   display: flex;
