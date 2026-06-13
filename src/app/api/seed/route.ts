@@ -619,27 +619,27 @@ function initSimulation(board, params) {
 
   // Point A
   board.A = board.create('point', [
-    function() { var R = params.R !== undefined ? params.R : 0.6; return R; },
+    function() { var R = params.R !== undefined ? params.R : 1.0; return R; },
     0
   ], {
     name: math('A'),
     size: 3,
-    fillColor: '#10b981',
-    strokeColor: '#059669',
+    fillColor: '#6366f1',
+    strokeColor: '#4f46e5',
     fixed: true,
     label: { display: 'html', fontSize: 14, offset: [10, -10] }
   });
 
   // Circle
   board.circle = board.create('circle', [board.O, board.A], {
-    strokeColor: '#94a3b8',
+    strokeColor: '#cbd5e1',
     strokeWidth: 2,
     highlight: false,
     fixed: true
   });
 
-  // Point M as a glider on the circle
-  board.M = board.create('glider', [0, 0.6, board.circle], {
+  // Point M as a glider on the circle (colored Indigo to match radius segment)
+  board.M = board.create('glider', [0, 1.0, board.circle], {
     name: math('M'),
     size: 5,
     fillColor: '#6366f1',
@@ -648,18 +648,42 @@ function initSimulation(board, params) {
   });
   registerDragSnapping(board, board.M, 'angle');
 
-  // Segments
-  board.create('segment', [board.O, board.M], { strokeColor: '#6366f1', strokeWidth: 1.5 });
-  board.create('segment', [board.O, board.A], { strokeColor: '#10b981', strokeWidth: 1.5 });
+  // Segments representing Radius R (colored Indigo)
+  board.create('segment', [board.O, board.M], { strokeColor: '#6366f1', strokeWidth: 2.5 });
+  board.create('segment', [board.O, board.A], { strokeColor: '#6366f1', strokeWidth: 2.5 });
 
-  // Arc curve
+  // Central angle arc (colored Amber representing angle alpha)
+  board.angleArcStart = board.create('point', [0.2, 0], { visible: false, withLabel: false });
+  board.angleArcEnd = board.create('point', [
+    function() {
+      var x = board.M.X();
+      var y = board.M.Y();
+      var rad = Math.atan2(y, x);
+      if (rad < 0) rad += 2 * Math.PI;
+      return 0.2 * Math.cos(rad);
+    },
+    function() {
+      var x = board.M.X();
+      var y = board.M.Y();
+      var rad = Math.atan2(y, x);
+      if (rad < 0) rad += 2 * Math.PI;
+      return 0.2 * Math.sin(rad);
+    }
+  ], { visible: false, withLabel: false });
+  board.angleArc = board.create('arc', [board.O, board.angleArcStart, board.angleArcEnd], {
+    strokeColor: '#f59e0b',
+    strokeWidth: 3,
+    withLabel: false
+  });
+
+  // Arc curve (colored Teal representing arc length l)
   board.arcCurve = board.create('curve', [
     function(t) {
-      var R = params.R !== undefined ? params.R : 0.6;
+      var R = params.R !== undefined ? params.R : 1.0;
       return R * Math.cos(t);
     },
     function(t) {
-      var R = params.R !== undefined ? params.R : 0.6;
+      var R = params.R !== undefined ? params.R : 1.0;
       return R * Math.sin(t);
     },
     0,
@@ -677,7 +701,7 @@ function initSimulation(board, params) {
   });
 
   // Ruler Axis
-  board.create('line', [[-1.5, -1.3], [3.5, -1.3]], {
+  board.create('line', [[-1.0, -1.3], [4.0, -1.3]], {
     strokeColor: '#cbd5e1',
     strokeWidth: 1.5,
     fixed: true,
@@ -685,36 +709,36 @@ function initSimulation(board, params) {
   });
 
   // Ruler ticks
-  for (var tickX = -1.5; tickX <= 3.51; tickX += 0.5) {
-    var val = (tickX + 1.5).toFixed(1);
+  for (var tickX = -1.0; tickX <= 4.01; tickX += 0.5) {
+    var val = (tickX + 1.0).toFixed(1);
     board.create('segment', [[tickX, -1.3], [tickX, -1.38]], { strokeColor: '#64748b', strokeWidth: 1, fixed: true });
-    if (Math.abs(tickX + 1.5 - Math.round(tickX + 1.5)) < 0.01) {
-      board.create('text', [tickX - 0.08, -1.55, math(Math.round(tickX + 1.5).toString())], { display: 'html', fontSize: 10, color: '#64748b' });
+    if (Math.abs(tickX + 1.0 - Math.round(tickX + 1.0)) < 0.01) {
+      board.create('text', [tickX - 0.08, -1.55, math(Math.round(tickX + 1.0).toString())], { display: 'html', fontSize: 10, color: '#64748b' });
     }
   }
 
   // Label for ruler
-  board.create('text', [-1.5, -1.1, math('\\\\text{Thước đo duỗi thẳng cung tròn l (m):}')], { display: 'html', fontSize: 11, color: '#475569' });
+  board.create('text', [-1.0, -1.1, math('\\text{Thước đo duỗi thẳng cung tròn l (m):}')], { display: 'html', fontSize: 11, color: '#475569' });
 
-  // Unwrapped segment
-  board.unwrappedStart = board.create('point', [-1.5, -1.3], { visible: false });
+  // Unwrapped segment (colored Teal representing unwrapped arc length l)
+  board.unwrappedStart = board.create('point', [-1.0, -1.3], { visible: false });
   board.unwrappedEnd = board.create('point', [
     function() {
-      var R = params.R !== undefined ? params.R : 0.6;
+      var R = params.R !== undefined ? params.R : 1.0;
       var x = board.M.X();
       var y = board.M.Y();
       var rad = Math.atan2(y, x);
       if (rad < 0) rad += 2 * Math.PI;
       var l = R * rad;
-      return -1.5 + l;
+      return -1.0 + l;
     },
     -1.3
   ], {
-    name: math("M_{duỗi}"),
-    size: 4,
+    name: math("M'"),
+    size: 5,
     fillColor: '#10b981',
     strokeColor: '#059669',
-    label: { display: 'html', fontSize: 12, offset: [0, 10] }
+    label: { display: 'html', fontSize: 13, offset: [0, 10] }
   });
 
   board.unwrappedSeg = board.create('segment', [board.unwrappedStart, board.unwrappedEnd], {
@@ -730,7 +754,7 @@ function initSimulation(board, params) {
 function updateSimulation(board, params) {
   board.suspendUpdate();
   var mode = params.mode || 'Kéo tự do';
-  var R = params.R !== undefined ? params.R : 0.6;
+  var R = params.R !== undefined ? params.R : 1.0;
   var deg = 90;
   var idx = 4;
   
@@ -766,8 +790,8 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Bán kính R:', value: R.toFixed(1), labelStyle: 'color: #0ea5e9;', valueStyle: 'color: #0284c7; font-weight: bold;' },
-    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
+    { label: 'Bán kính R:', value: R.toFixed(1), labelStyle: 'color: #4f46e5;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
+    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #d97706;', valueStyle: 'color: #d97706; font-weight: bold;' },
     { label: 'Công thức l:', value: 'R × α (rad)', labelStyle: 'color: #64748b;', valueStyle: 'color: #475569; font-style: italic;' },
     { label: 'Tính toán:', value: R.toFixed(1) + ' × ' + rad.toFixed(3) + ' rad', labelStyle: 'color: #64748b;', valueStyle: 'font-family: monospace; color: #475569;' },
     { label: 'Độ dài cung l:', value: l.toFixed(3), labelStyle: 'color: #10b981; font-weight: bold; border-top: 1px dashed #cbd5e1; padding-top: 4px;', valueStyle: 'color: #10b981; font-weight: bold; font-size: 0.85rem; background: rgba(16, 185, 129, 0.12); padding: 2px 6px; border-radius: 4px; border-top: 1px dashed #cbd5e1; padding-top: 4px;' }
@@ -779,19 +803,19 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.8, 3.8, -1.8],
+          boundingBox: [-1.5, 1.3, 4.0, -1.6],
           showAxis: false,
           showGrid: false,
           theme: 'light',
         },
         controls: [
-          { type: 'slider', name: 'R', label: 'Bán kính R', min: 0.4, max: 0.8, step: 0.1, defaultValue: 0.6 },
+          { type: 'slider', name: 'R', label: 'Bán kính R', min: 0.8, max: 1.2, step: 0.1, defaultValue: 1.0 },
           { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt', 'Góc radian đặc biệt'] },
           { type: 'slider', name: 'angle', label: 'Góc tự do (độ)', min: 0, max: 360, step: 5, defaultValue: 90, showIf: { control: 'mode', value: 'Kéo tự do' } },
           { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
           { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
         ],
-        mathContent: 'l = R \\\\cdot \\\\alpha \\\\quad (\\\\alpha \\\\text{ tính bằng radian})',
+        mathContent: 'l = R \\cdot \\alpha \\quad (\\alpha \\text{ tính bằng radian})',
         explanation: 'Trên đường tròn bán kính R, cung tròn có số đo α radian sẽ có độ dài l bằng tích của R và α. Tính năng duỗi thẳng trực quan hóa cung tròn cong thành một đoạn thẳng thực tế để đo chính xác bằng thước mét.',
         keyInsights: [
           'Độ dài cung l tỉ lệ thuận với cả bán kính R và góc ở tâm α',
