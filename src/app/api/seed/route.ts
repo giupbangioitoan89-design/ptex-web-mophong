@@ -386,19 +386,19 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Góc tổng quát α:', value: deg + '°' },
-    { label: 'Số đo radian:', value: radText + ' rad' },
-    { label: 'Góc hình học tương ứng:', value: remainderDeg + '° (' + remainderRadStr + ')' },
-    { label: 'Chiều quay:', value: dirText, valueStyle: 'color:' + dirColor + '; font-weight: bold;' },
-    { label: 'Số vòng quay k:', value: turns.toString() },
-    { label: 'Vị trí biểu diễn:', value: quadText }
+    { label: 'Góc tổng quát α:', value: deg + '°', labelStyle: 'color: #4f46e5;', valueStyle: 'color: #4f46e5; font-size: 0.85rem;' },
+    { label: 'Số đo radian:', value: radText + ' rad', labelStyle: 'color: #6366f1;', valueStyle: 'color: #6366f1;' },
+    { label: 'Góc hình học:', value: remainderDeg + '° (' + remainderRadStr + ')', labelStyle: 'color: #0ea5e9;', valueStyle: 'color: #0ea5e9;' },
+    { label: 'Chiều quay:', value: dirText, labelStyle: 'color: #475569;', valueStyle: 'color: ' + dirColor + '; background: ' + (deg > 0 ? 'rgba(16, 185, 129, 0.12)' : (deg < 0 ? 'rgba(239, 68, 68, 0.12)' : 'rgba(100, 116, 139, 0.12)')) + '; padding: 1px 5px; border-radius: 4px;' },
+    { label: 'Số vòng k:', value: turns.toString(), labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706; background: rgba(245, 158, 11, 0.12); padding: 1px 5px; border-radius: 4px;' },
+    { label: 'Vị trí:', value: quadText, labelStyle: 'color: #8b5cf6;', valueStyle: 'color: #7c3aed; font-weight: bold;' }
   ]);
 }
 `,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.8, 1.8, -1.8],
+          boundingBox: [-2.4, 1.8, 1.4, -1.8],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -551,13 +551,13 @@ function updateSimulation(board, params) {
   var radUW = (diffUW / 180).toFixed(2) + 'π';
 
   showReadouts([
-    { label: 'Tia Ou (U):', value: degU + '°' },
-    { label: 'Tia Ov (V):', value: degV + '°' },
-    { label: 'Tia Ow (W):', value: degW + '°' },
-    { label: 'Góc (Ou, Ov) [α]:', value: diffUV + '° (' + radUV + ' rad)', valueStyle: 'color: #10b981; font-weight: bold;' },
-    { label: 'Góc (Ov, Ow) [β]:', value: diffVW + '° (' + radVW + ' rad)', valueStyle: 'color: #f59e0b; font-weight: bold;' },
-    { label: 'Góc (Ou, Ow) [γ]:', value: diffUW + '° (' + radUW + ' rad)', valueStyle: 'color: #6366f1; font-weight: bold;' },
-    { label: 'Hệ thức Chasles:', value: diffUV + '° + ' + diffVW + '° = ' + diffUW + '° + ' + (k * 360) + '° (k = ' + k + ')', valueStyle: 'font-weight: bold; color: #4f46e5;' }
+    { label: 'Tia Ou (U):', value: degU + '°', labelStyle: 'color: #10b981;', valueStyle: 'color: #059669;' },
+    { label: 'Tia Ov (V):', value: degV + '°', labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706;' },
+    { label: 'Tia Ow (W):', value: degW + '°', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5;' },
+    { label: 'Góc (Ou, Ov) [α]:', value: diffUV + '° (' + radUV + ')', labelStyle: 'color: #10b981;', valueStyle: 'color: #059669; font-weight: bold;' },
+    { label: 'Góc (Ov, Ow) [β]:', value: diffVW + '° (' + radVW + ')', labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706; font-weight: bold;' },
+    { label: 'Góc (Ou, Ow) [γ]:', value: diffUW + '° (' + radUW + ')', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
+    { label: 'Hệ thức Chasles:', value: diffUV + '° + ' + diffVW + '° = ' + diffUW + '° + ' + (k * 360) + '°', labelStyle: 'color: #4f46e5; font-weight: bold; border-top: 1px dashed #cbd5e1; padding-top: 4px;', valueStyle: 'color: #4f46e5; font-weight: bold; background: rgba(99, 102, 241, 0.12); padding: 2px 6px; border-radius: 4px; border-top: 1px dashed #cbd5e1; padding-top: 4px;' }
   ]);
   board.unsuspendUpdate();
 }
@@ -565,7 +565,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.8, 1.8, -1.8],
+          boundingBox: [-2.4, 1.8, 1.4, -1.8],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -601,6 +601,11 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
+  var panel = document.getElementById('readout-panel');
+  if (panel) {
+    panel.style.left = 'auto';
+    panel.style.right = '10px';
+  }
 
   // Origin O
   board.O = board.create('point', [0, 0], {
@@ -761,11 +766,11 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Bán kính R:', value: R.toFixed(1) },
-    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)' },
-    { label: 'Độ dài cung l (lấy radian):', value: 'l = R × α' },
-    { label: 'Tính toán chi tiết:', value: R.toFixed(1) + ' × ' + rad.toFixed(3) + ' rad', valueStyle: 'font-family: monospace;' },
-    { label: 'Độ dài cung thực tế l:', value: l.toFixed(3), valueStyle: 'color: #10b981; font-weight: bold; font-size: 1rem;' }
+    { label: 'Bán kính R:', value: R.toFixed(1), labelStyle: 'color: #0ea5e9;', valueStyle: 'color: #0284c7; font-weight: bold;' },
+    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
+    { label: 'Công thức l:', value: 'R × α (rad)', labelStyle: 'color: #64748b;', valueStyle: 'color: #475569; font-style: italic;' },
+    { label: 'Tính toán:', value: R.toFixed(1) + ' × ' + rad.toFixed(3) + ' rad', labelStyle: 'color: #64748b;', valueStyle: 'font-family: monospace; color: #475569;' },
+    { label: 'Độ dài cung l:', value: l.toFixed(3), labelStyle: 'color: #10b981; font-weight: bold; border-top: 1px dashed #cbd5e1; padding-top: 4px;', valueStyle: 'color: #10b981; font-weight: bold; font-size: 0.85rem; background: rgba(16, 185, 129, 0.12); padding: 2px 6px; border-radius: 4px; border-top: 1px dashed #cbd5e1; padding-top: 4px;' }
   ]);
 
   board.unsuspendUpdate();
@@ -1012,11 +1017,11 @@ function updateSimulation(board, params) {
   var cotVal = showCot ? (1 / Math.tan(angle)) : null;
 
   function getSignHtml(val) {
-    if (val === null) return '<span style="color: #94a3b8; font-weight: bold;">K.Xác định</span>';
-    if (Math.abs(val) < 1e-4) return '0 (trên trục)';
+    if (val === null) return '<span style="color: #94a3b8; background: rgba(148, 163, 184, 0.15); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">K.Xác định</span>';
+    if (Math.abs(val) < 1e-4) return '<span style="color: #64748b; background: rgba(100, 116, 139, 0.12); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">0 (trục)</span>';
     return val > 0 
-      ? '<span style="color: #10b981; font-weight: bold;">+ (Dương)</span>' 
-      : '<span style="color: #ef4444; font-weight: bold;">- (Âm)</span>';
+      ? '<span style="color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">+ (Dương)</span>' 
+      : '<span style="color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">- (Âm)</span>';
   }
 
   var sinValStr = py.toFixed(3) + ' &nbsp; ' + getSignHtml(py);
@@ -1025,19 +1030,19 @@ function updateSimulation(board, params) {
   var cotValStr = showCot ? cotVal.toFixed(3) + ' &nbsp; ' + getSignHtml(cotVal) : getSignHtml(null);
 
   showReadouts([
-    { label: 'Góc α:', value: deg + '° (' + radText + ' rad)' },
-    { label: 'Vị trí điểm P:', value: quadLabel },
-    { label: 'cos α (hoành độ P):', value: cosValStr },
-    { label: 'sin α (tung độ P):', value: sinValStr },
-    { label: 'tan α (sin/cos):', value: tanValStr },
-    { label: 'cot α (cos/sin):', value: cotValStr }
+    { label: 'Góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #4f46e5;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
+    { label: 'Vị trí P:', value: quadLabel, labelStyle: 'color: #64748b;', valueStyle: 'color: #334155; font-weight: bold;' },
+    { label: 'cos α (hoành độ P):', value: cosValStr, labelStyle: 'color: #10b981; border-top: 1px dashed #cbd5e1; padding-top: 3px;', valueStyle: 'border-top: 1px dashed #cbd5e1; padding-top: 3px;' },
+    { label: 'sin α (tung độ P):', value: sinValStr, labelStyle: 'color: #f43f5e;', valueStyle: '' },
+    { label: 'tan α (sin/cos):', value: tanValStr, labelStyle: 'color: #d97706;', valueStyle: '' },
+    { label: 'cot α (cos/sin):', value: cotValStr, labelStyle: 'color: #06b6d4;', valueStyle: '' }
   ]);
 }
 `,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-2, 2.2, 2, -2.5],
+          boundingBox: [-2.6, 2.2, 1.6, -2.5],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -1301,12 +1306,12 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Góc ban đầu α:', value: deg + '° (' + radText + ' rad)' },
-    { label: 'Mối liên hệ:', value: math(relationLabel) },
-    { label: 'Góc liên kết β:', value: symDeg + '° (' + symRadText + ' rad)' },
-    { label: 'Liên hệ Côsin:', value: fCos },
-    { label: 'Liên hệ Sin:', value: fSin },
-    { label: 'Liên hệ Tang / Côtang:', value: fTan + ' &nbsp;|&nbsp; ' + fCot }
+    { label: 'Góc ban đầu α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
+    { label: 'Mối liên hệ:', value: math(relationLabel), labelStyle: 'color: #64748b;', valueStyle: 'font-weight: bold;' },
+    { label: 'Góc liên kết β:', value: symDeg + '° (' + symRadText + ' rad)', labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706; font-weight: bold;' },
+    { label: 'Liên hệ Côsin:', value: fCos, labelStyle: 'color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 4px;', valueStyle: 'border-top: 1px dashed #cbd5e1; padding-top: 4px;' },
+    { label: 'Liên hệ Sin:', value: fSin, labelStyle: 'color: #475569;' },
+    { label: 'Liên hệ Tang/Cot:', value: fTan + ' &nbsp;|&nbsp; ' + fCot, labelStyle: 'color: #475569;' }
   ]);
 
   board.unsuspendUpdate();
@@ -1315,7 +1320,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.8, 1.8, -1.8],
+          boundingBox: [-2.4, 1.8, 1.4, -1.8],
           showAxis: true,
           showGrid: true,
           theme: 'light',

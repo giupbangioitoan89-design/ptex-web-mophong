@@ -105,39 +105,41 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     }
     #readout-panel {
       position: absolute;
-      top: 12px;
-      left: 12px;
+      top: 10px;
+      left: 10px;
       z-index: 1000;
       display: none;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       pointer-events: none;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1.5px solid rgba(226, 232, 240, 0.8);
-      border-radius: 8px;
-      padding: 10px 14px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(226, 232, 240, 0.7);
+      border-radius: 6px;
+      padding: 6px 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
       font-family: 'Inter', sans-serif;
-      min-width: 240px;
+      min-width: 210px;
+      max-width: 280px;
     }
     .readout-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.82rem;
+      font-size: 0.75rem;
       color: #334155;
-      line-height: 1.4;
+      line-height: 1.35;
     }
     .readout-label {
-      font-weight: 500;
-      color: #64748b;
+      font-weight: 600;
+      color: #475569;
+      margin-right: 12px;
     }
     .readout-value {
       font-family: 'Courier New', Courier, monospace;
       font-variant-numeric: tabular-nums;
-      font-weight: 600;
+      font-weight: 700;
       color: #0f172a;
       text-align: right;
     }
@@ -169,7 +171,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
         html += '<div class="readout-row">';
-        html += '<span class="readout-label">' + row.label + '</span>';
+        var labelStyle = row.labelStyle || '';
+        html += '<span class="readout-label" style="' + labelStyle + '">' + row.label + '</span>';
         var style = row.valueStyle || '';
         html += '<span class="readout-value" style="' + style + '">' + row.value + '</span>';
         html += '</div>';
