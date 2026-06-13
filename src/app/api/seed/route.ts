@@ -308,12 +308,6 @@ function initSimulation(board, params) {
     strokeWidth: 2
   });
 
-  // Texts
-  board.txtDeg = board.create('text', [-1.6, 1.5, ''], { display: 'html', fontSize: 14 });
-  board.txtRad = board.create('text', [-1.6, 1.3, ''], { display: 'html', fontSize: 14 });
-  board.txtTurns = board.create('text', [-1.6, 1.1, ''], { display: 'html', fontSize: 14 });
-  board.txtDir = board.create('text', [-1.6, 0.9, ''], { display: 'html', fontSize: 14 });
-
   updateSimulation(board, params);
 }
 
@@ -369,14 +363,35 @@ function updateSimulation(board, params) {
     else radText = frac.toFixed(2) + '\\pi';
   }
 
-  var dirText = deg > 0 ? '\\text{Chiều Dương (+)}' : (deg < 0 ? '\\text{Chiều Âm (-)}' : '\\text{Không quay}');
-  var dirColor = deg > 0 ? '#22c55e' : (deg < 0 ? '#ef4444' : '#94a3b8');
+  var dirText = deg > 0 ? 'Dương (+)' : (deg < 0 ? 'Âm (-)' : 'Không quay');
+  var dirColor = deg > 0 ? '#10b981' : (deg < 0 ? '#ef4444' : '#64748b');
 
-  board.txtDeg.setText(math('\\text{Số đo Độ: } ' + deg + '^\\circ'));
-  board.txtRad.setText(math('\\text{Số đo Radian: } ' + radText + ' \\text{ rad}'));
-  board.txtTurns.setText(math('\\text{Số vòng quay: } ' + turns + ' \\text{ vòng}'));
-  board.txtDir.setText(math('\\text{Hướng quay: } ' + dirText));
-  board.txtDir.setAttribute({ strokeColor: dirColor });
+  var displayRad = radText;
+  if (displayRad.includes('\\frac')) {
+    if (radText === '\\frac{\\pi}{6}') displayRad = 'π/6';
+    else if (radText === '\\frac{\\pi}{4}') displayRad = 'π/4';
+    else if (radText === '\\frac{\\pi}{3}') displayRad = 'π/3';
+    else if (radText === '\\frac{\\pi}{2}') displayRad = 'π/2';
+    else if (radText === '\\frac{2\\pi}{3}') displayRad = '2π/3';
+    else if (radText === '\\frac{3\\pi}{4}') displayRad = '3π/4';
+    else if (radText === '\\frac{5\\pi}{6}') displayRad = '5π/6';
+    else if (radText === '\\frac{7\\pi}{6}') displayRad = '7π/6';
+    else if (radText === '\\frac{5\\pi}{4}') displayRad = '5π/4';
+    else if (radText === '\\frac{4\\pi}{3}') displayRad = '4π/3';
+    else if (radText === '\\frac{3\\pi}{2}') displayRad = '3π/2';
+    else if (radText === '\\frac{5\\pi}{3}') displayRad = '5π/3';
+    else if (radText === '\\frac{7\\pi}{4}') displayRad = '7π/4';
+    else if (radText === '\\frac{11\\pi}{6}') displayRad = '11π/6';
+  } else {
+    displayRad = displayRad.replace('\\pi', 'π').replace('-\\pi', '-π');
+  }
+
+  showReadouts([
+    { label: 'Số đo độ α:', value: deg + '°' },
+    { label: 'Số đo rad α:', value: displayRad + ' rad' },
+    { label: 'Số vòng quay:', value: turns },
+    { label: 'Chiều quay:', value: dirText, valueStyle: 'color:' + dirColor + '; font-weight: bold; font-family: Inter, sans-serif;' }
+  ]);
 }
 `,
         visualizationType: 'jsxgraph',
@@ -435,28 +450,62 @@ function initSimulation(board, params) {
 
   // projection points
   board.H = board.create('point', [0, 0], {
-    name: math('H(\\cos \\alpha; 0)'),
+    name: math('H'),
     size: 4,
     fillColor: '#22c55e',
     strokeColor: '#16a34a',
-    label: { display: 'html', fontSize: 12, offset: [-30, -20] }
+    label: { display: 'html', fontSize: 12, offset: [-10, -15] }
   });
 
   board.K = board.create('point', [0, 0], {
-    name: math('K(0; \\sin \\alpha)'),
+    name: math('K'),
     size: 4,
     fillColor: '#ef4444',
     strokeColor: '#dc2626',
-    label: { display: 'html', fontSize: 12, offset: [-95, 0] }
+    label: { display: 'html', fontSize: 12, offset: [-18, 0] }
   });
 
   // Target point P
   board.P = board.create('point', [0, 0], {
-    name: math('P(\\cos \\alpha; \\sin \\alpha)'),
+    name: math('P'),
     size: 5,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
     label: { display: 'html', fontSize: 14, offset: [10, 10] }
+  });
+
+  // Special axis boundary points
+  board.create('point', [1, 0], {
+    name: math('A(1;0)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [8, -12] }
+  });
+  board.create('point', [-1, 0], {
+    name: math('A\'(-1;0)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [-65, -12] }
+  });
+  board.create('point', [0, 1], {
+    name: math('B(0;1)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [8, 12] }
+  });
+  board.create('point', [0, -1], {
+    name: math('B\'(0;-1)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [8, -12] }
   });
 
   // Label Axis names
@@ -497,11 +546,6 @@ function initSimulation(board, params) {
     strokeColor: '#f59e0b',
     strokeWidth: 2
   });
-
-  // Texts
-  board.txtAngle = board.create('text', [-1.8, 1.8, ''], { display: 'html', fontSize: 14, color: '#6366f1' });
-  board.txtSin = board.create('text', [-1.8, 1.5, ''], { display: 'html', fontSize: 14, color: '#ef4444' });
-  board.txtCos = board.create('text', [-1.8, 1.2, ''], { display: 'html', fontSize: 14, color: '#22c55e' });
 
   updateSimulation(board, params);
 }
@@ -549,9 +593,31 @@ function updateSimulation(board, params) {
     else radText = frac.toFixed(2) + '\\pi';
   }
 
-  board.txtAngle.setText(math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}'));
-  board.txtSin.setText(math('\\sin \\alpha = ' + py.toFixed(3)));
-  board.txtCos.setText(math('\\cos \\alpha = ' + px.toFixed(3)));
+  var displayRad = radText;
+  if (displayRad.includes('\\frac')) {
+    if (radText === '\\frac{\\pi}{6}') displayRad = 'π/6';
+    else if (radText === '\\frac{\\pi}{4}') displayRad = 'π/4';
+    else if (radText === '\\frac{\\pi}{3}') displayRad = 'π/3';
+    else if (radText === '\\frac{\\pi}{2}') displayRad = 'π/2';
+    else if (radText === '\\frac{2\\pi}{3}') displayRad = '2π/3';
+    else if (radText === '\\frac{3\\pi}{4}') displayRad = '3π/4';
+    else if (radText === '\\frac{5\\pi}{6}') displayRad = '5π/6';
+    else if (radText === '\\frac{7\\pi}{6}') displayRad = '7π/6';
+    else if (radText === '\\frac{5\\pi}{4}') displayRad = '5π/4';
+    else if (radText === '\\frac{4\\pi}{3}') displayRad = '4π/3';
+    else if (radText === '\\frac{3\\pi}{2}') displayRad = '3π/2';
+    else if (radText === '\\frac{5\\pi}{3}') displayRad = '5π/3';
+    else if (radText === '\\frac{7\\pi}{4}') displayRad = '7π/4';
+    else if (radText === '\\frac{11\\pi}{6}') displayRad = '11π/6';
+  } else {
+    displayRad = displayRad.replace('\\pi', 'π').replace('-\\pi', '-π');
+  }
+
+  showReadouts([
+    { label: 'Góc α:', value: deg + '° (' + displayRad + ' rad)' },
+    { label: 'cos α (hoành độ P):', value: px.toFixed(3), valueStyle: 'color: #16a34a; font-weight: bold;' },
+    { label: 'sin α (tung độ P):', value: py.toFixed(3), valueStyle: 'color: #dc2626; font-weight: bold;' }
+  ]);
 }
 `,
         visualizationType: 'jsxgraph',
@@ -688,11 +754,6 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 12, offset: [-45, 12] }
   });
 
-  // Value texts
-  board.txtAngle = board.create('text', [-2.3, -1.6, ''], { display: 'html', fontSize: 13, color: '#6366f1' });
-  board.txtTan = board.create('text', [-2.3, -1.9, ''], { display: 'html', fontSize: 13, color: '#f59e0b' });
-  board.txtCot = board.create('text', [-2.3, -2.2, ''], { display: 'html', fontSize: 13, color: '#ec4899' });
-
   updateSimulation(board, params);
 }
 
@@ -752,17 +813,34 @@ function updateSimulation(board, params) {
     else radText = frac.toFixed(2) + '\\pi';
   }
 
-  board.txtAngle.setText(math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}'));
-  if (showTan) {
-    board.txtTan.setText(math('\\tan \\alpha = ' + Math.tan(angle).toFixed(3)));
+  var displayRad = radText;
+  if (displayRad.includes('\\frac')) {
+    if (radText === '\\frac{\\pi}{6}') displayRad = 'π/6';
+    else if (radText === '\\frac{\\pi}{4}') displayRad = 'π/4';
+    else if (radText === '\\frac{\\pi}{3}') displayRad = 'π/3';
+    else if (radText === '\\frac{\\pi}{2}') displayRad = 'π/2';
+    else if (radText === '\\frac{2\\pi}{3}') displayRad = '2π/3';
+    else if (radText === '\\frac{3\\pi}{4}') displayRad = '3π/4';
+    else if (radText === '\\frac{5\\pi}{6}') displayRad = '5π/6';
+    else if (radText === '\\frac{7\\pi}{6}') displayRad = '7π/6';
+    else if (radText === '\\frac{5\\pi}{4}') displayRad = '5π/4';
+    else if (radText === '\\frac{4\\pi}{3}') displayRad = '4π/3';
+    else if (radText === '\\frac{3\\pi}{2}') displayRad = '3π/2';
+    else if (radText === '\\frac{5\\pi}{3}') displayRad = '5π/3';
+    else if (radText === '\\frac{7\\pi}{4}') displayRad = '7π/4';
+    else if (radText === '\\frac{11\\pi}{6}') displayRad = '11π/6';
   } else {
-    board.txtTan.setText(math('\\tan \\alpha = \\text{Không xác định}'));
+    displayRad = displayRad.replace('\\pi', 'π').replace('-\\pi', '-π');
   }
-  if (showCot) {
-    board.txtCot.setText(math('\\cot \\alpha = ' + (1/Math.tan(angle)).toFixed(3)));
-  } else {
-    board.txtCot.setText(math('\\cot \\alpha = \\text{Không xác định}'));
-  }
+
+  var tanValStr = showTan ? Math.tan(angle).toFixed(3) : 'K.Xác định';
+  var cotValStr = showCot ? (1 / Math.tan(angle)).toFixed(3) : 'K.Xác định';
+
+  showReadouts([
+    { label: 'Góc α:', value: deg + '° (' + displayRad + ' rad)' },
+    { label: 'tan α:', value: tanValStr, valueStyle: 'color: #d97706; font-weight: bold;' },
+    { label: 'cot α:', value: cotValStr, valueStyle: 'color: #db2777; font-weight: bold;' }
+  ]);
 
   board.unsuspendUpdate();
 }`,

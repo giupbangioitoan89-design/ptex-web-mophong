@@ -68,6 +68,55 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     body { background: #fafbfc; overflow: hidden; }
     #board { width: 100%; height: 100vh; }
     .sim-formula { font-family: 'Inter', sans-serif; font-weight: 600; color: #4f46e5; }
+    .sim-readout {
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      color: #334155;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1.5px solid rgba(226, 232, 240, 0.9);
+      border-radius: 6px;
+      padding: 4px 8px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    #readout-panel {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(226, 232, 240, 0.8);
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      font-family: 'Inter', sans-serif;
+      min-width: 240px;
+    }
+    .readout-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: #334155;
+      line-height: 1.4;
+    }
+    .readout-label {
+      font-weight: 500;
+      color: #64748b;
+    }
+    .readout-value {
+      font-family: 'Courier New', Courier, monospace;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: #0f172a;
+      text-align: right;
+    }
     /* Beautiful KaTeX overrides inside JSXGraph labels */
     .jxgbox .katex { font-size: 1.1rem !important; }
     .jxgbox .katex-display { margin: 0.5em 0; }
@@ -75,7 +124,29 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 </head>
 <body>
   <div id="board" class="jxgbox"></div>
+  <div id="readout-panel"></div>
   <script>
+    function showReadouts(rows) {
+      var panel = document.getElementById('readout-panel');
+      if (!panel) return;
+      if (!rows || rows.length === 0) {
+        panel.style.display = 'none';
+        return;
+      }
+      panel.style.display = 'flex';
+      var html = '';
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        html += '<div class="readout-row">';
+        html += '<span class="readout-label">' + row.label + '</span>';
+        var style = row.valueStyle || '';
+        html += '<span class="readout-value" style="' + style + '">' + row.value + '</span>';
+        html += '</div>';
+      }
+      panel.innerHTML = html;
+    }
+    window.showReadouts = showReadouts;
+
     function math(latex) {
       try {
         return katex.renderToString(latex, { throwOnError: false });
