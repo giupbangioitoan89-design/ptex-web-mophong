@@ -556,10 +556,12 @@ function initSimulation(board, params) {
   });
 
   // Helper points and arc for angle
-  board.arcEnd = board.create('point', [0.3, 0], { visible: false });
-  board.angleArc = board.create('arc', [board.O, [0.3, 0], board.arcEnd], {
+  board.arcStart = board.create('point', [0.3, 0], { visible: false, withLabel: false });
+  board.arcEnd = board.create('point', [0.3, 0], { visible: false, withLabel: false });
+  board.angleArc = board.create('arc', [board.O, board.arcStart, board.arcEnd], {
     strokeColor: '#f59e0b',
-    strokeWidth: 2
+    strokeWidth: 2,
+    withLabel: false
   });
 
   updateSimulation(board, params);
@@ -840,9 +842,15 @@ function updateSimulation(board, params) {
   var py = Math.sin(symAngle);
   board.MPrime.setPosition(JXG.COORDS_BY_USER, [px, py]);
 
-  // Set nice labels
-  board.M.setAttribute({ name: math(latexM) });
-  board.MPrime.setAttribute({ name: math(latexMPrime) });
+  // Set nice labels (only update if name changed to prevent DOM reflow flickering)
+  var newNameM = math(latexM);
+  if (board.M.name !== newNameM) {
+    board.M.setAttribute({ name: newNameM });
+  }
+  var newNameMPrime = math(latexMPrime);
+  if (board.MPrime.name !== newNameMPrime) {
+    board.MPrime.setAttribute({ name: newNameMPrime });
+  }
 
   // Format radian texts
   var radText = '';

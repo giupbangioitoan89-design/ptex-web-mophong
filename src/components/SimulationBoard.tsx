@@ -31,8 +31,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     const ctrl = simulation.controls.find(c => c.name === playingControl);
     if (!ctrl || ctrl.type !== 'slider') return;
 
-    const min = ctrl.min ?? 0;
-    const max = ctrl.max ?? 100;
+    const min = Number(ctrl.min ?? 0);
+    const max = Number(ctrl.max ?? 100);
     
     // Check if it's a discrete selection slider (has displayValues)
     const isDiscrete = !!ctrl.displayValues;
@@ -40,12 +40,13 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     
     const tick = () => {
       setControlValues(prev => {
-        const current = (prev[playingControl] as number) ?? ctrl.defaultValue;
+        // Force type-safety cast to number to prevent string concatenation bugs
+        const current = Number(prev[playingControl] ?? ctrl.defaultValue);
         
         let next;
         if (isDiscrete) {
           // Discrete step
-          const step = ctrl.step ?? 1;
+          const step = Number(ctrl.step ?? 1);
           next = current + step;
           if (next > max) {
             next = min;
@@ -139,6 +140,13 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       font-weight: 600;
       color: #0f172a;
       text-align: right;
+    }
+    /* Hardware acceleration rules to completely prevent HTML labels flickering during movement */
+    .jxgbox div, .jxgbox .jxglabel {
+      -webkit-backface-visibility: hidden !important;
+      backface-visibility: hidden !important;
+      will-change: transform, left, top !important;
+      transform: translate3d(0,0,0) !important;
     }
     /* Beautiful KaTeX overrides inside JSXGraph labels */
     .jxgbox .katex { font-size: 1.1rem !important; }
