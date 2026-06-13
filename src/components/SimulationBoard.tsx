@@ -430,10 +430,11 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                     <div key={ctrl.name} className="control-item">
                       {ctrl.type === 'slider' && (
                         <>
-                          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              {ctrl.label}
+                              <label htmlFor={ctrl.name} style={{ cursor: 'pointer' }}>{ctrl.label}</label>
                               <button
+                                type="button"
                                 onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
                                 style={{
                                   background: 'none', border: 'none', cursor: 'pointer',
@@ -456,8 +457,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                                   )
                                 : String(controlValues[ctrl.name])}
                             </span>
-                          </label>
+                          </div>
                           <input
+                            id={ctrl.name}
                             type="range"
                             min={ctrl.min}
                             max={ctrl.max}
