@@ -484,7 +484,7 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 12, offset: [8, -12] }
   });
   board.create('point', [-1, 0], {
-    name: math('A\'(-1;0)'),
+    name: math("A'(-1;0)"),
     size: 2,
     fillColor: '#94a3b8',
     strokeColor: '#64748b',
@@ -500,7 +500,7 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 12, offset: [8, 12] }
   });
   board.create('point', [0, -1], {
-    name: math('B\'(0;-1)'),
+    name: math("B'(0;-1)"),
     size: 2,
     fillColor: '#94a3b8',
     strokeColor: '#64748b',
@@ -509,8 +509,8 @@ function initSimulation(board, params) {
   });
 
   // Label Axis names
-  board.create('text', [1.8, 0.1, math('\\text{trục cos}')], { display: 'html', fontSize: 13, color: '#16a34a' });
-  board.create('text', [0.08, 1.8, math('\\text{trục sin}')], { display: 'html', fontSize: 13, color: '#dc2626' });
+  board.create('text', [1.8, 0.1, math('\\\\text{trục cos}')], { display: 'html', fontSize: 13, color: '#16a34a' });
+  board.create('text', [0.08, 1.8, math('\\\\text{trục sin}')], { display: 'html', fontSize: 13, color: '#dc2626' });
 
   // Radius line
   board.create('segment', [board.O, board.P], {
@@ -698,7 +698,7 @@ function initSimulation(board, params) {
     strokeWidth: 2,
     highlight: false
   });
-  board.create('text', [1.1, 2.2, math('\\text{Trục Tan}')], { display: 'html', fontSize: 12, color: '#f59e0b' });
+  board.create('text', [1.1, 2.2, math('\\\\text{Trục Tan}')], { display: 'html', fontSize: 12, color: '#f59e0b' });
 
   // Cot axis (y = 1)
   board.create('line', [[-10, 1], [10, 1]], {
@@ -706,11 +706,11 @@ function initSimulation(board, params) {
     strokeWidth: 2,
     highlight: false
   });
-  board.create('text', [2.1, 1.1, math('\\text{Trục Cot}')], { display: 'html', fontSize: 12, color: '#ec4899' });
+  board.create('text', [2.1, 1.1, math('\\\\text{Trục Cot}')], { display: 'html', fontSize: 12, color: '#ec4899' });
 
   // Tan projection point
   board.T = board.create('point', [1, 0], {
-    name: math('T(1; \\tan \\alpha)'),
+    name: math("T(1; \\\\tan \\\\alpha)"),
     size: 5,
     fillColor: '#f59e0b',
     strokeColor: '#d97706',
@@ -724,7 +724,7 @@ function initSimulation(board, params) {
 
   // Cot projection point
   board.C = board.create('point', [0, 1], {
-    name: math('C(\\cot \\alpha; 1)'),
+    name: math("C(\\\\cot \\\\alpha; 1)"),
     size: 5,
     fillColor: '#ec4899',
     strokeColor: '#db2777',

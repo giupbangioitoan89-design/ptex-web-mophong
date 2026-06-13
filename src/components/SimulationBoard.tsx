@@ -33,18 +33,36 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 
     const min = ctrl.min ?? 0;
     const max = ctrl.max ?? 100;
-    const step = ctrl.step ?? 1;
-
+    
+    // Check if it's a discrete selection slider (has displayValues)
+    const isDiscrete = !!ctrl.displayValues;
+    const intervalTime = isDiscrete ? 1000 : 30; // 1 second for discrete concepts, 30ms for continuous motion
+    
     const interval = setInterval(() => {
       setControlValues(prev => {
         const current = (prev[playingControl] as number) ?? ctrl.defaultValue;
-        let next = current + step;
-        if (next > max) {
-          next = min;
+        
+        let next;
+        if (isDiscrete) {
+          // Discrete step
+          const step = ctrl.step ?? 1;
+          next = current + step;
+          if (next > max) {
+            next = min;
+          }
+        } else {
+          // Continuous smooth animation
+          // A full sweep from min to max should take about 12-15 seconds (400 frames)
+          const range = max - min;
+          const autoStep = range / 400;
+          next = current + autoStep;
+          if (next > max) {
+            next = min;
+          }
         }
         return { ...prev, [playingControl]: next };
       });
-    }, 85); // 12 fps autoplay (smooth and slow)
+    }, intervalTime);
 
     return () => clearInterval(interval);
   }, [playingControl, simulation.controls]);
