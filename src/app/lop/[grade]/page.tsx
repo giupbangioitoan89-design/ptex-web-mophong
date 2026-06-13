@@ -4,10 +4,11 @@ import Footer from '@/components/Footer';
 import ChapterCard from '@/components/ChapterCard';
 import connectDB from '@/lib/db';
 import Chapter from '@/models/Chapter';
+import Simulation from '@/models/Simulation';
 import type { IChapter } from '@/types';
 
-// ✅ ISR: cache page for 1 hour, rebuild on next request after expiry
-export const revalidate = 3600;
+// ✅ ISR: cache page for 30 minutes, rebuild on next request after expiry
+export const revalidate = 1800;
 
 interface PageProps {
   params: Promise<{ grade: string }>;
@@ -25,9 +26,40 @@ export default async function GradePage({ params }: PageProps) {
   const info = GRADE_INFO[grade] || GRADE_INFO[10];
 
   await connectDB();
-  const chapters = await Chapter.find({ grade })
-    .sort({ order: 1 })
-    .lean() as unknown as IChapter[];
+  
+  // ✅ Query both chapters and simulation counts in parallel
+  const [chapters, simCounts] = await Promise.all([
+    Chapter.find({ grade }).sort({ order: 1 }).lean() as unknown as IChapter[],
+    Simulation.aggregate([
+      { $match: { grade, isPublished: true } },
+      {
+        $group: {
+          _id: { chapterSlug: '$chapterSlug', lessonSlug: '$lessonSlug' },
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+  ]);
+
+  // Map counts to the respective chapter lessons
+  const simCountMap: Record<string, Record<string, number>> = {};
+  for (const s of simCounts) {
+    const { chapterSlug, lessonSlug } = s._id || {};
+    if (chapterSlug && lessonSlug) {
+      if (!simCountMap[chapterSlug]) {
+        simCountMap[chapterSlug] = {};
+      }
+      simCountMap[chapterSlug][lessonSlug] = s.count;
+    }
+  }
+
+  const updatedChapters = chapters.map((chapter) => {
+    const lessons = chapter.lessons.map((lesson) => {
+      const count = simCountMap[chapter.slug]?.[lesson.slug] || 0;
+      return { ...lesson, simulationCount: count };
+    });
+    return { ...chapter, lessons };
+  });
 
   return (
     <>
@@ -46,13 +78,13 @@ export default async function GradePage({ params }: PageProps) {
               {info.icon} {info.label} — Kết nối tri thức
             </h1>
             <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-              {chapters.length} chương
+              {updatedChapters.length} chương
             </span>
           </div>
 
-          {chapters.length > 0 ? (
+          {updatedChapters.length > 0 ? (
             <div className="chapter-grid">
-              {chapters.map((chapter) => (
+              {updatedChapters.map((chapter) => (
                 <ChapterCard
                   key={chapter.slug}
                   chapter={JSON.parse(JSON.stringify(chapter))}

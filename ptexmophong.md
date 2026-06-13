@@ -146,4 +146,4 @@ curl -X POST http://localhost:3000/api/seed
 
 | Ngày | Thay đổi |
 |---|---|
-| 2026-06-13 | Khởi tạo project, tạo khung sườn |
+| 2026-06-13 | - Khởi tạo project, tạo khung sườn<br>- Kết nối MongoDB và tạo API CRUD cho Chapters và Simulations<br>- Tích hợp KaTeX toàn diện để hiển thị công thức toán học chuyên nghiệp<br>- Hiển thị số lượng mô phỏng thực tế bên cạnh tên mỗi chương trên trang chọn lớp (Toán 10/11/12) |
