@@ -85,9 +85,9 @@ export async function connectDB(): Promise<typeof mongoose> {
     await mongoose.connect(finalUri, {
       bufferCommands: false,
       maxPoolSize: 5,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 20000,
       socketTimeoutMS: 30000,
-      connectTimeoutMS: 5000,
+      connectTimeoutMS: 20000,
     });
 
     return mongoose;

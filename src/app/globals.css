@@ -312,36 +312,51 @@ body::after {
 }
 @media (min-width: 640px) { .sim-board iframe { min-height: 440px; } }
 
-/* Controls row — horizontal, below the graph */
-.control-panel {
-  padding: 1.25rem 1.5rem;
-  border-radius: var(--radius-lg);
-  background: var(--glass-bg); border: 1px solid var(--glass-border);
-  display: flex; flex-wrap: wrap; gap: 1.25rem 2rem;
-  align-items: flex-end;
-}
-.control-panel h3 {
+/* Integrated Control Panel inside the Graph box at bottom */
+.board-control-panel {
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.88)) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  font-size: 0.8rem; font-weight: 600;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--text-muted); margin-bottom: -0.25rem;
-  display: flex; align-items: center; gap: 6px;
+  z-index: 5;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
-.control-item {
-  flex: 1 1 180px; min-width: 140px;
-  display: flex; flex-direction: column; gap: 5px;
+
+.control-list-horizontal {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.75rem;
+  width: 100%;
 }
+
+.board-control-panel .control-item {
+  flex: 1 1 180px;
+  min-width: 140px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .control-item label {
-  font-size: 0.82rem; font-weight: 500;
+  font-size: 0.78rem; font-weight: 500;
   color: var(--text-secondary);
   display: flex; justify-content: space-between; align-items: center;
 }
+
 .control-item label .value {
   font-weight: 700; font-variant-numeric: tabular-nums;
-  color: var(--color-primary-light);
-  background: rgba(99,102,241,0.12);
-  padding: 2px 8px; border-radius: 6px;
-  font-size: 0.8rem;
+  color: var(--control-theme-color, var(--color-primary-light)) !important;
+  background: var(--control-theme-color-light, rgba(99, 102, 241, 0.12)) !important;
+  padding: 1px 6px; border-radius: 4px;
+  font-size: 0.75rem;
 }
 .control-item input[type="range"] {
   -webkit-appearance: none; appearance: none;
@@ -394,10 +409,13 @@ body::after {
 
 /* Math display */
 .math-display {
-  padding: 0.9rem; border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.025);
-  border: 1px solid var(--glass-border);
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(192, 132, 252, 0.08)) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
   text-align: center;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.12), inset 0 0 12px rgba(255, 255, 255, 0.02);
+  font-size: 1.15rem;
 }
 
 /* ===== Footer ===== */
@@ -745,63 +763,96 @@ body::after {
 /* Style for Select Dropdowns in Control Panel */
 .control-item select {
   width: 100%;
-  background-color: #1e293b !important;
+  background-color: rgba(15, 23, 42, 0.6) !important;
   color: #f8fafc !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 6px;
+  padding: 4px 1.75rem 4px 8px !important;
+  font-size: 0.8rem !important;
+  height: 32px !important;
   outline: none;
   cursor: pointer;
   appearance: none;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E") !important;
-  background-position: right 12px center !important;
+  background-position: right 8px center !important;
   background-repeat: no-repeat !important;
-  background-size: 1.25rem !important;
-  padding-right: 2.25rem !important;
+  background-size: 1rem !important;
+  padding-right: 1.75rem !important;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .control-item select:focus {
-  border-color: var(--color-primary-light) !important;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+  border-color: var(--control-theme-color, var(--color-primary-light)) !important;
+  box-shadow: 0 0 0 2px var(--control-theme-color-light, rgba(99, 102, 241, 0.15)) !important;
 }
 
 .control-item select option {
   background-color: #ffffff !important;
   color: #1e293b !important;
-  padding: 8px;
+  padding: 6px;
+}
+
+/* Range input WebKit dynamic colors based on --control-theme-color custom property */
+.control-item input[type="range"]::-webkit-slider-thumb {
+  background: var(--control-theme-color, var(--color-primary)) !important;
+  box-shadow: 0 0 8px var(--control-theme-color, var(--color-primary-light)) !important;
+  border: 2px solid white !important;
+}
+
+.control-item input[type="range"] {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Play/Pause control button styles matching the theme color */
+.control-item .play-btn {
+  color: var(--text-muted) !important;
+}
+
+.control-item .play-btn.playing {
+  color: var(--control-theme-color, var(--color-primary-light)) !important;
+  text-shadow: 0 0 6px var(--control-theme-color);
 }
 
 /* React Readout Panel Styles */
 .readout-panel-react {
   padding: 1.25rem 1.5rem;
   border-radius: var(--radius-lg);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(15, 23, 42, 0.85)) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+  border-left: 4px solid var(--color-primary) !important;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   margin-bottom: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.readout-panel-react:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.2) !important;
 }
 
 .readout-panel-react h3 {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #f1f5f9 !important;
   margin-bottom: 0.25rem;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
 }
 
 .readout-list-react {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .readout-row-react {
@@ -811,17 +862,23 @@ body::after {
   font-size: 0.85rem;
   color: var(--text-primary);
   line-height: 1.4;
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.readout-row-react:last-child {
+  border-bottom: none;
 }
 
 .readout-label-react {
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: #cbd5e1; /* Clear white-gray for high contrast readability */
 }
 
 .readout-value-react {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-inter), 'Inter', sans-serif;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #f8fafc;
   text-align: right;
 }

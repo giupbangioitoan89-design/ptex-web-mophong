@@ -22,6 +22,20 @@ function parseStyle(styleStr?: string): React.CSSProperties {
   return styles as React.CSSProperties;
 }
 
+function getControlThemeColor(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes('u') || n.includes('deg') || n === 'angle' || n === 'r') {
+    return '#818cf8'; // Indigo-400 (Primary)
+  }
+  if (n.includes('v') || n.includes('relation') || n === 'a' || n === 'b') {
+    return '#fb923c'; // Orange-400 (Secondary)
+  }
+  if (n.includes('w') || n === 'c' || n === 'd') {
+    return '#c084fc'; // Purple-400 (Third)
+  }
+  return '#6366f1'; // Default Indigo
+}
+
 export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [controlValues, setControlValues] = useState<Record<string, number | string | boolean>>(() => {
@@ -356,7 +370,6 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     if (iframeRef.current) iframeRef.current.src = url;
     return () => URL.revokeObjectURL(url);
   }, [buildIframeContent]);
-
   const handleControlChange = (name: string, value: number | string | boolean) => {
     setControlValues(prev => ({ ...prev, [name]: value }));
     // Reset play state if mode changes to avoid ghost autoplay
@@ -369,9 +382,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     <div className="sim-wrapper">
       {/* ===== Upper Row: Board & Controls side-by-side on desktop ===== */}
       <div className="sim-layout-main">
-        {/* Left Column: Board */}
+        {/* Left Column: Board (with integrated compact controls at bottom) */}
         <div className="sim-board-column">
-          <div className="sim-board" style={{ position: 'relative' }}>
+          <div className="sim-board" style={{ position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {isLoading && (
               <div className="loading-board" style={{
                 position: 'absolute',
@@ -391,16 +404,116 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
               ref={iframeRef}
               style={{
                 width: '100%',
-                height: '100%',
+                flex: 1,
+                minHeight: '360px',
                 border: 'none',
               }}
               sandbox="allow-scripts"
               title={simulation.title}
             />
+
+            {/* Integrated compact controls block inside graph box at bottom */}
+            {simulation.controls.length > 0 && (
+              <div className="board-control-panel">
+                <div className="control-list-horizontal">
+                  {simulation.controls.map((ctrl) => {
+                    if (ctrl.showIf) {
+                      const dependVal = controlValues[ctrl.showIf.control];
+                      if (dependVal !== ctrl.showIf.value) {
+                        return null;
+                      }
+                    }
+                    const themeColor = getControlThemeColor(ctrl.name);
+                    const themeColorLight = themeColor + '20'; // 12% opacity hex representation
+                    return (
+                      <div 
+                        key={ctrl.name} 
+                        className="control-item"
+                        style={{
+                          '--control-theme-color': themeColor,
+                          '--control-theme-color-light': themeColorLight
+                        } as React.CSSProperties}
+                      >
+                        {ctrl.type === 'slider' && (
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <label htmlFor={ctrl.name} style={{ cursor: 'pointer', fontSize: '0.78rem' }}>{ctrl.label}</label>
+                                <button
+                                  type="button"
+                                  onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
+                                  className={`play-btn ${playingControl === ctrl.name ? 'playing' : ''}`}
+                                  style={{
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    fontSize: '0.8rem', padding: '0 2px',
+                                    display: 'inline-flex', alignItems: 'center',
+                                    transition: 'color 0.2s, text-shadow 0.2s'
+                                  }}
+                                  title={playingControl === ctrl.name ? "Tạm dừng chạy tự động" : "Chạy tự động chậm"}
+                                >
+                                  {playingControl === ctrl.name ? '⏸' : '▶'}
+                                </button>
+                              </span>
+                              <span className="value">
+                                {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
+                                  ? ctrl.displayValues[controlValues[ctrl.name] as number]
+                                  : typeof controlValues[ctrl.name] === 'number'
+                                  ? (controlValues[ctrl.name] as number).toFixed(
+                                      ctrl.step && ctrl.step < 1 ? 1 : 0
+                                    )
+                                  : String(controlValues[ctrl.name])}
+                              </span>
+                            </div>
+                            <input
+                              id={ctrl.name}
+                              type="range"
+                              min={ctrl.min}
+                              max={ctrl.max}
+                              step={ctrl.step}
+                              value={controlValues[ctrl.name] as number}
+                              onChange={(e) =>
+                                handleControlChange(ctrl.name, parseFloat(e.target.value))
+                              }
+                            />
+                          </>
+                        )}
+                        {ctrl.type === 'checkbox' && (
+                          <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', height: '32px' }}>
+                            <input
+                              type="checkbox"
+                              checked={controlValues[ctrl.name] as boolean}
+                              onChange={(e) =>
+                                handleControlChange(ctrl.name, e.target.checked)
+                              }
+                            />
+                            {ctrl.label}
+                          </label>
+                        )}
+                        {ctrl.type === 'select' && (
+                          <>
+                            <label style={{ fontSize: '0.78rem', marginBottom: '2px' }}>{ctrl.label}</label>
+                            <select
+                              value={controlValues[ctrl.name] as string}
+                              onChange={(e) =>
+                                handleControlChange(ctrl.name, e.target.value)
+                              }
+                            >
+                              {ctrl.options?.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right Column: Controls */}
+        {/* Right Column: Controls Column now only holds the Readout Stats Panel */}
         <div className="sim-controls-column">
           {readoutRows.length > 0 && (
             <div className="readout-panel-react">
@@ -418,104 +531,6 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                     />
                   </div>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {simulation.controls.length > 0 && (
-            <div className="control-panel">
-              <h3>⚙️ Điều chỉnh tham số</h3>
-              <div className="control-list">
-                {simulation.controls.map((ctrl) => {
-                  if (ctrl.showIf) {
-                    const dependVal = controlValues[ctrl.showIf.control];
-                    if (dependVal !== ctrl.showIf.value) {
-                      return null;
-                    }
-                  }
-                  return (
-                    <div key={ctrl.name} className="control-item">
-                      {ctrl.type === 'slider' && (
-                        <>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <label htmlFor={ctrl.name} style={{ cursor: 'pointer' }}>{ctrl.label}</label>
-                              <button
-                                type="button"
-                                onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
-                                style={{
-                                  background: 'none', border: 'none', cursor: 'pointer',
-                                  fontSize: '0.85rem', padding: '0 4px',
-                                  color: playingControl === ctrl.name ? 'var(--color-primary-light)' : 'var(--text-muted)',
-                                  transition: 'color 0.2s',
-                                  display: 'inline-flex', alignItems: 'center'
-                                }}
-                                title={playingControl === ctrl.name ? "Tạm dừng chạy tự động" : "Chạy tự động chậm"}
-                              >
-                                {playingControl === ctrl.name ? '⏸' : '▶'}
-                              </button>
-                            </span>
-                            <span className="value">
-                              {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
-                                ? ctrl.displayValues[controlValues[ctrl.name] as number]
-                                : typeof controlValues[ctrl.name] === 'number'
-                                ? (controlValues[ctrl.name] as number).toFixed(
-                                    ctrl.step && ctrl.step < 1 ? 1 : 0
-                                  )
-                                : String(controlValues[ctrl.name])}
-                            </span>
-                          </div>
-                          <input
-                            id={ctrl.name}
-                            type="range"
-                            min={ctrl.min}
-                            max={ctrl.max}
-                            step={ctrl.step}
-                            value={controlValues[ctrl.name] as number}
-                            onChange={(e) =>
-                              handleControlChange(ctrl.name, parseFloat(e.target.value))
-                            }
-                          />
-                        </>
-                      )}
-                      {ctrl.type === 'checkbox' && (
-                        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <input
-                            type="checkbox"
-                            checked={controlValues[ctrl.name] as boolean}
-                            onChange={(e) =>
-                              handleControlChange(ctrl.name, e.target.checked)
-                            }
-                          />
-                          {ctrl.label}
-                        </label>
-                      )}
-                      {ctrl.type === 'select' && (
-                        <>
-                          <label>{ctrl.label}</label>
-                          <select
-                            value={controlValues[ctrl.name] as string}
-                            onChange={(e) =>
-                              handleControlChange(ctrl.name, e.target.value)
-                            }
-                            style={{
-                              background: 'rgba(255,255,255,0.08)',
-                              border: '1px solid rgba(255,255,255,0.15)',
-                              borderRadius: '8px',
-                              padding: '8px 12px',
-                              color: 'var(--text-primary)',
-                              fontSize: '0.85rem',
-                            }}
-                          >
-                            {ctrl.options?.map((opt) => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </select>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             </div>
           )}

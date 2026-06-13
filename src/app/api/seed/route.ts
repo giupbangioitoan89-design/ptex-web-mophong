@@ -369,7 +369,7 @@ function updateSimulation(board, params) {
   }
 
   var dirText = deg > 0 ? 'Dương (+)' : (deg < 0 ? 'Âm (-)' : 'Không quay');
-  var dirColor = deg > 0 ? '#10b981' : (deg < 0 ? '#ef4444' : '#64748b');
+  var dirColor = deg > 0 ? '#34d399' : (deg < 0 ? '#f87171' : '#cbd5e1');
 
   var normDeg = ((deg % 360) + 360) % 360;
   var quadText = '';
@@ -386,19 +386,19 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Góc tổng quát α:', value: deg + '°', labelStyle: 'color: #4f46e5;', valueStyle: 'color: #4f46e5; font-size: 0.85rem;' },
-    { label: 'Số đo radian:', value: radText + ' rad', labelStyle: 'color: #6366f1;', valueStyle: 'color: #6366f1;' },
-    { label: 'Góc hình học:', value: remainderDeg + '° (' + remainderRadStr + ')', labelStyle: 'color: #0ea5e9;', valueStyle: 'color: #0ea5e9;' },
-    { label: 'Chiều quay:', value: dirText, labelStyle: 'color: #475569;', valueStyle: 'color: ' + dirColor + '; background: ' + (deg > 0 ? 'rgba(16, 185, 129, 0.12)' : (deg < 0 ? 'rgba(239, 68, 68, 0.12)' : 'rgba(100, 116, 139, 0.12)')) + '; padding: 1px 5px; border-radius: 4px;' },
-    { label: 'Số vòng k:', value: turns.toString(), labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706; background: rgba(245, 158, 11, 0.12); padding: 1px 5px; border-radius: 4px;' },
-    { label: 'Vị trí:', value: quadText, labelStyle: 'color: #8b5cf6;', valueStyle: 'color: #7c3aed; font-weight: bold;' }
+    { label: 'Góc tổng quát α:', value: deg + '°', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-size: 0.85rem;' },
+    { label: 'Số đo radian:', value: radText + ' rad', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #c084fc;' },
+    { label: 'Góc hình học:', value: remainderDeg + '° (' + remainderRadStr + ')', labelStyle: 'color: #38bdf8;', valueStyle: 'color: #7dd3fc;' },
+    { label: 'Chiều quay:', value: dirText, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: ' + dirColor + '; background: ' + (deg > 0 ? 'rgba(52, 211, 153, 0.15)' : (deg < 0 ? 'rgba(248, 113, 113, 0.15)' : 'rgba(203, 213, 225, 0.15)')) + '; padding: 2px 6px; border-radius: 4px; font-weight: bold;' },
+    { label: 'Số vòng k:', value: turns.toString(), labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; background: rgba(249, 115, 22, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: bold;' },
+    { label: 'Vị trí:', value: quadText, labelStyle: 'color: #c084fc;', valueStyle: 'color: #e879f9; font-weight: bold;' }
   ]);
 }
 `,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-2.4, 1.8, 1.4, -1.8],
+          boundingBox: [-1.8, 1.5, 1.8, -1.5],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -551,13 +551,13 @@ function updateSimulation(board, params) {
   var radUW = (diffUW / 180).toFixed(2) + 'π';
 
   showReadouts([
-    { label: 'Tia Ou (U):', value: degU + '°', labelStyle: 'color: #10b981;', valueStyle: 'color: #059669;' },
-    { label: 'Tia Ov (V):', value: degV + '°', labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706;' },
-    { label: 'Tia Ow (W):', value: degW + '°', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5;' },
-    { label: 'Góc (Ou, Ov) [α]:', value: diffUV + '° (' + radUV + ')', labelStyle: 'color: #10b981;', valueStyle: 'color: #059669; font-weight: bold;' },
-    { label: 'Góc (Ov, Ow) [β]:', value: diffVW + '° (' + radVW + ')', labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706; font-weight: bold;' },
-    { label: 'Góc (Ou, Ow) [γ]:', value: diffUW + '° (' + radUW + ')', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
-    { label: 'Hệ thức Chasles:', value: diffUV + '° + ' + diffVW + '° = ' + diffUW + '° + ' + (k * 360) + '°', labelStyle: 'color: #4f46e5; font-weight: bold; border-top: 1px dashed #cbd5e1; padding-top: 4px;', valueStyle: 'color: #4f46e5; font-weight: bold; background: rgba(99, 102, 241, 0.12); padding: 2px 6px; border-radius: 4px; border-top: 1px dashed #cbd5e1; padding-top: 4px;' }
+    { label: 'Tia Ou (U):', value: degU + '°', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: 700;' },
+    { label: 'Tia Ov (V):', value: degV + '°', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: 700;' },
+    { label: 'Tia Ow (W):', value: degW + '°', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: 700;' },
+    { label: 'Góc (Ou, Ov) [α]:', value: diffUV + '° (' + radUV + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
+    { label: 'Góc (Ov, Ow) [β]:', value: diffVW + '° (' + radVW + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
+    { label: 'Góc (Ou, Ow) [γ]:', value: diffUW + '° (' + radUW + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
+    { label: 'Hệ thức Chasles:', value: diffUV + '° + ' + diffVW + '° = ' + diffUW + '° + ' + (k * 360) + '°', labelStyle: 'color: #a5b4fc; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #c084fc; font-weight: bold; background: rgba(99, 102, 241, 0.18); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
   ]);
   board.unsuspendUpdate();
 }
@@ -565,7 +565,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-2.4, 1.8, 1.4, -1.8],
+          boundingBox: [-1.8, 1.5, 1.8, -1.5],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -718,7 +718,7 @@ function initSimulation(board, params) {
   }
 
   // Label for ruler
-  board.create('text', [-1.0, -1.1, 'Thước đo duỗi thẳng cung tròn l (m):'], { fontSize: 11, color: '#475569' });
+  board.create('text', [-1.0, -1.1, 'Thước đo duỗi thẳng cung tròn l (m):'], { display: 'html', fontSize: 11, color: '#475569' });
 
   // Unwrapped segment (colored Teal representing unwrapped arc length l)
   board.unwrappedStart = board.create('point', [-1.0, -1.3], { visible: false });
@@ -790,11 +790,11 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Bán kính R:', value: R.toFixed(1), labelStyle: 'color: #4f46e5;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
-    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #d97706;', valueStyle: 'color: #d97706; font-weight: bold;' },
-    { label: 'Công thức l:', value: 'R × α (rad)', labelStyle: 'color: #64748b;', valueStyle: 'color: #475569; font-style: italic;' },
-    { label: 'Tính toán:', value: R.toFixed(1) + ' × ' + rad.toFixed(3) + ' rad', labelStyle: 'color: #64748b;', valueStyle: 'font-family: monospace; color: #475569;' },
-    { label: 'Độ dài cung l:', value: l.toFixed(3), labelStyle: 'color: #10b981; font-weight: bold; border-top: 1px dashed #cbd5e1; padding-top: 4px;', valueStyle: 'color: #10b981; font-weight: bold; font-size: 0.85rem; background: rgba(16, 185, 129, 0.12); padding: 2px 6px; border-radius: 4px; border-top: 1px dashed #cbd5e1; padding-top: 4px;' }
+    { label: 'Bán kính R:', value: R.toFixed(1), labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
+    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
+    { label: 'Công thức l:', value: 'R × α (rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f8fafc; font-style: italic;' },
+    { label: 'Tính toán:', value: R.toFixed(1) + ' × ' + rad.toFixed(3) + ' rad', labelStyle: 'color: #cbd5e1;', valueStyle: 'font-family: monospace; color: #cbd5e1;' },
+    { label: 'Độ dài cung l:', value: l.toFixed(3), labelStyle: 'color: #34d399; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #34d399; font-weight: bold; font-size: 0.85rem; background: rgba(52, 211, 153, 0.15); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
   ]);
 
   board.unsuspendUpdate();
@@ -1041,11 +1041,11 @@ function updateSimulation(board, params) {
   var cotVal = showCot ? (1 / Math.tan(angle)) : null;
 
   function getSignHtml(val) {
-    if (val === null) return '<span style="color: #94a3b8; background: rgba(148, 163, 184, 0.15); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">K.Xác định</span>';
-    if (Math.abs(val) < 1e-4) return '<span style="color: #64748b; background: rgba(100, 116, 139, 0.12); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">0 (trục)</span>';
+    if (val === null) return '<span style="color: #cbd5e1; background: rgba(255, 255, 255, 0.08); padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">K.Xác định</span>';
+    if (Math.abs(val) < 1e-4) return '<span style="color: #cbd5e1; background: rgba(255, 255, 255, 0.08); padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">0 (trục)</span>';
     return val > 0 
-      ? '<span style="color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">+ (Dương)</span>' 
-      : '<span style="color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem;">- (Âm)</span>';
+      ? '<span style="color: #34d399; background: rgba(52, 211, 153, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">+ (Dương)</span>' 
+      : '<span style="color: #f87171; background: rgba(248, 113, 113, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">- (Âm)</span>';
   }
 
   var sinValStr = py.toFixed(3) + ' &nbsp; ' + getSignHtml(py);
@@ -1054,19 +1054,19 @@ function updateSimulation(board, params) {
   var cotValStr = showCot ? cotVal.toFixed(3) + ' &nbsp; ' + getSignHtml(cotVal) : getSignHtml(null);
 
   showReadouts([
-    { label: 'Góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #4f46e5;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
-    { label: 'Vị trí P:', value: quadLabel, labelStyle: 'color: #64748b;', valueStyle: 'color: #334155; font-weight: bold;' },
-    { label: 'cos α (hoành độ P):', value: cosValStr, labelStyle: 'color: #10b981; border-top: 1px dashed #cbd5e1; padding-top: 3px;', valueStyle: 'border-top: 1px dashed #cbd5e1; padding-top: 3px;' },
-    { label: 'sin α (tung độ P):', value: sinValStr, labelStyle: 'color: #f43f5e;', valueStyle: '' },
-    { label: 'tan α (sin/cos):', value: tanValStr, labelStyle: 'color: #d97706;', valueStyle: '' },
-    { label: 'cot α (cos/sin):', value: cotValStr, labelStyle: 'color: #06b6d4;', valueStyle: '' }
+    { label: 'Góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
+    { label: 'Vị trí P:', value: quadLabel, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #e2e8f0; font-weight: bold;' },
+    { label: 'cos α (hoành độ P):', value: cosValStr, labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 8px;', valueStyle: 'border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 8px; color: #34d399; font-weight: 800; font-size: 0.95rem; text-shadow: 0 0 6px rgba(52, 211, 153, 0.2);' },
+    { label: 'sin α (tung độ P):', value: sinValStr, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f87171; font-weight: 800; font-size: 0.95rem; text-shadow: 0 0 6px rgba(248, 113, 113, 0.2);' },
+    { label: 'tan α (sin/cos):', value: tanValStr, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c; font-weight: 800; font-size: 0.95rem; text-shadow: 0 0 6px rgba(249, 115, 22, 0.2);' },
+    { label: 'cot α (cos/sin):', value: cotValStr, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #2dd4bf; font-weight: 800; font-size: 0.95rem; text-shadow: 0 0 6px rgba(45, 212, 191, 0.2);' }
   ]);
 }
 `,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-2.6, 2.2, 1.6, -2.5],
+          boundingBox: [-2.1, 1.75, 2.1, -1.75],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -1131,7 +1131,7 @@ function initSimulation(board, params) {
 
   // Primary Point M
   board.M = board.create('glider', [1, 0, board.circle], {
-    name: '',
+    name: math('M(\\\\alpha)'),
     size: 5,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
@@ -1147,7 +1147,7 @@ function initSimulation(board, params) {
 
   // Symmetric Point M'
   board.MPrime = board.create('point', [1, 0], {
-    name: '',
+    name: math("M'(-\\\\alpha)"),
     size: 5,
     fillColor: '#f59e0b',
     strokeColor: '#d97706',
@@ -1164,9 +1164,75 @@ function initSimulation(board, params) {
 
   // Symmetry guide lines
   board.guideSeg = board.create('segment', [board.M, board.MPrime], {
-    strokeColor: '#94a3b8',
+    strokeColor: '#cbd5e1',
     strokeWidth: 1.5,
     dash: 2
+  });
+
+  // Projections for M on axes
+  board.Hx = board.create('point', [
+    function() { return board.M.X(); },
+    0
+  ], {
+    name: '',
+    size: 4,
+    fillColor: '#34d399',
+    strokeColor: '#10b981',
+    visible: true,
+    fixed: true
+  });
+  
+  board.Ky = board.create('point', [
+    0,
+    function() { return board.M.Y(); }
+  ], {
+    name: '',
+    size: 4,
+    fillColor: '#f87171',
+    strokeColor: '#f43f5e',
+    visible: true,
+    fixed: true
+  });
+
+  // Projections for M' on axes
+  board.HPrimeX = board.create('point', [
+    function() { return board.MPrime.X(); },
+    0
+  ], {
+    name: '',
+    size: 4,
+    fillColor: '#34d399',
+    strokeColor: '#10b981',
+    visible: true,
+    fixed: true
+  });
+
+  board.KPrimeY = board.create('point', [
+    0,
+    function() { return board.MPrime.Y(); }
+  ], {
+    name: '',
+    size: 4,
+    fillColor: '#f87171',
+    strokeColor: '#f43f5e',
+    visible: true,
+    fixed: true
+  });
+
+  // Dashed lines representing Cos projection (green-teal)
+  board.cosSegM = board.create('segment', [board.M, board.Hx], {
+    strokeColor: '#34d399', strokeWidth: 1.2, dash: 2, highlight: false
+  });
+  board.cosSegMPrime = board.create('segment', [board.MPrime, board.HPrimeX], {
+    strokeColor: '#34d399', strokeWidth: 1.2, dash: 2, highlight: false
+  });
+
+  // Dashed lines representing Sin projection (rose-red)
+  board.sinSegM = board.create('segment', [board.M, board.Ky], {
+    strokeColor: '#f87171', strokeWidth: 1.2, dash: 2, highlight: false
+  });
+  board.sinSegMPrime = board.create('segment', [board.MPrime, board.KPrimeY], {
+    strokeColor: '#f87171', strokeWidth: 1.2, dash: 2, highlight: false
   });
 
   // Line y = x for complementary angles (phụ nhau)
@@ -1216,34 +1282,34 @@ function updateSimulation(board, params) {
   // Determine M' based on relation
   var symAngle = 0;
   var relationLabel = '';
-  var latexM = 'M(\\alpha)';
-  var latexMPrime = "M'(\\beta)";
+  var latexM = 'M(\\\\alpha)';
+  var latexMPrime = "M'(\\\\beta)";
 
   if (relation === 'Góc đối nhau (α và -α)') {
     symAngle = -angle;
-    relationLabel = 'Đối nhau (\\alpha \\text{ và } -\\alpha)';
-    latexMPrime = "M'(-\\alpha)";
+    relationLabel = 'Đối nhau (α và -α)';
+    latexMPrime = "M'(-\\\\alpha)";
     board.lineYX.setAttribute({ visible: false });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#f43f5e', dash: 2 });
   } else if (relation === 'Góc bù nhau (α và π - α)') {
     symAngle = Math.PI - angle;
-    relationLabel = 'Bù nhau (\\alpha \\text{ và } \\pi - \\alpha)';
-    latexMPrime = "M'(\\pi - \\alpha)";
+    relationLabel = 'Bù nhau (α và π - α)';
+    latexMPrime = "M'(\\\\pi - \\\\alpha)";
     board.lineYX.setAttribute({ visible: false });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#10b981', dash: 2 });
   } else if (relation === 'Góc phụ nhau (α và π/2 - α)') {
     symAngle = Math.PI / 2 - angle;
-    relationLabel = 'Phụ nhau (\\alpha \\text{ và } \\pi/2 - \\alpha)';
-    latexMPrime = "M'(\\pi/2 - \\alpha)";
+    relationLabel = 'Phụ nhau (α và π/2 - α)';
+    latexMPrime = "M'(\\\\pi/2 - \\\\alpha)";
     board.lineYX.setAttribute({ visible: true });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#f59e0b', dash: 2 });
   } else if (relation === 'Góc hơn kém π (α và π + α)') {
     symAngle = angle + Math.PI;
-    relationLabel = 'Hơn kém \\pi (\\alpha \\text{ và } \\pi + \\alpha)';
-    latexMPrime = "M'(\\alpha + \\pi)";
+    relationLabel = 'Hơn kém π (α và π + α)';
+    latexMPrime = "M'(\\\\alpha + \\\\pi)";
     board.lineYX.setAttribute({ visible: false });
     board.lineNegYX.setAttribute({ visible: false });
     board.guideSeg.setAttribute({ strokeColor: '#8b5cf6', dash: 2 });
@@ -1253,14 +1319,15 @@ function updateSimulation(board, params) {
   var py = Math.sin(symAngle);
   board.MPrime.setPosition(JXG.COORDS_BY_USER, [px, py]);
 
-  // Set nice labels (only update if name changed to prevent DOM reflow flickering)
-  var newNameM = math(latexM);
-  if (board.M.name !== newNameM) {
-    board.M.setAttribute({ name: newNameM });
-  }
-  var newNameMPrime = math(latexMPrime);
-  if (board.MPrime.name !== newNameMPrime) {
-    board.MPrime.setAttribute({ name: newNameMPrime });
+  // Set nice labels (only update if relation changed to prevent DOM reflow flickering)
+  if (board.currentRelation !== relation) {
+    board.currentRelation = relation;
+    var newNameMPrime = math(latexMPrime);
+    if (board.MPrime.label) {
+      board.MPrime.label.setText(newNameMPrime);
+    } else {
+      board.MPrime.setName(newNameMPrime);
+    }
   }
 
   // Format radian texts
@@ -1316,7 +1383,7 @@ function updateSimulation(board, params) {
     fCos = math('\\\\cos(\\\\pi - \\\\alpha) = -\\\\cos\\\\alpha');
     fSin = math('\\\\sin(\\\\pi - \\\\alpha) = \\\\sin\\\\alpha');
     fTan = math('\\\\tan(\\\\pi - \\\\alpha) = -\\\\tan\\\\alpha');
-    fCot = math('\\\\cot(\\pi - \\\\alpha) = -\\\\cot\\\\alpha');
+    fCot = math('\\\\cot(\\\\pi - \\\\alpha) = -\\\\cot\\\\alpha');
   } else if (relation === 'Góc phụ nhau (α và π/2 - α)') {
     fCos = math('\\\\cos(\\\\pi/2 - \\\\alpha) = \\\\sin\\\\alpha');
     fSin = math('\\\\sin(\\\\pi/2 - \\\\alpha) = \\\\cos\\\\alpha');
@@ -1330,12 +1397,12 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Góc ban đầu α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #6366f1;', valueStyle: 'color: #4f46e5; font-weight: bold;' },
-    { label: 'Mối liên hệ:', value: math(relationLabel), labelStyle: 'color: #64748b;', valueStyle: 'font-weight: bold;' },
-    { label: 'Góc liên kết β:', value: symDeg + '° (' + symRadText + ' rad)', labelStyle: 'color: #f59e0b;', valueStyle: 'color: #d97706; font-weight: bold;' },
-    { label: 'Liên hệ Côsin:', value: fCos, labelStyle: 'color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 4px;', valueStyle: 'border-top: 1px dashed #cbd5e1; padding-top: 4px;' },
-    { label: 'Liên hệ Sin:', value: fSin, labelStyle: 'color: #475569;' },
-    { label: 'Liên hệ Tang/Cot:', value: fTan + ' &nbsp;|&nbsp; ' + fCot, labelStyle: 'color: #475569;' }
+    { label: 'Góc ban đầu α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
+    { label: 'Mối liên hệ:', value: relationLabel, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #e2e8f0; font-weight: bold; background: rgba(99, 102, 241, 0.15); padding: 2px 6px; border-radius: 4px;' },
+    { label: 'Góc liên kết β:', value: symDeg + '° (' + symRadText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c; font-weight: bold;' },
+    { label: 'Liên hệ Côsin:', value: fCos, labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 8px;', valueStyle: 'border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 8px; color: #34d399; font-weight: 800; font-size: 1.05rem; text-shadow: 0 0 8px rgba(52, 211, 153, 0.3);' },
+    { label: 'Liên hệ Sin:', value: fSin, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f87171; font-weight: 800; font-size: 1.05rem; text-shadow: 0 0 8px rgba(248, 113, 113, 0.3);' },
+    { label: 'Liên hệ Tang/Cot:', value: fTan + ' &nbsp;|&nbsp; ' + fCot, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c; font-weight: 800; font-size: 1.05rem; text-shadow: 0 0 8px rgba(249, 115, 22, 0.3);' }
   ]);
 
   board.unsuspendUpdate();
@@ -1344,7 +1411,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-2.4, 1.8, 1.4, -1.8],
+          boundingBox: [-1.8, 1.5, 1.8, -1.5],
           showAxis: true,
           showGrid: true,
           theme: 'light',
