@@ -718,7 +718,7 @@ function initSimulation(board, params) {
   }
 
   // Label for ruler
-  board.create('text', [-1.0, -1.1, math('\\text{Thước đo duỗi thẳng cung tròn l (m):}')], { display: 'html', fontSize: 11, color: '#475569' });
+  board.create('text', [-1.0, -1.1, 'Thước đo duỗi thẳng cung tròn l (m):'], { fontSize: 11, color: '#475569' });
 
   // Unwrapped segment (colored Teal representing unwrapped arc length l)
   board.unwrappedStart = board.create('point', [-1.0, -1.3], { visible: false });

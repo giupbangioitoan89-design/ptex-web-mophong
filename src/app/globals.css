@@ -707,8 +707,6 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    overflow-y: auto;
-    max-height: 420px;
   }
 
   .control-item {
@@ -744,4 +742,33 @@ body::after {
   }
 }
 
+/* Style for Select Dropdowns in Control Panel */
+.control-item select {
+  width: 100%;
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E") !important;
+  background-position: right 12px center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1.25rem !important;
+  padding-right: 2.25rem !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
 
+.control-item select:focus {
+  border-color: var(--color-primary-light) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+.control-item select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 8px;
+}
