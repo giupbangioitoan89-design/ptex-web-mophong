@@ -7,7 +7,7 @@ export default function Footer() {
       <p style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
         Được phát triển bởi{' '}
         <a href="https://github.com/gioangiang01" target="_blank" rel="noreferrer">
-          PTex Team
+          PTex - Ths. Võ Thanh Phong
         </a>
       </p>
     </footer>
