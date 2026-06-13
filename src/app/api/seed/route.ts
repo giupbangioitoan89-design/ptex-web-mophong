@@ -236,7 +236,7 @@ function initSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   // Unit circle
-  board.create('circle', [[0,0], 1], {
+  board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8',
     strokeWidth: 2,
     highlight: false,
@@ -264,13 +264,14 @@ function initSimulation(board, params) {
   });
 
   // Target point M
-  board.M = board.create('point', [0, 0], {
+  board.M = board.create('glider', [1, 0, board.circle], {
     name: math('M'),
     size: 5,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
     label: { display: 'html', fontSize: 14, offset: [10, 10] }
   });
+  registerDragSnapping(board, board.M, 'deg');
 
   // Radius line segment
   board.OM = board.create('segment', [board.O, board.M], {
@@ -446,7 +447,7 @@ function initSimulation(board, params) {
   });
 
   // Unit circle
-  board.create('circle', [[0,0], 1], {
+  board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8',
     strokeWidth: 2,
     highlight: false,
@@ -469,6 +470,7 @@ function initSimulation(board, params) {
     size: 4,
     fillColor: '#10b981',
     strokeColor: '#059669',
+    fixed: true,
     label: { display: 'html', fontSize: 12, offset: [-10, -15] }
   });
 
@@ -477,17 +479,19 @@ function initSimulation(board, params) {
     size: 4,
     fillColor: '#f43f5e',
     strokeColor: '#e11d48',
+    fixed: true,
     label: { display: 'html', fontSize: 12, offset: [-18, 0] }
   });
 
   // Target point P
-  board.P = board.create('point', [0, 0], {
+  board.P = board.create('glider', [1, 0, board.circle], {
     name: math('P'),
     size: 5,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
     label: { display: 'html', fontSize: 14, offset: [10, 10] }
   });
+  registerDragSnapping(board, board.P, 'angle');
 
   // Special axis boundary points
   board.create('point', [1, 0], {
@@ -693,7 +697,7 @@ function initSimulation(board, params) {
   board.suspendUpdate();
 
   // Unit circle
-  board.create('circle', [[0,0], 1], {
+  board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8',
     strokeWidth: 2,
     highlight: false,
@@ -721,13 +725,14 @@ function initSimulation(board, params) {
   });
 
   // Primary Point M
-  board.M = board.create('point', [1, 0], {
+  board.M = board.create('glider', [1, 0, board.circle], {
     name: '',
     size: 5,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
     label: { display: 'html', fontSize: 13, color: '#4f46e5', offset: [10, 10] }
   });
+  registerDragSnapping(board, board.M, 'angle');
   
   // Ray OM
   board.OM = board.create('segment', [board.O, board.M], {
@@ -741,6 +746,7 @@ function initSimulation(board, params) {
     size: 5,
     fillColor: '#f59e0b',
     strokeColor: '#d97706',
+    fixed: true,
     label: { display: 'html', fontSize: 13, color: '#d97706', offset: [10, -15] }
   });
   

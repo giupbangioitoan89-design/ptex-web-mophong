@@ -186,8 +186,52 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       }
     }
 
+    function registerDragSnapping(board, point, sliderName) {
+      point.on('drag', function() {
+        var x = point.X();
+        var y = point.Y();
+        var rad = Math.atan2(y, x);
+        var deg = rad * 180 / Math.PI;
+        if (deg < 0) deg += 360;
+        
+        var params = window.currentParams || {};
+        var mode = params.mode || 'Kéo tự do';
+        
+        if (mode === 'Kéo tự do') {
+          var val = Math.round(deg);
+          if (sliderName === 'deg') {
+            var currentVal = params.deg !== undefined ? params.deg : 120;
+            var currentTurns = Math.floor(currentVal / 360);
+            var targetVal = currentTurns * 360 + val;
+            if (Math.abs(targetVal - currentVal) > 180) {
+              if (targetVal < currentVal) targetVal += 360;
+              else targetVal -= 360;
+            }
+            val = Math.max(-720, Math.min(720, targetVal));
+          }
+          window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: sliderName, value: val }, '*');
+        } else if (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') {
+          var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+          var closestIdx = 0;
+          var minDiff = 360;
+          for (var i = 0; i < specialDegVals.length; i++) {
+            var diff = Math.abs(deg - specialDegVals[i]);
+            if (diff < minDiff) {
+              minDiff = diff;
+              closestIdx = i;
+            }
+          }
+          var targetSlider = (mode === 'Góc độ đặc biệt') ? 'specialDeg' : 'specialRad';
+          window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: targetSlider, value: closestIdx }, '*');
+        }
+      });
+    }
+    window.registerDragSnapping = registerDragSnapping;
+
     var board = null;
+    window.currentParams = null;
     function render(params) {
+      window.currentParams = params;
       if (board && typeof updateSimulation === 'function') {
         try {
           updateSimulation(board, params);
@@ -305,6 +349,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       if (e.data?.type === 'IFRAME_READY') {
         setIsLoading(false);
         sendParams();
+      } else if (e.data?.type === 'UPDATE_CONTROL_VALUE') {
+        const { name, value } = e.data;
+        setControlValues(prev => ({ ...prev, [name]: value }));
       }
     };
     window.addEventListener('message', handler);
