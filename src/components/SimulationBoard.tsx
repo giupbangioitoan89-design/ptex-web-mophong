@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import type { ISimulation } from '@/types';
+import { DisplayMath, MathText } from '@/components/MathRenderer';
 
 interface SimulationBoardProps {
   simulation: ISimulation;
@@ -260,6 +261,13 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         </div>
       )}
 
+      {/* ===== Math Formula Display ===== */}
+      {simulation.mathContent && (
+        <div className="math-display">
+          <DisplayMath>{simulation.mathContent}</DisplayMath>
+        </div>
+      )}
+
       {/* ===== Info Panels — 2 columns ===== */}
       <div className="sim-info-grid">
         {/* Key Insights */}
@@ -268,7 +276,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
             <h4>💡 Điểm chính</h4>
             <ul>
               {simulation.keyInsights.map((insight, i) => (
-                <li key={i}>{insight}</li>
+                <li key={i}><MathText>{insight}</MathText></li>
               ))}
             </ul>
           </div>
@@ -278,9 +286,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         {simulation.explanation && (
           <div className="insight-box explanation">
             <h4>📝 Giải thích</h4>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              {simulation.explanation}
-            </p>
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+              <MathText>{simulation.explanation}</MathText>
+            </div>
           </div>
         )}
       </div>

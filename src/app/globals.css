@@ -469,3 +469,37 @@ body::after {
   color: var(--color-primary-light);
   font-size: 0.72rem; font-weight: 600;
 }
+
+/* ===== KaTeX Math Styling ===== */
+.math-display {
+  padding: 1.25rem 1.5rem; border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(192,132,252,0.04));
+  border: 1px solid rgba(99,102,241,0.12);
+  text-align: center;
+  overflow-x: auto;
+}
+.math-display .katex-display { margin: 0; }
+.math-display .katex { font-size: 1.35rem; color: var(--text-primary); }
+
+/* Inline math in text */
+.insight-box .katex { font-size: 0.92em; color: var(--color-primary-light); }
+.insight-box.explanation .katex { color: #6ee7b7; }
+
+/* KaTeX overrides for dark theme */
+.katex { color: var(--text-primary); }
+.katex .mord, .katex .mbin, .katex .mrel,
+.katex .mopen, .katex .mclose, .katex .mpunct,
+.katex .minner { color: inherit; }
+.katex-error { color: var(--text-muted); font-style: italic; font-size: 0.85rem; }
+
+/* ===== Skeleton Loading ===== */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
