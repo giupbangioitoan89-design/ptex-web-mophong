@@ -6,11 +6,24 @@ import Chapter from '@/models/Chapter';
 import Simulation from '@/models/Simulation';
 import type { IChapter } from '@/types';
 
+import { CURRICULUM } from '@/data/curriculum';
+
 // ✅ ISR: cache for 30 min (sim counts may change more often)
 export const revalidate = 1800;
 
 interface PageProps {
   params: Promise<{ grade: string; chapterSlug: string }>;
+}
+
+export async function generateStaticParams() {
+  const params: { grade: string; chapterSlug: string }[] = [];
+  for (const item of CURRICULUM) {
+    params.push({
+      grade: String(item.grade),
+      chapterSlug: item.slug,
+    });
+  }
+  return params;
 }
 
 export default async function ChapterPage({ params }: PageProps) {

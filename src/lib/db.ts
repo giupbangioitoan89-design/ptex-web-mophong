@@ -52,55 +52,55 @@ export async function connectDB(): Promise<typeof mongoose> {
   const MONGODB_URI = process.env.MONGODB_URI;
   if (!MONGODB_URI) throw new Error('MONGODB_URI not set');
 
-  // Fast path: already connected
-  if (cached.conn && mongoose.connection.readyState === 1) {
-    return cached.conn;
-  }
-
-  if (cached.promise) {
-    try {
-      cached.conn = await cached.promise;
-      if (mongoose.connection.readyState === 1) return cached.conn;
-    } catch {
-      cached.promise = null;
-    }
-  }
-
+  // 1. Fast path: already connected
   if (mongoose.connection.readyState === 1) {
-    cached.conn = mongoose;
-    return cached.conn;
+    return mongoose;
   }
 
-  if (mongoose.connection.readyState !== 0) {
-    try { await mongoose.disconnect(); } catch { /* ignore */ }
+  // 2. If a connection is in progress, await it
+  if (cached.promise) {
+    return cached.promise;
   }
 
-  // On Vercel: use SRV directly (fast DNS). Locally: resolve manually.
-  let finalUri = MONGODB_URI;
-  if (MONGODB_URI.startsWith('mongodb+srv://') && !process.env.VERCEL) {
-    try {
-      finalUri = await resolveSrvUri(MONGODB_URI);
-    } catch {
-      finalUri = MONGODB_URI; // fallback to SRV
+  // 3. Create the connection promise synchronously to prevent race conditions
+  cached.promise = (async () => {
+    // If not fully disconnected, clean up first
+    if (mongoose.connection.readyState !== 0) {
+      try {
+        await mongoose.disconnect();
+      } catch {
+        /* ignore */
+      }
     }
-  }
 
-  cached.promise = mongoose.connect(finalUri, {
-    bufferCommands: false,
-    maxPoolSize: 5,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 30000,
-    connectTimeoutMS: 5000,
-  });
+    let finalUri = MONGODB_URI;
+    if (MONGODB_URI.startsWith('mongodb+srv://') && !process.env.VERCEL) {
+      try {
+        finalUri = await resolveSrvUri(MONGODB_URI);
+      } catch {
+        finalUri = MONGODB_URI; // fallback to SRV
+      }
+    }
+
+    await mongoose.connect(finalUri, {
+      bufferCommands: false,
+      maxPoolSize: 5,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+      connectTimeoutMS: 5000,
+    });
+
+    return mongoose;
+  })();
 
   try {
     cached.conn = await cached.promise;
+    return cached.conn;
   } catch (e) {
     cached.promise = null;
+    cached.conn = null;
     throw e;
   }
-
-  return cached.conn;
 }
 
 export default connectDB;

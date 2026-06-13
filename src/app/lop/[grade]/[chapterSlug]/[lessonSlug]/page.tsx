@@ -7,11 +7,27 @@ import Chapter from '@/models/Chapter';
 import Simulation from '@/models/Simulation';
 import type { IChapter, ISimulation } from '@/types';
 
+import { CURRICULUM } from '@/data/curriculum';
+
 // ✅ ISR: cache 10 min (simulation code changes rarely)
 export const revalidate = 600;
 
 interface PageProps {
   params: Promise<{ grade: string; chapterSlug: string; lessonSlug: string }>;
+}
+
+export async function generateStaticParams() {
+  const params: { grade: string; chapterSlug: string; lessonSlug: string }[] = [];
+  for (const item of CURRICULUM) {
+    for (const lesson of item.lessons) {
+      params.push({
+        grade: String(item.grade),
+        chapterSlug: item.slug,
+        lessonSlug: lesson.slug,
+      });
+    }
+  }
+  return params;
 }
 
 export default async function LessonSimulationPage({ params }: PageProps) {

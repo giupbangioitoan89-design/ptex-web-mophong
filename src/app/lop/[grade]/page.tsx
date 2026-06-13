@@ -14,6 +14,14 @@ interface PageProps {
   params: Promise<{ grade: string }>;
 }
 
+export async function generateStaticParams() {
+  return [
+    { grade: '10' },
+    { grade: '11' },
+    { grade: '12' },
+  ];
+}
+
 const GRADE_INFO: Record<number, { label: string; color: string; icon: string }> = {
   10: { label: 'Toán 10', color: '#22c55e', icon: '📗' },
   11: { label: 'Toán 11', color: '#3b82f6', icon: '📘' },
