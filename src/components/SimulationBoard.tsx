@@ -86,6 +86,16 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 
     var board = null;
     function render(params) {
+      if (board && typeof updateSimulation === 'function') {
+        try {
+          updateSimulation(board, params);
+          board.update();
+        } catch (e) {
+          console.error('Update error:', e);
+        }
+        return;
+      }
+
       if (board) JXG.JSXGraph.freeBoard(board);
       board = JXG.JSXGraph.initBoard('board', {
         boundingbox: [${bbox.join(',')}],

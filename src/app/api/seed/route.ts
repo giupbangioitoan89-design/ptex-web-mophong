@@ -235,8 +235,89 @@ function initSimulation(board, params) {
         order: 1,
         simulationCode: `
 function initSimulation(board, params) {
-  board.suspendUpdate();
+  // Unit circle
+  board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8',
+    strokeWidth: 2,
+    highlight: false,
+    fixed: true
+  });
 
+  // Origin O
+  board.O = board.create('point', [0, 0], {
+    name: math('O'),
+    size: 3,
+    fillColor: '#64748b',
+    strokeColor: '#475569',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+
+  // Start point A
+  board.A = board.create('point', [1, 0], {
+    name: math('A'),
+    size: 3,
+    fillColor: '#10b981',
+    strokeColor: '#059669',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [10, -10] }
+  });
+
+  // Target point M
+  board.M = board.create('point', [0, 0], {
+    name: math('M'),
+    size: 5,
+    fillColor: '#6366f1',
+    strokeColor: '#4f46e5',
+    label: { display: 'html', fontSize: 14, offset: [10, 10] }
+  });
+
+  // Radius line segment
+  board.OM = board.create('segment', [board.O, board.M], {
+    strokeColor: '#6366f1',
+    strokeWidth: 2
+  });
+
+  // Helper variables for spiral curve
+  board.radVal = 0;
+  
+  // Spiral arc to represent multiple turns
+  board.spiral = board.create('curve', [
+    function(t) {
+      var r = 0.25 + 0.08 * (t / (2 * Math.PI));
+      var angle = t * Math.sign(board.radVal);
+      return r * Math.cos(angle);
+    },
+    function(t) {
+      var r = 0.25 + 0.08 * (t / (2 * Math.PI));
+      var angle = t * Math.sign(board.radVal);
+      return r * Math.sin(angle);
+    },
+    0,
+    function() { return Math.abs(board.radVal); }
+  ], {
+    strokeColor: function() { return board.radVal >= 0 ? '#22c55e' : '#ef4444'; },
+    strokeWidth: 2.5
+  });
+
+  // Spiral arrow head points
+  board.arrowStart = board.create('point', [0, 0], { visible: false });
+  board.arrowEnd = board.create('point', [0, 0], { visible: false });
+  board.arrow = board.create('arrow', [board.arrowStart, board.arrowEnd], {
+    strokeColor: function() { return board.radVal >= 0 ? '#22c55e' : '#ef4444'; },
+    strokeWidth: 2
+  });
+
+  // Texts
+  board.txtDeg = board.create('text', [-1.6, 1.5, ''], { display: 'html', fontSize: 14 });
+  board.txtRad = board.create('text', [-1.6, 1.3, ''], { display: 'html', fontSize: 14 });
+  board.txtTurns = board.create('text', [-1.6, 1.1, ''], { display: 'html', fontSize: 14 });
+  board.txtDir = board.create('text', [-1.6, 0.9, ''], { display: 'html', fontSize: 14 });
+
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
   var mode = params.mode || 'Kéo tự do';
   var deg = 120;
   if (mode === 'Kéo tự do') {
@@ -251,73 +332,15 @@ function initSimulation(board, params) {
     deg = specialDegVals[idx] || 0;
   }
   var rad = deg * Math.PI / 180;
+  board.radVal = rad;
 
-  // Unit circle
-  board.create('circle', [[0,0], 1], {
-    strokeColor: '#94a3b8',
-    strokeWidth: 2,
-    highlight: false,
-    fixed: true
-  });
-
-  // Target point M
   var px = Math.cos(rad);
   var py = Math.sin(rad);
-  var P = board.create('point', [px, py], {
-    name: math('M'),
-    size: 5,
-    fillColor: '#6366f1',
-    strokeColor: '#4f46e5',
-    label: { display: 'html', fontSize: 14, offset: [10, 10] }
-  });
+  board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
 
-  // Origin O
-  board.create('point', [0, 0], {
-    name: math('O'),
-    size: 3,
-    fillColor: '#64748b',
-    strokeColor: '#475569',
-    fixed: true,
-    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
-  });
-
-  // Start point A
-  board.create('point', [1, 0], {
-    name: math('A'),
-    size: 3,
-    fillColor: '#10b981',
-    strokeColor: '#059669',
-    fixed: true,
-    label: { display: 'html', fontSize: 14, offset: [10, -10] }
-  });
-
-  // Radius line
-  board.create('segment', [[0,0], P], {
-    strokeColor: '#6366f1',
-    strokeWidth: 2
-  });
-
-  // Spiral arc to represent multiple turns
+  // Update arrow head positions
   var absRad = Math.abs(rad);
   if (absRad > 0.05) {
-    board.create('curve', [
-      function(t) {
-        var r = 0.25 + 0.08 * (t / (2 * Math.PI));
-        var angle = t * Math.sign(rad);
-        return r * Math.cos(angle);
-      },
-      function(t) {
-        var r = 0.25 + 0.08 * (t / (2 * Math.PI));
-        var angle = t * Math.sign(rad);
-        return r * Math.sin(angle);
-      },
-      0, absRad
-    ], {
-      strokeColor: rad >= 0 ? '#22c55e' : '#ef4444',
-      strokeWidth: 2.5
-    });
-
-    // Arrow head at the end of spiral
     var endR = 0.25 + 0.08 * (absRad / (2 * Math.PI));
     var arrowDx = 0.05 * Math.sin(rad);
     var arrowDy = -0.05 * Math.cos(rad);
@@ -325,19 +348,15 @@ function initSimulation(board, params) {
       arrowDx = -arrowDx;
       arrowDy = -arrowDy;
     }
-    board.create('arrow', [
-      [endR * Math.cos(rad) - arrowDx * 0.5, endR * Math.sin(rad) - arrowDy * 0.5],
-      [endR * Math.cos(rad) + arrowDx * 0.5, endR * Math.sin(rad) + arrowDy * 0.5]
-    ], {
-      strokeColor: rad >= 0 ? '#22c55e' : '#ef4444',
-      strokeWidth: 2
-    });
+    board.arrowStart.setPosition(JXG.COORDS_BY_USER, [endR * Math.cos(rad) - arrowDx * 0.5, endR * Math.sin(rad) - arrowDy * 0.5]);
+    board.arrowEnd.setPosition(JXG.COORDS_BY_USER, [endR * Math.cos(rad) + arrowDx * 0.5, endR * Math.sin(rad) + arrowDy * 0.5]);
+    board.arrow.setAttribute({ visible: true });
+  } else {
+    board.arrow.setAttribute({ visible: false });
   }
 
-  // Display texts in KaTeX format
   var turns = (deg / 360).toFixed(2);
   
-  // Calculate clean radian fraction string
   var radText = '';
   if (mode === 'Góc radian đặc biệt') {
     var radLabels = ['0', '\\frac{\\pi}{6}', '\\frac{\\pi}{4}', '\\frac{\\pi}{3}', '\\frac{\\pi}{2}', '\\frac{2\\pi}{3}', '\\frac{3\\pi}{4}', '\\frac{5\\pi}{6}', '\\pi', '\\frac{7\\pi}{6}', '\\frac{5\\pi}{4}', '\\frac{4\\pi}{3}', '\\frac{3\\pi}{2}', '\\frac{5\\pi}{3}', '\\frac{7\\pi}{4}', '\\frac{11\\pi}{6}', '2\\pi'];
@@ -353,13 +372,13 @@ function initSimulation(board, params) {
   var dirText = deg > 0 ? '\\text{Chiều Dương (+)}' : (deg < 0 ? '\\text{Chiều Âm (-)}' : '\\text{Không quay}');
   var dirColor = deg > 0 ? '#22c55e' : (deg < 0 ? '#ef4444' : '#94a3b8');
 
-  board.create('text', [-1.6, 1.5, math('\\text{Số đo Độ: } ' + deg + '^\\circ')], { display: 'html', fontSize: 14 });
-  board.create('text', [-1.6, 1.3, math('\\text{Số đo Radian: } ' + radText + ' \\text{ rad}')], { display: 'html', fontSize: 14 });
-  board.create('text', [-1.6, 1.1, math('\\text{Số vòng quay: } ' + turns + ' \\text{ vòng}')], { display: 'html', fontSize: 14 });
-  board.create('text', [-1.6, 0.9, math('\\text{Hướng quay: } ' + dirText)], { display: 'html', fontSize: 14, color: dirColor });
-
-  board.unsuspendUpdate();
-}`,
+  board.txtDeg.setText(math('\\text{Số đo Độ: } ' + deg + '^\\circ'));
+  board.txtRad.setText(math('\\text{Số đo Radian: } ' + radText + ' \\text{ rad}'));
+  board.txtTurns.setText(math('\\text{Số vòng quay: } ' + turns + ' \\text{ vòng}'));
+  board.txtDir.setText(math('\\text{Hướng quay: } ' + dirText));
+  board.txtDir.setAttribute({ strokeColor: dirColor });
+}
+`,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
@@ -396,8 +415,98 @@ function initSimulation(board, params) {
         order: 2,
         simulationCode: `
 function initSimulation(board, params) {
-  board.suspendUpdate();
+  // Unit circle
+  board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8',
+    strokeWidth: 2,
+    highlight: false,
+    fixed: true
+  });
 
+  // Origin O
+  board.O = board.create('point', [0, 0], {
+    name: math('O'),
+    size: 3,
+    fillColor: '#64748b',
+    strokeColor: '#475569',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+
+  // projection points
+  board.H = board.create('point', [0, 0], {
+    name: math('H(\\cos \\alpha; 0)'),
+    size: 4,
+    fillColor: '#22c55e',
+    strokeColor: '#16a34a',
+    label: { display: 'html', fontSize: 12, offset: [-30, -20] }
+  });
+
+  board.K = board.create('point', [0, 0], {
+    name: math('K(0; \\sin \\alpha)'),
+    size: 4,
+    fillColor: '#ef4444',
+    strokeColor: '#dc2626',
+    label: { display: 'html', fontSize: 12, offset: [-95, 0] }
+  });
+
+  // Target point P
+  board.P = board.create('point', [0, 0], {
+    name: math('P(\\cos \\alpha; \\sin \\alpha)'),
+    size: 5,
+    fillColor: '#6366f1',
+    strokeColor: '#4f46e5',
+    label: { display: 'html', fontSize: 14, offset: [10, 10] }
+  });
+
+  // Label Axis names
+  board.create('text', [1.8, 0.1, math('\\text{trục cos}')], { display: 'html', fontSize: 13, color: '#16a34a' });
+  board.create('text', [0.08, 1.8, math('\\text{trục sin}')], { display: 'html', fontSize: 13, color: '#dc2626' });
+
+  // Radius line
+  board.create('segment', [board.O, board.P], {
+    strokeColor: '#6366f1',
+    strokeWidth: 2
+  });
+
+  // cos projection segment
+  board.create('segment', [board.O, board.H], {
+    strokeColor: '#22c55e',
+    strokeWidth: 3,
+    highlight: false
+  });
+
+  // sin projection segment
+  board.create('segment', [board.O, board.K], {
+    strokeColor: '#ef4444',
+    strokeWidth: 3,
+    highlight: false
+  });
+
+  // Dashed projections lines
+  board.create('segment', [board.P, board.H], {
+    dash: 2, strokeColor: '#94a3b8', strokeWidth: 1
+  });
+  board.create('segment', [board.P, board.K], {
+    dash: 2, strokeColor: '#94a3b8', strokeWidth: 1
+  });
+
+  // Helper points and arc for angle
+  board.arcEnd = board.create('point', [0.3, 0], { visible: false });
+  board.angleArc = board.create('arc', [board.O, [0.3, 0], board.arcEnd], {
+    strokeColor: '#f59e0b',
+    strokeWidth: 2
+  });
+
+  // Texts
+  board.txtAngle = board.create('text', [-1.8, 1.8, ''], { display: 'html', fontSize: 14, color: '#6366f1' });
+  board.txtSin = board.create('text', [-1.8, 1.5, ''], { display: 'html', fontSize: 14, color: '#ef4444' });
+  board.txtCos = board.create('text', [-1.8, 1.2, ''], { display: 'html', fontSize: 14, color: '#22c55e' });
+
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
   var mode = params.mode || 'Kéo tự do';
   var deg = 45;
   if (mode === 'Kéo tự do') {
@@ -413,130 +522,22 @@ function initSimulation(board, params) {
   }
   var angle = deg * Math.PI / 180;
 
-  // Unit circle
-  board.create('circle', [[0,0], 1], {
-    strokeColor: '#94a3b8',
-    strokeWidth: 2,
-    highlight: false,
-    fixed: true
-  });
-
-  // Origin O
-  board.create('point', [0, 0], {
-    name: math('O'),
-    size: 3,
-    fillColor: '#64748b',
-    strokeColor: '#475569',
-    fixed: true,
-    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
-  });
-
-  // Coordinates of P
   var px = Math.cos(angle);
   var py = Math.sin(angle);
 
-  // Cos projection point
-  var H = board.create('point', [px, 0], {
-    name: math('H(\\cos \\alpha; 0)'),
-    size: 4,
-    fillColor: '#22c55e',
-    strokeColor: '#16a34a',
-    label: { display: 'html', fontSize: 12, offset: [-30, -20] }
-  });
+  board.P.setPosition(JXG.COORDS_BY_USER, [px, py]);
+  board.H.setPosition(JXG.COORDS_BY_USER, [px, 0]);
+  board.K.setPosition(JXG.COORDS_BY_USER, [0, py]);
 
-  // Sin projection point
-  var K = board.create('point', [0, py], {
-    name: math('K(0; \\sin \\alpha)'),
-    size: 4,
-    fillColor: '#ef4444',
-    strokeColor: '#dc2626',
-    label: { display: 'html', fontSize: 12, offset: [-95, 0] }
-  });
-
-  // Target point P
-  var P = board.create('point', [px, py], {
-    name: math('P(\\cos \\alpha; \\sin \\alpha)'),
-    size: 5,
-    fillColor: '#6366f1',
-    strokeColor: '#4f46e5',
-    label: { display: 'html', fontSize: 14, offset: [10, 10] }
-  });
-
-  // Special axis boundary points
-  board.create('point', [1, 0], {
-    name: math('A(1;0)'),
-    size: 2,
-    fillColor: '#94a3b8',
-    strokeColor: '#64748b',
-    fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [8, -12] }
-  });
-  board.create('point', [-1, 0], {
-    name: math('A\'(-1;0)'),
-    size: 2,
-    fillColor: '#94a3b8',
-    strokeColor: '#64748b',
-    fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [-65, -12] }
-  });
-  board.create('point', [0, 1], {
-    name: math('B(0;1)'),
-    size: 2,
-    fillColor: '#94a3b8',
-    strokeColor: '#64748b',
-    fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [8, 12] }
-  });
-  board.create('point', [0, -1], {
-    name: math('B\'(0;-1)'),
-    size: 2,
-    fillColor: '#94a3b8',
-    strokeColor: '#64748b',
-    fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [8, -12] }
-  });
-
-  // Label Axis names
-  board.create('text', [1.8, 0.1, math('\\text{trục cos}')], { display: 'html', fontSize: 13, color: '#16a34a' });
-  board.create('text', [0.08, 1.8, math('\\text{trục sin}')], { display: 'html', fontSize: 13, color: '#dc2626' });
-
-  // Radius line
-  board.create('segment', [[0,0], P], {
-    strokeColor: '#6366f1',
-    strokeWidth: 2
-  });
-
-  // cos projection segment
-  board.create('segment', [[0,0], H], {
-    strokeColor: '#22c55e',
-    strokeWidth: 3,
-    highlight: false
-  });
-
-  // sin projection segment
-  board.create('segment', [[0,0], K], {
-    strokeColor: '#ef4444',
-    strokeWidth: 3,
-    highlight: false
-  });
-
-  // Dashed projections lines
-  board.create('segment', [P, H], {
-    dash: 2, strokeColor: '#94a3b8', strokeWidth: 1
-  });
-  board.create('segment', [P, K], {
-    dash: 2, strokeColor: '#94a3b8', strokeWidth: 1
-  });
-
-  // Angle arc
+  // Update angle arc
+  board.arcEnd.setPosition(JXG.COORDS_BY_USER, [0.3 * px, 0.3 * py]);
   if (Math.abs(angle) > 0.01) {
-    board.create('arc', [[0,0], [0.3, 0], [0.3 * Math.cos(angle), 0.3 * Math.sin(angle)]], {
-      strokeColor: '#f59e0b',
-      strokeWidth: 2
-    });
+    board.angleArc.setAttribute({ visible: true });
+  } else {
+    board.angleArc.setAttribute({ visible: false });
   }
 
-  // Display texts in graph corner in KaTeX
+  // Texts
   var radText = '';
   if (mode === 'Góc radian đặc biệt') {
     var radLabels = ['0', '\\frac{\\pi}{6}', '\\frac{\\pi}{4}', '\\frac{\\pi}{3}', '\\frac{\\pi}{2}', '\\frac{2\\pi}{3}', '\\frac{3\\pi}{4}', '\\frac{5\\pi}{6}', '\\pi', '\\frac{7\\pi}{6}', '\\frac{5\\pi}{4}', '\\frac{4\\pi}{3}', '\\frac{3\\pi}{2}', '\\frac{5\\pi}{3}', '\\frac{7\\pi}{4}', '\\frac{11\\pi}{6}', '2\\pi'];
@@ -548,12 +549,11 @@ function initSimulation(board, params) {
     else radText = frac.toFixed(2) + '\\pi';
   }
 
-  board.create('text', [-1.8, 1.8, math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}')], { display: 'html', fontSize: 14, color: '#6366f1' });
-  board.create('text', [-1.8, 1.5, math('\\sin \\alpha = ' + py.toFixed(3))], { display: 'html', fontSize: 14, color: '#ef4444' });
-  board.create('text', [-1.8, 1.2, math('\\cos \\alpha = ' + px.toFixed(3))], { display: 'html', fontSize: 14, color: '#22c55e' });
-
-  board.unsuspendUpdate();
-}`,
+  board.txtAngle.setText(math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}'));
+  board.txtSin.setText(math('\\sin \\alpha = ' + py.toFixed(3)));
+  board.txtCos.setText(math('\\cos \\alpha = ' + px.toFixed(3)));
+}
+`,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
@@ -590,23 +590,6 @@ function initSimulation(board, params) {
         order: 3,
         simulationCode: `
 function initSimulation(board, params) {
-  board.suspendUpdate();
-
-  var mode = params.mode || 'Kéo tự do';
-  var deg = 45;
-  if (mode === 'Kéo tự do') {
-    deg = params.angle !== undefined ? params.angle : 45;
-  } else if (mode === 'Góc độ đặc biệt') {
-    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    var idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 2;
-    deg = specialDegVals[idx] || 0;
-  } else if (mode === 'Góc radian đặc biệt') {
-    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    var idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 2;
-    deg = specialDegVals[idx] || 0;
-  }
-  var angle = deg * Math.PI / 180;
-
   // Unit circle
   board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8',
@@ -616,7 +599,7 @@ function initSimulation(board, params) {
   });
 
   // Origin O
-  board.create('point', [0, 0], {
+  board.O = board.create('point', [0, 0], {
     name: math('O'),
     size: 3,
     fillColor: '#64748b',
@@ -625,9 +608,8 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 14, offset: [-15, -15] }
   });
 
-  var mx = Math.cos(angle);
-  var my = Math.sin(angle);
-  var M = board.create('point', [mx, my], {
+  // M point
+  board.M = board.create('point', [0, 0], {
     name: math('M'),
     size: 4,
     fillColor: '#fff',
@@ -636,7 +618,7 @@ function initSimulation(board, params) {
   });
 
   // Radial line extending beyond circle
-  var OM = board.create('line', [[0,0], M], {
+  board.OM = board.create('line', [board.O, board.M], {
     strokeColor: '#6366f1',
     strokeWidth: 1.5,
     dash: 1,
@@ -660,41 +642,33 @@ function initSimulation(board, params) {
   });
   board.create('text', [2.1, 1.1, math('\\text{Trục Cot}')], { display: 'html', fontSize: 12, color: '#ec4899' });
 
-  // Tan projection point: x = 1, y = tan(angle)
-  var showTan = (deg !== 90 && deg !== 270);
-  if (showTan) {
-    var tanValue = Math.tan(angle);
-    var T = board.create('point', [1, tanValue], {
-      name: math('T(1; \\tan \\alpha)'),
-      size: 5,
-      fillColor: '#f59e0b',
-      strokeColor: '#d97706',
-      label: { display: 'html', fontSize: 12, offset: [10, 0] }
-    });
-    // Segment from origin to T
-    board.create('segment', [[1, 0], T], {
-      strokeColor: '#f59e0b',
-      strokeWidth: 3
-    });
-  }
+  // Tan projection point
+  board.T = board.create('point', [1, 0], {
+    name: math('T(1; \\tan \\alpha)'),
+    size: 5,
+    fillColor: '#f59e0b',
+    strokeColor: '#d97706',
+    label: { display: 'html', fontSize: 12, offset: [10, 0] }
+  });
+  // Segment from (1,0) to T
+  board.tanSeg = board.create('segment', [[1, 0], board.T], {
+    strokeColor: '#f59e0b',
+    strokeWidth: 3
+  });
 
-  // Cot projection point: x = cot(angle), y = 1
-  var showCot = (deg !== 0 && deg !== 180 && deg !== 360);
-  if (showCot) {
-    var cotValue = 1 / Math.tan(angle);
-    var C = board.create('point', [cotValue, 1], {
-      name: math('C(\\cot \\alpha; 1)'),
-      size: 5,
-      fillColor: '#ec4899',
-      strokeColor: '#db2777',
-      label: { display: 'html', fontSize: 12, offset: [-30, 15] }
-    });
-    // Segment from origin to C
-    board.create('segment', [[0, 1], C], {
-      strokeColor: '#ec4899',
-      strokeWidth: 3
-    });
-  }
+  // Cot projection point
+  board.C = board.create('point', [0, 1], {
+    name: math('C(\\cot \\alpha; 1)'),
+    size: 5,
+    fillColor: '#ec4899',
+    strokeColor: '#db2777',
+    label: { display: 'html', fontSize: 12, offset: [-30, 15] }
+  });
+  // Segment from (0,1) to C
+  board.cotSeg = board.create('segment', [[0, 1], board.C], {
+    strokeColor: '#ec4899',
+    strokeWidth: 3
+  });
 
   // A(1,0) and B(0,1)
   board.create('point', [1, 0], {
@@ -714,7 +688,59 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 12, offset: [-45, 12] }
   });
 
-  // Display texts in graph corner in KaTeX
+  // Value texts
+  board.txtAngle = board.create('text', [-2.3, -1.6, ''], { display: 'html', fontSize: 13, color: '#6366f1' });
+  board.txtTan = board.create('text', [-2.3, -1.9, ''], { display: 'html', fontSize: 13, color: '#f59e0b' });
+  board.txtCot = board.create('text', [-2.3, -2.2, ''], { display: 'html', fontSize: 13, color: '#ec4899' });
+
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  var mode = params.mode || 'Kéo tự do';
+  var deg = 45;
+  if (mode === 'Kéo tự do') {
+    deg = params.angle !== undefined ? params.angle : 45;
+  } else if (mode === 'Góc độ đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 2;
+    deg = specialDegVals[idx] || 0;
+  } else if (mode === 'Góc radian đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 2;
+    deg = specialDegVals[idx] || 0;
+  }
+  var angle = deg * Math.PI / 180;
+
+  var mx = Math.cos(angle);
+  var my = Math.sin(angle);
+  board.M.setPosition(JXG.COORDS_BY_USER, [mx, my]);
+
+  // Update Tan value
+  var showTan = (deg !== 90 && deg !== 270);
+  if (showTan) {
+    var tanValue = Math.tan(angle);
+    board.T.setPosition(JXG.COORDS_BY_USER, [1, tanValue]);
+    board.T.setAttribute({ visible: true });
+    board.tanSeg.setAttribute({ visible: true });
+  } else {
+    board.T.setAttribute({ visible: false });
+    board.tanSeg.setAttribute({ visible: false });
+  }
+
+  // Update Cot value
+  var showCot = (deg !== 0 && deg !== 180 && deg !== 360);
+  if (showCot) {
+    var cotValue = 1 / Math.tan(angle);
+    board.C.setPosition(JXG.COORDS_BY_USER, [cotValue, 1]);
+    board.C.setAttribute({ visible: true });
+    board.cotSeg.setAttribute({ visible: true });
+  } else {
+    board.C.setAttribute({ visible: false });
+    board.cotSeg.setAttribute({ visible: false });
+  }
+
+  // Radian Text
   var radText = '';
   if (mode === 'Góc radian đặc biệt') {
     var radLabels = ['0', '\\frac{\\pi}{6}', '\\frac{\\pi}{4}', '\\frac{\\pi}{3}', '\\frac{\\pi}{2}', '\\frac{2\\pi}{3}', '\\frac{3\\pi}{4}', '\\frac{5\\pi}{6}', '\\pi', '\\frac{7\\pi}{6}', '\\frac{5\\pi}{4}', '\\frac{4\\pi}{3}', '\\frac{3\\pi}{2}', '\\frac{5\\pi}{3}', '\\frac{7\\pi}{4}', '\\frac{11\\pi}{6}', '2\\pi'];
@@ -726,16 +752,16 @@ function initSimulation(board, params) {
     else radText = frac.toFixed(2) + '\\pi';
   }
 
-  board.create('text', [-2.3, -1.6, math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}')], { display: 'html', fontSize: 13, color: '#6366f1' });
+  board.txtAngle.setText(math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}'));
   if (showTan) {
-    board.create('text', [-2.3, -1.9, math('\\tan \\alpha = ' + Math.tan(angle).toFixed(3))], { display: 'html', fontSize: 13, color: '#f59e0b' });
+    board.txtTan.setText(math('\\tan \\alpha = ' + Math.tan(angle).toFixed(3)));
   } else {
-    board.create('text', [-2.3, -1.9, math('\\tan \\alpha = \\text{Không xác định}')], { display: 'html', fontSize: 13, color: '#ef4444' });
+    board.txtTan.setText(math('\\tan \\alpha = \\text{Không xác định}'));
   }
   if (showCot) {
-    board.create('text', [-2.3, -2.2, math('\\cot \\alpha = ' + (1/Math.tan(angle)).toFixed(3))], { display: 'html', fontSize: 13, color: '#ec4899' });
+    board.txtCot.setText(math('\\cot \\alpha = ' + (1/Math.tan(angle)).toFixed(3)));
   } else {
-    board.create('text', [-2.3, -2.2, math('\\cot \\alpha = \\text{Không xác định}')], { display: 'html', fontSize: 13, color: '#ef4444' });
+    board.txtCot.setText(math('\\cot \\alpha = \\text{Không xác định}'));
   }
 
   board.unsuspendUpdate();
