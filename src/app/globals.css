@@ -645,3 +645,103 @@ body::after {
   }
 }
 
+/* ===== Split Layout for Simulation and Controls (Desktop) ===== */
+@media (min-width: 860px) {
+  /* Expand sim container width to fit screen better */
+  .sim-wrapper {
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Main row with split */
+  .sim-layout-main {
+    display: flex;
+    gap: 1.25rem;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  /* Left board gets 65% width */
+  .sim-board-column {
+    flex: 6.5;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sim-board {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sim-board iframe {
+    flex: 1;
+    height: 100%;
+    min-height: 480px;
+    aspect-ratio: unset;
+  }
+
+  /* Right controls get 3.5% width */
+  .sim-controls-column {
+    flex: 3.5;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Stretched control panel vertically stacked */
+  .control-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+
+  .control-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    overflow-y: auto;
+    max-height: 420px;
+  }
+
+  .control-item {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  
+  /* Lower row has its own spacing */
+  .sim-layout-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+}
+
+/* On mobile/tablet, default to vertical stack */
+@media (max-width: 859px) {
+  .sim-layout-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .sim-board-column,
+  .sim-controls-column {
+    width: 100%;
+  }
+  .control-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    width: 100%;
+  }
+}
+
+

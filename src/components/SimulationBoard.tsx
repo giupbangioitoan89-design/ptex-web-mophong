@@ -173,134 +173,146 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 
   return (
     <div className="sim-wrapper">
-      {/* ===== Graph Board — Full Width ===== */}
-      <div className="sim-board">
-        {isLoading && (
-          <div className="loading-board">
-            <div className="spinner" />
-            <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>Đang tải mô phỏng...</p>
+      {/* ===== Upper Row: Board & Controls side-by-side on desktop ===== */}
+      <div className="sim-layout-main">
+        {/* Left Column: Board */}
+        <div className="sim-board-column">
+          <div className="sim-board">
+            {isLoading && (
+              <div className="loading-board">
+                <div className="spinner" />
+                <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>Đang tải mô phỏng...</p>
+              </div>
+            )}
+            <iframe
+              ref={iframeRef}
+              style={{
+                display: isLoading ? 'none' : 'block',
+              }}
+              sandbox="allow-scripts"
+              title={simulation.title}
+            />
           </div>
-        )}
-        <iframe
-          ref={iframeRef}
-          style={{
-            display: isLoading ? 'none' : 'block',
-          }}
-          sandbox="allow-scripts"
-          title={simulation.title}
-        />
+        </div>
+
+        {/* Right Column: Controls */}
+        <div className="sim-controls-column">
+          {simulation.controls.length > 0 && (
+            <div className="control-panel">
+              <h3>⚙️ Điều chỉnh tham số</h3>
+              <div className="control-list">
+                {simulation.controls.map((ctrl) => (
+                  <div key={ctrl.name} className="control-item">
+                    {ctrl.type === 'slider' && (
+                      <>
+                        <label>
+                          {ctrl.label}
+                          <span className="value">
+                            {typeof controlValues[ctrl.name] === 'number'
+                              ? (controlValues[ctrl.name] as number).toFixed(
+                                  ctrl.step && ctrl.step < 1 ? 1 : 0
+                                )
+                              : String(controlValues[ctrl.name])}
+                          </span>
+                        </label>
+                        <input
+                          type="range"
+                          min={ctrl.min}
+                          max={ctrl.max}
+                          step={ctrl.step}
+                          value={controlValues[ctrl.name] as number}
+                          onChange={(e) =>
+                            handleControlChange(ctrl.name, parseFloat(e.target.value))
+                          }
+                        />
+                      </>
+                    )}
+                    {ctrl.type === 'checkbox' && (
+                      <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          checked={controlValues[ctrl.name] as boolean}
+                          onChange={(e) =>
+                            handleControlChange(ctrl.name, e.target.checked)
+                          }
+                        />
+                        {ctrl.label}
+                      </label>
+                    )}
+                    {ctrl.type === 'select' && (
+                      <>
+                        <label>{ctrl.label}</label>
+                        <select
+                          value={controlValues[ctrl.name] as string}
+                          onChange={(e) =>
+                            handleControlChange(ctrl.name, e.target.value)
+                          }
+                          style={{
+                            background: 'rgba(255,255,255,0.08)',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          {ctrl.options?.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ===== Controls — Horizontal Below Graph ===== */}
-      {simulation.controls.length > 0 && (
-        <div className="control-panel">
-          <h3>⚙️ Điều chỉnh tham số</h3>
-          {simulation.controls.map((ctrl) => (
-            <div key={ctrl.name} className="control-item">
-              {ctrl.type === 'slider' && (
-                <>
-                  <label>
-                    {ctrl.label}
-                    <span className="value">
-                      {typeof controlValues[ctrl.name] === 'number'
-                        ? (controlValues[ctrl.name] as number).toFixed(
-                            ctrl.step && ctrl.step < 1 ? 1 : 0
-                          )
-                        : String(controlValues[ctrl.name])}
-                    </span>
-                  </label>
-                  <input
-                    type="range"
-                    min={ctrl.min}
-                    max={ctrl.max}
-                    step={ctrl.step}
-                    value={controlValues[ctrl.name] as number}
-                    onChange={(e) =>
-                      handleControlChange(ctrl.name, parseFloat(e.target.value))
-                    }
-                  />
-                </>
-              )}
-              {ctrl.type === 'checkbox' && (
-                <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={controlValues[ctrl.name] as boolean}
-                    onChange={(e) =>
-                      handleControlChange(ctrl.name, e.target.checked)
-                    }
-                  />
-                  {ctrl.label}
-                </label>
-              )}
-              {ctrl.type === 'select' && (
-                <>
-                  <label>{ctrl.label}</label>
-                  <select
-                    value={controlValues[ctrl.name] as string}
-                    onChange={(e) =>
-                      handleControlChange(ctrl.name, e.target.value)
-                    }
-                    style={{
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: '8px',
-                      padding: '8px 12px',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.85rem',
-                    }}
-                  >
-                    {ctrl.options?.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ===== Math Formula Display ===== */}
-      {simulation.mathContent && (
-        <div className="math-display">
-          <DisplayMath>{simulation.mathContent}</DisplayMath>
-        </div>
-      )}
-
-      {/* ===== Info Panels — 2 columns ===== */}
-      <div className="sim-info-grid">
-        {/* Key Insights */}
-        {simulation.keyInsights.length > 0 && (
-          <div className="insight-box">
-            <h4>💡 Điểm chính</h4>
-            <ul>
-              {simulation.keyInsights.map((insight, i) => (
-                <li key={i}><MathText>{insight}</MathText></li>
-              ))}
-            </ul>
+      {/* ===== Lower Section: Full-Width Math, Insights & Explanation ===== */}
+      <div className="sim-layout-info">
+        {/* Math Formula Display */}
+        {simulation.mathContent && (
+          <div className="math-display">
+            <DisplayMath>{simulation.mathContent}</DisplayMath>
           </div>
         )}
 
-        {/* Explanation */}
-        {simulation.explanation && (
-          <div className="insight-box explanation">
-            <h4>📝 Giải thích</h4>
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-              <MathText>{simulation.explanation}</MathText>
+        {/* Info Panels */}
+        <div className="sim-info-grid">
+          {/* Key Insights */}
+          {simulation.keyInsights.length > 0 && (
+            <div className="insight-box">
+              <h4>💡 Điểm chính</h4>
+              <ul>
+                {simulation.keyInsights.map((insight, i) => (
+                  <li key={i}><MathText>{insight}</MathText></li>
+                ))}
+              </ul>
             </div>
+          )}
+
+          {/* Explanation */}
+          {simulation.explanation && (
+            <div className="insight-box explanation">
+              <h4>📝 Giải thích</h4>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+                <MathText>{simulation.explanation}</MathText>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tags */}
+        {simulation.tags && simulation.tags.length > 0 && (
+          <div className="tag-list">
+            {simulation.tags.map((tag) => (
+              <span key={tag} className="tag-pill">{tag}</span>
+            ))}
           </div>
         )}
       </div>
-
-      {/* Tags */}
-      {simulation.tags && simulation.tags.length > 0 && (
-        <div className="tag-list">
-          {simulation.tags.map((tag) => (
-            <span key={tag} className="tag-pill">{tag}</span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

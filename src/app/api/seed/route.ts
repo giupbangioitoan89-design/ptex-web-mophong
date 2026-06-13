@@ -225,14 +225,126 @@ function initSimulation(board, params) {
         difficulty: 'intermediate',
         isPublished: true,
       },
-      // Demo 2: Đường tròn lượng giác (Toán 11)
+      // Demo 2.1: Góc lượng giác và Chiều quay (Toán 11 - Bài 1.1)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
         lessonSlug: 'goc-luong-giac-duong-tron',
-        title: 'Đường tròn lượng giác',
-        description: 'Khám phá mối liên hệ giữa góc và giá trị sin, cos trên đường tròn đơn vị.',
+        title: 'Góc lượng giác và Chiều quay',
+        description: 'Khám phá khái niệm số đo góc lượng giác (Độ và Radian), chiều quay dương (ngược chiều kim đồng hồ) và âm (cùng chiều kim đồng hồ). Thử kéo slider vượt quá 360° để xem số vòng quay!',
         order: 1,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+
+  var deg = params.deg;
+  var rad = deg * Math.PI / 180;
+
+  // Unit circle
+  board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8',
+    strokeWidth: 2,
+    highlight: false,
+    fixed: true
+  });
+
+  // Target point M
+  var px = Math.cos(rad);
+  var py = Math.sin(rad);
+  var P = board.create('point', [px, py], {
+    name: 'M',
+    size: 5,
+    fillColor: '#6366f1',
+    strokeColor: '#4f46e5',
+    label: { fontSize: 13, offset: [10, 10] }
+  });
+
+  // Radius line
+  board.create('segment', [[0,0], P], {
+    strokeColor: '#6366f1',
+    strokeWidth: 2
+  });
+
+  // Spiral arc to represent multiple turns
+  var absRad = Math.abs(rad);
+  if (absRad > 0.05) {
+    board.create('curve', [
+      function(t) {
+        var r = 0.25 + 0.08 * (t / (2 * Math.PI));
+        var angle = t * Math.sign(rad);
+        return r * Math.cos(angle);
+      },
+      function(t) {
+        var r = 0.25 + 0.08 * (t / (2 * Math.PI));
+        var angle = t * Math.sign(rad);
+        return r * Math.sin(angle);
+      },
+      0, absRad
+    ], {
+      strokeColor: rad >= 0 ? '#22c55e' : '#ef4444',
+      strokeWidth: 2.5
+    });
+
+    // Arrow head at the end of spiral
+    var endR = 0.25 + 0.08 * (absRad / (2 * Math.PI));
+    var arrowDx = 0.05 * Math.sin(rad);
+    var arrowDy = -0.05 * Math.cos(rad);
+    if (rad < 0) {
+      arrowDx = -arrowDx;
+      arrowDy = -arrowDy;
+    }
+    board.create('arrow', [
+      [endR * Math.cos(rad) - arrowDx * 0.5, endR * Math.sin(rad) - arrowDy * 0.5],
+      [endR * Math.cos(rad) + arrowDx * 0.5, endR * Math.sin(rad) + arrowDy * 0.5]
+    ], {
+      strokeColor: rad >= 0 ? '#22c55e' : '#ef4444',
+      strokeWidth: 2
+    });
+  }
+
+  // Display texts
+  var turns = (deg / 360).toFixed(1);
+  var radFraction = (deg / 180).toFixed(2);
+  var dirText = deg > 0 ? "Chiều Dương (+)" : (deg < 0 ? "Chiều Âm (-)" : "Không quay");
+
+  board.create('text', [-1.6, 1.5, 'Số đo Độ: ' + deg + '°'], { fontSize: 13, color: '#fff' });
+  board.create('text', [-1.6, 1.3, 'Số đo Radian: ' + radFraction + 'π rad'], { fontSize: 13, color: '#60a5fa' });
+  board.create('text', [-1.6, 1.1, 'Số vòng quay: ' + turns + ' vòng'], { fontSize: 13, color: '#a855f7' });
+  board.create('text', [-1.6, 0.9, 'Hướng quay: ' + dirText], { fontSize: 13, color: deg >= 0 ? '#22c55e' : '#ef4444' });
+
+  board.unsuspendUpdate();
+}`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-1.8, 1.8, 1.8, -1.8],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'slider', name: 'deg', label: 'Góc quay (độ)', min: -720, max: 720, step: 10, defaultValue: 120 },
+        ],
+        mathContent: '1 \\text{ rad} = \\left(\\frac{180}{\\pi}\\right)^\\circ \\quad \\text{và} \\quad 1^\circ = \\frac{\\pi}{180} \\text{ rad}',
+        explanation: 'Khác với góc hình học thông thường (chỉ từ 0° đến 180°), góc lượng giác có hướng quay (ngược chiều kim đồng hồ là chiều dương, cùng chiều là chiều âm) và số đo có thể lớn hơn 360° (tương ứng nhiều vòng quay).',
+        keyInsights: [
+          'Góc lượng giác biểu diễn chuyển động quay tròn định hướng',
+          'Chiều dương (+): ngược chiều kim đồng hồ (màu xanh lá)',
+          'Chiều âm (-): cùng chiều kim đồng hồ (màu đỏ)',
+          'Công thức đổi: rad = deg × π / 180',
+        ],
+        tags: ['lượng giác', 'góc lượng giác', 'độ', 'radian'],
+        difficulty: 'basic',
+        isPublished: true,
+      },
+      // Demo 2.2: Đường tròn lượng giác (Toán 11 - Bài 1.2)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'goc-luong-giac-duong-tron',
+        title: 'Đường tròn lượng giác (Sin và Cos)',
+        description: 'Khám phá mối liên hệ giữa góc và giá trị sin, cos trên đường tròn đơn vị.',
+        order: 2,
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
@@ -339,7 +451,7 @@ function initSimulation(board, params) {
           { type: 'slider', name: 'angle', label: 'Góc α (độ)', min: 0, max: 360, step: 5, defaultValue: 45 },
         ],
         mathContent: '\\sin^2\\alpha + \\cos^2\\alpha = 1',
-        explanation: 'Trên đường tròn đơn vị (bán kính = 1), điểm P ứng với góc α có tọa độ (cos α, sin α). Hình chiếu lên trục Ox cho cos, lên trục Oy cho sin.',
+        explanation: 'Trên đường tròn đơn vị (bán kính = 1), điểm P ứng với góc lượng giác α có tọa độ (cos α, sin α). Hình chiếu lên trục Ox cho giá trị cos, lên Oy cho giá trị sin.',
         keyInsights: [
           'cos α = hoành độ điểm P trên đường tròn đơn vị',
           'sin α = tung độ điểm P trên đường tròn đơn vị',
@@ -348,6 +460,137 @@ function initSimulation(board, params) {
         ],
         tags: ['lượng giác', 'đường tròn đơn vị', 'sin', 'cos'],
         difficulty: 'basic',
+        isPublished: true,
+      },
+      // Demo 2.3: Giá trị Tan và Cot (Toán 11 - Bài 1.3)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'goc-luong-giac-duong-tron',
+        title: 'Giá trị Tan và Cot',
+        description: 'Khảo sát các trục số biểu diễn Tan (đường thẳng x = 1) và Cot (đường thẳng y = 1). Kéo slider để thay đổi góc α và xem giao điểm cắt của tia OM!',
+        order: 3,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+
+  var angle = params.angle * Math.PI / 180;
+  var deg = params.angle;
+
+  // Unit circle
+  board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8',
+    strokeWidth: 1.5,
+    highlight: false,
+    fixed: true
+  });
+
+  // OM line
+  var mx = Math.cos(angle);
+  var my = Math.sin(angle);
+  var M = board.create('point', [mx, my], {
+    name: 'M',
+    size: 4,
+    fillColor: '#fff',
+    strokeColor: '#6366f1'
+  });
+
+  // Radial line extending beyond circle
+  var OM = board.create('line', [[0,0], M], {
+    strokeColor: '#6366f1',
+    strokeWidth: 1.5,
+    dash: 1,
+    straightFirst: true,
+    straightLast: true
+  });
+
+  // Tan axis (x = 1)
+  board.create('line', [[1, -10], [1, 10]], {
+    strokeColor: '#f59e0b',
+    strokeWidth: 2,
+    highlight: false,
+    name: 'Trục Tan'
+  });
+  // Cot axis (y = 1)
+  board.create('line', [[-10, 1], [10, 1]], {
+    strokeColor: '#ec4899',
+    strokeWidth: 2,
+    highlight: false,
+    name: 'Trục Cot'
+  });
+
+  // Tan projection point: x = 1, y = tan(angle)
+  var showTan = (deg !== 90 && deg !== 270);
+  if (showTan) {
+    var tanValue = Math.tan(angle);
+    var T = board.create('point', [1, tanValue], {
+      name: 'T(1, tan α)',
+      size: 5,
+      fillColor: '#f59e0b',
+      strokeColor: '#d97706',
+      label: { fontSize: 12, offset: [10, 0] }
+    });
+    // Segment from origin to T
+    board.create('segment', [[1, 0], T], {
+      strokeColor: '#f59e0b',
+      strokeWidth: 3
+    });
+  }
+
+  // Cot projection point: x = cot(angle), y = 1
+  var showCot = (deg !== 0 && deg !== 180 && deg !== 360);
+  if (showCot) {
+    var cotValue = 1 / Math.tan(angle);
+    var C = board.create('point', [cotValue, 1], {
+      name: 'C(cot α, 1)',
+      size: 5,
+      fillColor: '#ec4899',
+      strokeColor: '#db2777',
+      label: { fontSize: 12, offset: [0, 10] }
+    });
+    // Segment from origin to C
+    board.create('segment', [[0, 1], C], {
+      strokeColor: '#ec4899',
+      strokeWidth: 3
+    });
+  }
+
+  // Value readouts
+  board.create('text', [-2.3, -1.8, 'α = ' + deg + '°'], { fontSize: 13, color: '#fff' });
+  if (showTan) {
+    board.create('text', [-2.3, -2.0, 'tan α = ' + Math.tan(angle).toFixed(3)], { fontSize: 13, color: '#f59e0b' });
+  } else {
+    board.create('text', [-2.3, -2.0, 'tan α = Không xác định'], { fontSize: 13, color: '#ef4444' });
+  }
+  if (showCot) {
+    board.create('text', [-2.3, -2.2, 'cot α = ' + (1/Math.tan(angle)).toFixed(3)], { fontSize: 13, color: '#ec4899' });
+  } else {
+    board.create('text', [-2.3, -2.2, 'cot α = Không xác định'], { fontSize: 13, color: '#ef4444' });
+  }
+
+  board.unsuspendUpdate();
+}`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-2.5, 2.5, 2.5, -2.5],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'slider', name: 'angle', label: 'Góc α (độ)', min: 0, max: 360, step: 5, defaultValue: 45 },
+        ],
+        mathContent: '\\tan\\alpha = \\frac{\\sin\\alpha}{\\cos\\alpha} \\quad \\text{và} \\quad \\cot\\alpha = \\frac{\\cos\\alpha}{\\sin\\alpha}',
+        explanation: 'Trục tan là trục thẳng đứng đi qua điểm (1,0) song song với Oy. Trục cot là trục nằm ngang đi qua điểm (0,1) song song với Ox. Giao điểm của tia OM kéo dài với các trục này xác định giá trị tan α và cot α.',
+        keyInsights: [
+          'tan α biểu diễn trên trục tiếp tuyến x = 1. Không xác định khi α = 90° hoặc 270°',
+          'cot α biểu diễn trên trục tiếp tuyến y = 1. Không xác định khi α = 0° hoặc 180°',
+          'Tia OM kéo dài về hai phía khi tìm giao điểm với trục',
+          'Khi góc α quay sát các giá trị không xác định, giao điểm chạy ra vô cực',
+        ],
+        tags: ['lượng giác', 'tan', 'cot', 'đường tròn đơn vị'],
+        difficulty: 'intermediate',
         isPublished: true,
       },
       // Demo 3: Khảo sát hàm số bậc 3 (Toán 12)
