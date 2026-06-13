@@ -114,6 +114,117 @@ function initSimulation(board, params) {
         difficulty: 'basic',
         isPublished: true,
       },
+      // Demo 1.2: Chiều biến thiên hàm số bậc hai (Toán 10)
+      {
+        grade: 10,
+        chapterSlug: 'ham-so-do-thi-va-ung-dung',
+        lessonSlug: 'ham-bac-hai-do-thi',
+        title: 'Chiều biến thiên hàm số bậc hai',
+        description: 'Khảo sát chiều biến thiên (đồng biến, nghịch biến) của hàm số bậc hai trên các khoảng. Di chuyển x0 để quan sát chiều mũi tên đồ thị!',
+        order: 2,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+
+  var a = params.a, b = params.b, c = params.c, x0 = params.x0;
+
+  // Draw parabola
+  var graph = board.create('functiongraph', [
+    function(x) { return a * x * x + b * x + c; }
+  ], {
+    strokeColor: '#3b82f6',
+    strokeWidth: 3,
+    highlight: false
+  });
+
+  // Vertex
+  if (a !== 0) {
+    var xV = -b / (2 * a);
+    var yV = a * xV * xV + b * xV + c;
+    board.create('point', [xV, yV], {
+      name: 'Đỉnh V',
+      size: 4,
+      fillColor: '#ef4444',
+      strokeColor: '#dc2626',
+      label: { fontSize: 13, offset: [10, 10] }
+    });
+
+    // Axis of symmetry
+    board.create('line', [[xV, 0], [xV, 1]], {
+      dash: 2,
+      strokeColor: 'rgba(255,255,255,0.4)',
+      strokeWidth: 1,
+      straightFirst: true,
+      straightLast: true,
+      highlight: false
+    });
+
+    var intervalText = "";
+    if (a > 0) {
+      if (x0 < xV) {
+        intervalText = "x = " + x0.toFixed(2) + " < -b/2a: Nghịch biến (đi xuống)";
+      } else {
+        intervalText = "x = " + x0.toFixed(2) + " > -b/2a: Đồng biến (đi lên)";
+      }
+    } else if (a < 0) {
+      if (x0 < xV) {
+        intervalText = "x = " + x0.toFixed(2) + " < -b/2a: Đồng biến (đi lên)";
+      } else {
+        intervalText = "x = " + x0.toFixed(2) + " > -b/2a: Nghịch biến (đi xuống)";
+      }
+    }
+
+    board.create('text', [-5.5, 5.0, intervalText], { fontSize: 14, cssClass: 'sim-formula', color: '#f59e0b' });
+
+    // Active point
+    var y0 = a * x0 * x0 + b * x0 + c;
+    board.create('point', [x0, y0], {
+      name: 'M',
+      size: 5,
+      fillColor: '#a855f7',
+      strokeColor: '#9333ea',
+      label: { fontSize: 12, offset: [10, 10] }
+    });
+
+    // Tangent arrow representing slope direction
+    var slope = 2 * a * x0 + b;
+    var angle = Math.atan(slope);
+    var dx = 0.5 * Math.cos(angle);
+    var dy = 0.5 * Math.sin(angle);
+    board.create('arrow', [[x0 - dx, y0 - dy], [x0 + dx, y0 + dy]], {
+      strokeColor: '#a855f7',
+      strokeWidth: 2.5
+    });
+  }
+
+  board.unsuspendUpdate();
+}`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-6, 6, 6, -4],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'slider', name: 'a', label: 'Hệ số a', min: -3, max: 3, step: 0.1, defaultValue: 1 },
+          { type: 'slider', name: 'b', label: 'Hệ số b', min: -5, max: 5, step: 0.5, defaultValue: 0 },
+          { type: 'slider', name: 'c', label: 'Hệ số c', min: -5, max: 5, step: 0.5, defaultValue: 0 },
+          { type: 'slider', name: 'x0', label: 'Điểm x0', min: -5, max: 5, step: 0.1, defaultValue: -2 },
+        ],
+        mathContent: 'y = ax^2 + bx + c \\quad \\text{và} \\quad x_V = -\\frac{b}{2a}',
+        explanation: 'Hàm số bậc hai đồng biến và nghịch biến trên các khoảng được chia bởi hoành độ đỉnh $x_V = -b/2a$. Hướng của mũi tên chỉ chiều biến thiên tại điểm $x_0$.',
+        keyInsights: [
+          'Hàm số đạt giá trị cực tiểu hoặc cực đại tại đỉnh V',
+          'a > 0: nghịch biến trên (-∞; -b/2a), đồng biến trên (-b/2a; +∞)',
+          'a < 0: đồng biến trên (-∞; -b/2a), nghịch biến trên (-b/2a; +∞)',
+          'Mũi tên chỉ hướng tiếp tuyến: hướng lên thể hiện đồng biến, hướng xuống thể hiện nghịch biến',
+        ],
+        tags: ['hàm số', 'chiều biến thiên', 'đồng biến', 'nghịch biến'],
+        difficulty: 'intermediate',
+        isPublished: true,
+      },
       // Demo 2: Đường tròn lượng giác (Toán 11)
       {
         grade: 11,

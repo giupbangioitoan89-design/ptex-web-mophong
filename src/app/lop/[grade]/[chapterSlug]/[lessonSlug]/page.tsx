@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import SimulationBoard from '@/components/SimulationBoard';
+import MultiSimLayout from '@/components/MultiSimLayout';
 import connectDB from '@/lib/db';
 import Chapter from '@/models/Chapter';
 import Simulation from '@/models/Simulation';
@@ -71,40 +71,13 @@ export default async function LessonSimulationPage({ params }: PageProps) {
             <h1>{lessonTitle}</h1>
             {simulations.length > 0 && (
               <p className="sim-desc">
-                {simulations.length} mô phỏng tương tác — Kéo thanh trượt để khám phá
+                {simulations.length} mô phỏng tương tác — Chọn tab để chuyển đổi
               </p>
             )}
           </div>
 
           {simulations.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-              {simulations.map((sim, index) => (
-                <div key={String(sim._id)} style={{ opacity: 0, animation: `fadeInUp 0.5s ease-out ${index * 0.15}s forwards` }}>
-                  {simulations.length > 1 && (
-                    <h2 style={{
-                      fontSize: '1.15rem', fontWeight: 600, marginBottom: '1rem',
-                      color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px',
-                    }}>
-                      <span style={{
-                        width: '28px', height: '28px', borderRadius: '8px',
-                        background: 'rgba(99,102,241,0.15)',
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary-light)',
-                      }}>
-                        {index + 1}
-                      </span>
-                      {sim.title}
-                    </h2>
-                  )}
-                  {simulations.length === 1 && sim.description && (
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-                      {sim.description}
-                    </p>
-                  )}
-                  <SimulationBoard simulation={JSON.parse(JSON.stringify(sim))} />
-                </div>
-              ))}
-            </div>
+            <MultiSimLayout simulations={JSON.parse(JSON.stringify(simulations))} />
           ) : (
             <div className="empty-state">
               <div className="empty-icon">🔬</div>
