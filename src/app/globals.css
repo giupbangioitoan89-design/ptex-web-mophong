@@ -312,40 +312,42 @@ body::after {
 }
 @media (min-width: 640px) { .sim-board iframe { min-height: 440px; } }
 
-/* Integrated Control Panel inside the Graph box at bottom */
+/* Floating Control Panel inside the Graph box in top-left corner */
 .board-control-panel {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.75rem 1.25rem;
-  background: rgba(15, 23, 42, 0.75) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 12px;
+  left: 12px;
+  right: auto;
+  bottom: auto;
+  width: 210px; /* Highly compact width */
+  max-width: calc(100% - 24px);
+  padding: 0.5rem 0.6rem;
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1.2px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  display: block;
   z-index: 10;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .control-list-horizontal {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem 1.75rem;
+  flex-direction: column; /* Stack controls vertically */
+  align-items: stretch;
+  gap: 0.38rem;
   width: 100%;
 }
 
 .board-control-panel .control-item {
-  flex: 1 1 180px;
-  min-width: 140px;
-  max-width: 280px;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .control-item label {
@@ -379,6 +381,40 @@ body::after {
 }
 .control-item input[type="range"]:active::-webkit-slider-thumb {
   transform: scale(1.15);
+}
+
+/* Control Panel Toggle Button */
+.control-panel-toggle-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 1.2px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 20px;
+  color: #f8fafc !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all var(--transition-fast) ease-in-out;
+}
+
+.control-panel-toggle-btn:hover {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: var(--color-primary-light) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+}
+
+.control-panel-toggle-btn:active {
+  transform: translateY(0);
 }
 
 /* Info panels — 2-column below controls */

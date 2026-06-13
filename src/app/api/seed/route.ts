@@ -34,11 +34,22 @@ export async function POST() {
 function initSimulation(board, params) {
   board.suspendUpdate();
 
-  var a = params.a, b = params.b, c = params.c;
+  board.a = params.a !== undefined ? params.a : 1;
+  board.b = params.b !== undefined ? params.b : 0;
+  board.c = params.c !== undefined ? params.c : 0;
+
+  // Create sliders inside JSXGraph
+  board.sliderA = createCustomSlider(board, [-5.0, -3.2], [-2.2, -3.2], -3, board.a, 3, 'a', 0.1, '#6366f1');
+  board.sliderB = createCustomSlider(board, [-1.4, -3.2], [1.4, -3.2], -5, board.b, 5, 'b', 0.5, '#fb923c');
+  board.sliderC = createCustomSlider(board, [2.2, -3.2], [5.0, -3.2], -5, board.c, 5, 'c', 0.5, '#c084fc');
+
+  board.sliderA.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'a', value: board.sliderA.Value() }, '*'); });
+  board.sliderB.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'b', value: board.sliderB.Value() }, '*'); });
+  board.sliderC.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'c', value: board.sliderC.Value() }, '*'); });
 
   // Draw parabola
-  var graph = board.create('functiongraph', [
-    function(x) { return a * x * x + b * x + c; }
+  board.create('functiongraph', [
+    function(x) { return board.a * x * x + board.b * x + board.c; }
   ], {
     strokeColor: '#6366f1',
     strokeWidth: 3,
@@ -46,30 +57,41 @@ function initSimulation(board, params) {
   });
 
   // Vertex
-  if (a !== 0) {
-    var xV = -b / (2 * a);
-    var yV = a * xV * xV + b * xV + c;
-    board.create('point', [xV, yV], {
-      name: 'Đỉnh',
-      size: 5,
-      fillColor: '#ef4444',
-      strokeColor: '#dc2626',
-      label: { fontSize: 14, offset: [10, 10] }
-    });
+  board.vertex = board.create('point', [
+    function() { return board.a !== 0 ? -board.b / (2 * board.a) : 0; },
+    function() {
+      if (board.a === 0) return 0;
+      var xV = -board.b / (2 * board.a);
+      return board.a * xV * xV + board.b * xV + board.c;
+    }
+  ], {
+    name: 'Đỉnh',
+    size: 5,
+    fillColor: '#ef4444',
+    strokeColor: '#dc2626',
+    visible: function() { return board.a !== 0; },
+    label: { fontSize: 14, offset: [10, 10] }
+  });
 
-    // Axis of symmetry
-    board.create('line', [[xV, 0], [xV, 1]], {
-      dash: 3,
-      strokeColor: '#9ca3af',
-      strokeWidth: 1,
-      straightFirst: true,
-      straightLast: true,
-      highlight: false
-    });
-  }
+  // Axis of symmetry
+  board.axis = board.create('line', [
+    [function() { return board.a !== 0 ? -board.b / (2 * board.a) : 0; }, 0],
+    [function() { return board.a !== 0 ? -board.b / (2 * board.a) : 0; }, 1]
+  ], {
+    dash: 3,
+    strokeColor: '#9ca3af',
+    strokeWidth: 1,
+    straightFirst: true,
+    straightLast: true,
+    visible: function() { return board.a !== 0; },
+    highlight: false
+  });
 
   // Y-intercept
-  board.create('point', [0, c], {
+  board.yIntercept = board.create('point', [
+    0,
+    function() { return board.c; }
+  ], {
     name: 'y-intercept',
     size: 4,
     fillColor: '#22c55e',
@@ -80,6 +102,7 @@ function initSimulation(board, params) {
   // Title text
   board.create('text', [-5.5, 5.5,
     function() {
+      var a = board.a, b = board.b, c = board.c;
       return 'y = ' + (a >= 0 ? '' : '-') + (Math.abs(a) === 1 ? '' : Math.abs(a).toFixed(1))
         + 'x² ' + (b >= 0 ? '+ ' : '- ') + Math.abs(b).toFixed(1)
         + 'x ' + (c >= 0 ? '+ ' : '- ') + Math.abs(c).toFixed(1);
@@ -87,7 +110,18 @@ function initSimulation(board, params) {
   ], { fontSize: 16, cssClass: 'sim-formula' });
 
   board.unsuspendUpdate();
-}`,
+}
+
+function updateSimulation(board, params) {
+  board.a = params.a !== undefined ? params.a : 1;
+  board.b = params.b !== undefined ? params.b : 0;
+  board.c = params.c !== undefined ? params.c : 0;
+
+  if (board.sliderA && !board.sliderA.isDragging && Math.abs(board.sliderA.Value() - board.a) > 1e-4) board.sliderA.setValue(board.a);
+  if (board.sliderB && !board.sliderB.isDragging && Math.abs(board.sliderB.Value() - board.b) > 1e-4) board.sliderB.setValue(board.b);
+  if (board.sliderC && !board.sliderC.isDragging && Math.abs(board.sliderC.Value() - board.c) > 1e-4) board.sliderC.setValue(board.c);
+}
+`,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
@@ -126,11 +160,25 @@ function initSimulation(board, params) {
 function initSimulation(board, params) {
   board.suspendUpdate();
 
-  var a = params.a, b = params.b, c = params.c, x0 = params.x0;
+  board.a = params.a !== undefined ? params.a : 1;
+  board.b = params.b !== undefined ? params.b : 0;
+  board.c = params.c !== undefined ? params.c : 0;
+  board.x0 = params.x0 !== undefined ? params.x0 : -2;
+
+  // Create sliders inside JSXGraph
+  board.sliderA = createCustomSlider(board, [-5.0, -2.6], [-2.2, -2.6], -3, board.a, 3, 'a', 0.1, '#6366f1');
+  board.sliderB = createCustomSlider(board, [-1.4, -2.6], [1.4, -2.6], -5, board.b, 5, 'b', 0.5, '#fb923c');
+  board.sliderC = createCustomSlider(board, [2.2, -2.6], [5.0, -2.6], -5, board.c, 5, 'c', 0.5, '#c084fc');
+  board.sliderX0 = createCustomSlider(board, [-2.5, -3.4], [2.5, -3.4], -5, board.x0, 5, 'x0', 0.1, '#10b981');
+
+  board.sliderA.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'a', value: board.sliderA.Value() }, '*'); });
+  board.sliderB.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'b', value: board.sliderB.Value() }, '*'); });
+  board.sliderC.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'c', value: board.sliderC.Value() }, '*'); });
+  board.sliderX0.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'x0', value: board.sliderX0.Value() }, '*'); });
 
   // Draw parabola
-  var graph = board.create('functiongraph', [
-    function(x) { return a * x * x + b * x + c; }
+  board.create('functiongraph', [
+    function(x) { return board.a * x * x + board.b * x + board.c; }
   ], {
     strokeColor: '#3b82f6',
     strokeWidth: 3,
@@ -138,67 +186,104 @@ function initSimulation(board, params) {
   });
 
   // Vertex
-  if (a !== 0) {
-    var xV = -b / (2 * a);
-    var yV = a * xV * xV + b * xV + c;
-    board.create('point', [xV, yV], {
-      name: 'Đỉnh V',
-      size: 4,
-      fillColor: '#ef4444',
-      strokeColor: '#dc2626',
-      label: { fontSize: 13, offset: [10, 10] }
-    });
+  board.vertex = board.create('point', [
+    function() { return board.a !== 0 ? -board.b / (2 * board.a) : 0; },
+    function() {
+      if (board.a === 0) return 0;
+      var xV = -board.b / (2 * board.a);
+      return board.a * xV * xV + board.b * xV + board.c;
+    }
+  ], {
+    name: 'Đỉnh V',
+    size: 4,
+    fillColor: '#ef4444',
+    strokeColor: '#dc2626',
+    visible: function() { return board.a !== 0; },
+    label: { fontSize: 13, offset: [10, 10] }
+  });
 
-    // Axis of symmetry
-    board.create('line', [[xV, 0], [xV, 1]], {
-      dash: 2,
-      strokeColor: 'rgba(255,255,255,0.4)',
-      strokeWidth: 1,
-      straightFirst: true,
-      straightLast: true,
-      highlight: false
-    });
+  // Axis of symmetry
+  board.axis = board.create('line', [
+    [function() { return board.a !== 0 ? -board.b / (2 * board.a) : 0; }, 0],
+    [function() { return board.a !== 0 ? -board.b / (2 * board.a) : 0; }, 1]
+  ], {
+    dash: 2,
+    strokeColor: 'rgba(255,255,255,0.4)',
+    strokeWidth: 1,
+    straightFirst: true,
+    straightLast: true,
+    visible: function() { return board.a !== 0; },
+    highlight: false
+  });
 
-    var intervalText = "";
-    if (a > 0) {
-      if (x0 < xV) {
-        intervalText = "x = " + x0.toFixed(2) + " < -b/2a: Nghịch biến (đi xuống)";
+  // Interval text
+  board.create('text', [-5.5, 5.0,
+    function() {
+      var a = board.a, b = board.b, x0 = board.x0;
+      if (a === 0) return "Hàm số bậc nhất";
+      var xV = -b / (2 * a);
+      if (a > 0) {
+        if (x0 < xV) {
+          return "x = " + x0.toFixed(2) + " < -b/2a: Nghịch biến (đi xuống)";
+        } else {
+          return "x = " + x0.toFixed(2) + " > -b/2a: Đồng biến (đi lên)";
+        }
       } else {
-        intervalText = "x = " + x0.toFixed(2) + " > -b/2a: Đồng biến (đi lên)";
-      }
-    } else if (a < 0) {
-      if (x0 < xV) {
-        intervalText = "x = " + x0.toFixed(2) + " < -b/2a: Đồng biến (đi lên)";
-      } else {
-        intervalText = "x = " + x0.toFixed(2) + " > -b/2a: Nghịch biến (đi xuống)";
+        if (x0 < xV) {
+          return "x = " + x0.toFixed(2) + " < -b/2a: Đồng biến (đi lên)";
+        } else {
+          return "x = " + x0.toFixed(2) + " > -b/2a: Nghịch biến (đi xuống)";
+        }
       }
     }
+  ], { fontSize: 14, cssClass: 'sim-formula', color: '#f59e0b' });
 
-    board.create('text', [-5.5, 5.0, intervalText], { fontSize: 14, cssClass: 'sim-formula', color: '#f59e0b' });
+  // Active point
+  board.M = board.create('point', [
+    function() { return board.x0; },
+    function() { return board.a * board.x0 * board.x0 + board.b * board.x0 + board.c; }
+  ], {
+    name: 'M',
+    size: 5,
+    fillColor: '#a855f7',
+    strokeColor: '#9333ea',
+    label: { fontSize: 12, offset: [10, 10] }
+  });
 
-    // Active point
+  // Tangent arrow representing slope direction
+  board.arrowStart = board.create('point', [0, 0], { visible: false });
+  board.arrowEnd = board.create('point', [0, 0], { visible: false });
+  board.arrow = board.create('arrow', [board.arrowStart, board.arrowEnd], {
+    strokeColor: '#a855f7',
+    strokeWidth: 2.5
+  });
+
+  board.on('update', function() {
+    var a = board.a, b = board.b, c = board.c, x0 = board.x0;
     var y0 = a * x0 * x0 + b * x0 + c;
-    board.create('point', [x0, y0], {
-      name: 'M',
-      size: 5,
-      fillColor: '#a855f7',
-      strokeColor: '#9333ea',
-      label: { fontSize: 12, offset: [10, 10] }
-    });
-
-    // Tangent arrow representing slope direction
     var slope = 2 * a * x0 + b;
     var angle = Math.atan(slope);
     var dx = 0.5 * Math.cos(angle);
     var dy = 0.5 * Math.sin(angle);
-    board.create('arrow', [[x0 - dx, y0 - dy], [x0 + dx, y0 + dy]], {
-      strokeColor: '#a855f7',
-      strokeWidth: 2.5
-    });
-  }
+    board.arrowStart.setPosition(JXG.COORDS_BY_USER, [x0 - dx, y0 - dy]);
+    board.arrowEnd.setPosition(JXG.COORDS_BY_USER, [x0 + dx, y0 + dy]);
+  });
 
   board.unsuspendUpdate();
-}`,
+}
+
+function updateSimulation(board, params) {
+  board.a = params.a !== undefined ? params.a : 1;
+  board.b = params.b !== undefined ? params.b : 0;
+  board.c = params.c !== undefined ? params.c : 0;
+  board.x0 = params.x0 !== undefined ? params.x0 : -2;
+
+  if (board.sliderA && !board.sliderA.isDragging && Math.abs(board.sliderA.Value() - board.a) > 1e-4) board.sliderA.setValue(board.a);
+  if (board.sliderB && !board.sliderB.isDragging && Math.abs(board.sliderB.Value() - board.b) > 1e-4) board.sliderB.setValue(board.b);
+  if (board.sliderC && !board.sliderC.isDragging && Math.abs(board.sliderC.Value() - board.c) > 1e-4) board.sliderC.setValue(board.c);
+  if (board.sliderX0 && !board.sliderX0.isDragging && Math.abs(board.sliderX0.Value() - board.x0) > 1e-4) board.sliderX0.setValue(board.x0);
+}
+`,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
@@ -225,7 +310,7 @@ function initSimulation(board, params) {
         difficulty: 'intermediate',
         isPublished: true,
       },
-      // Demo 2.1: Góc lượng giác và Chiều quay (Toán 11 - Bài 1.1)
+      // Demo 2.1: Đường tròn định hướng & Chiều quay (Toán 11)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
@@ -235,6 +320,8 @@ function initSimulation(board, params) {
         order: 1,
         simulationCode: `
 function initSimulation(board, params) {
+  board.suspendUpdate();
+
   // Unit circle
   board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8',
@@ -309,29 +396,56 @@ function initSimulation(board, params) {
     strokeWidth: 2
   });
 
+  // Create native sliders inside SVG
+  board.sliderDeg = createCustomSlider(board, [-1.4, -1.35], [1.4, -1.35], -720, params.deg !== undefined ? params.deg : 120, 720, 'Góc', 10, '#6366f1');
+  
+  var specialDegVals = ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'];
+  board.sliderSpecialDeg = createCustomSlider(board, [-1.4, -1.35], [1.4, -1.35], 0, params.specialDeg !== undefined ? params.specialDeg : 4, 16, 'Góc đặc biệt', 1, '#fb923c', specialDegVals);
+  
+  var specialRadVals = ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'];
+  board.sliderSpecialRad = createCustomSlider(board, [-1.4, -1.35], [1.4, -1.35], 0, params.specialRad !== undefined ? params.specialRad : 4, 16, 'Radian đặc biệt', 1, '#c084fc', specialRadVals);
+
+  board.sliderDeg.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'deg', value: board.sliderDeg.Value() }, '*'); });
+  board.sliderSpecialDeg.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialDeg', value: board.sliderSpecialDeg.Value() }, '*'); });
+  board.sliderSpecialRad.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialRad', value: board.sliderSpecialRad.Value() }, '*'); });
+
+  board.unsuspendUpdate();
   updateSimulation(board, params);
 }
 
 function updateSimulation(board, params) {
+  board.suspendUpdate();
   var mode = params.mode || 'Kéo tự do';
   var deg = 120;
+  var idx = 4;
+  
+  board.sliderDeg.setAttribute({ visible: mode === 'Kéo tự do' });
+  board.sliderSpecialDeg.setAttribute({ visible: mode === 'Góc độ đặc biệt' });
+  board.sliderSpecialRad.setAttribute({ visible: mode === 'Góc radian đặc biệt' });
+
   if (mode === 'Kéo tự do') {
     deg = params.deg !== undefined ? params.deg : 120;
+    if (board.sliderDeg && !board.sliderDeg.isDragging && Math.abs(board.sliderDeg.Value() - deg) > 1e-4) board.sliderDeg.setValue(deg);
   } else if (mode === 'Góc độ đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    var idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 4;
+    idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 4;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecialDeg && !board.sliderSpecialDeg.isDragging && Math.abs(board.sliderSpecialDeg.Value() - idx) > 1e-4) board.sliderSpecialDeg.setValue(idx);
   } else if (mode === 'Góc radian đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    var idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 4;
+    idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 4;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecialRad && !board.sliderSpecialRad.isDragging && Math.abs(board.sliderSpecialRad.Value() - idx) > 1e-4) board.sliderSpecialRad.setValue(idx);
   }
+
   var rad = deg * Math.PI / 180;
   board.radVal = rad;
 
   var px = Math.cos(rad);
   var py = Math.sin(rad);
-  board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+  if (board.M && !board.M.isDragging) {
+    board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+  }
 
   // Update arrow head positions
   var absRad = Math.abs(rad);
@@ -393,6 +507,7 @@ function updateSimulation(board, params) {
     { label: 'Số vòng k:', value: turns.toString(), labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; background: rgba(249, 115, 22, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: bold;' },
     { label: 'Vị trí:', value: quadText, labelStyle: 'color: #c084fc;', valueStyle: 'color: #e879f9; font-weight: bold;' }
   ]);
+  board.unsuspendUpdate();
 }
 `,
         visualizationType: 'jsxgraph',
@@ -421,7 +536,7 @@ function updateSimulation(board, params) {
         difficulty: 'basic',
         isPublished: true,
       },
-      // Demo 2.2: Hệ thức Chasles cho các góc lượng giác (Toán 11 - Bài 1.2)
+      // Demo 2.2: Hệ thức Chasles cho các góc lượng giác (Toán 11)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
@@ -508,6 +623,24 @@ function initSimulation(board, params) {
     selection: 'minor'
   });
 
+  // Create native sliders inside SVG
+  board.sliderU = createCustomSlider(board, [-1.6, -1.35], [-0.7, -1.35], 0, params.angleU !== undefined ? params.angleU : 30, 360, 'U', 5, '#10b981');
+  board.sliderV = createCustomSlider(board, [-0.45, -1.35], [0.45, -1.35], 0, params.angleV !== undefined ? params.angleV : 120, 360, 'V', 5, '#fb923c');
+  board.sliderW = createCustomSlider(board, [0.7, -1.35], [1.6, -1.35], 0, params.angleW !== undefined ? params.angleW : 270, 360, 'W', 5, '#c084fc');
+
+  var specialDegVals = ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'];
+  board.sliderSpecU = createCustomSlider(board, [-1.6, -1.35], [-0.7, -1.35], 0, params.specialU !== undefined ? params.specialU : 1, 16, 'U', 1, '#10b981', specialDegVals);
+  board.sliderSpecV = createCustomSlider(board, [-0.45, -1.35], [0.45, -1.35], 0, params.specialV !== undefined ? params.specialV : 5, 16, 'V', 1, '#fb923c', specialDegVals);
+  board.sliderSpecW = createCustomSlider(board, [0.7, -1.35], [1.6, -1.35], 0, params.specialW !== undefined ? params.specialW : 12, 16, 'W', 1, '#c084fc', specialDegVals);
+
+  board.sliderU.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleU', value: board.sliderU.Value() }, '*'); });
+  board.sliderV.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleV', value: board.sliderV.Value() }, '*'); });
+  board.sliderW.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleW', value: board.sliderW.Value() }, '*'); });
+
+  board.sliderSpecU.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialU', value: board.sliderSpecU.Value() }, '*'); });
+  board.sliderSpecV.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialV', value: board.sliderSpecV.Value() }, '*'); });
+  board.sliderSpecW.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialW', value: board.sliderSpecW.Value() }, '*'); });
+
   board.unsuspendUpdate();
   updateSimulation(board, params);
 }
@@ -516,28 +649,42 @@ function updateSimulation(board, params) {
   board.suspendUpdate();
   var mode = params.mode || 'Kéo tự do';
   var degU = 30, degV = 120, degW = 270;
+  var idxU = 1, idxV = 5, idxW = 12;
   
+  board.sliderU.setAttribute({ visible: mode === 'Kéo tự do' });
+  board.sliderV.setAttribute({ visible: mode === 'Kéo tự do' });
+  board.sliderW.setAttribute({ visible: mode === 'Kéo tự do' });
+  board.sliderSpecU.setAttribute({ visible: mode !== 'Kéo tự do' });
+  board.sliderSpecV.setAttribute({ visible: mode !== 'Kéo tự do' });
+  board.sliderSpecW.setAttribute({ visible: mode !== 'Kéo tự do' });
+
   if (mode === 'Kéo tự do') {
     degU = params.angleU !== undefined ? params.angleU : 30;
     degV = params.angleV !== undefined ? params.angleV : 120;
     degW = params.angleW !== undefined ? params.angleW : 270;
+    if (board.sliderU && !board.sliderU.isDragging && Math.abs(board.sliderU.Value() - degU) > 1e-4) board.sliderU.setValue(degU);
+    if (board.sliderV && !board.sliderV.isDragging && Math.abs(board.sliderV.Value() - degV) > 1e-4) board.sliderV.setValue(degV);
+    if (board.sliderW && !board.sliderW.isDragging && Math.abs(board.sliderW.Value() - degW) > 1e-4) board.sliderW.setValue(degW);
   } else {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    var idxU = params.specialU !== undefined ? Math.round(params.specialU) : 1;
-    var idxV = params.specialV !== undefined ? Math.round(params.specialV) : 5;
-    var idxW = params.specialW !== undefined ? Math.round(params.specialW) : 12;
+    idxU = params.specialU !== undefined ? Math.round(params.specialU) : 1;
+    idxV = params.specialV !== undefined ? Math.round(params.specialV) : 5;
+    idxW = params.specialW !== undefined ? Math.round(params.specialW) : 12;
     degU = specialDegVals[idxU] || 0;
     degV = specialDegVals[idxV] || 0;
     degW = specialDegVals[idxW] || 0;
+    if (board.sliderSpecU && !board.sliderSpecU.isDragging && Math.abs(board.sliderSpecU.Value() - idxU) > 1e-4) board.sliderSpecU.setValue(idxU);
+    if (board.sliderSpecV && !board.sliderSpecV.isDragging && Math.abs(board.sliderSpecV.Value() - idxV) > 1e-4) board.sliderSpecV.setValue(idxV);
+    if (board.sliderSpecW && !board.sliderSpecW.isDragging && Math.abs(board.sliderSpecW.Value() - idxW) > 1e-4) board.sliderSpecW.setValue(idxW);
   }
 
   var radU = degU * Math.PI / 180;
   var radV = degV * Math.PI / 180;
   var radW = degW * Math.PI / 180;
 
-  board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
-  board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
-  board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
+  if (board.U && !board.U.isDragging) board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
+  if (board.V && !board.V.isDragging) board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
+  if (board.W && !board.W.isDragging) board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
 
   var diffUV = ((degV - degU) % 360 + 360) % 360;
   var diffVW = ((degW - degV) % 360 + 360) % 360;
@@ -584,13 +731,13 @@ function updateSimulation(board, params) {
         keyInsights: [
           'Hệ thức đúng với mọi góc lượng giác, bất kể thứ tự các tia',
           'Chênh lệch k * 360° thể hiện số vòng quay bù trừ',
-          'Kéo các điểm U, V, W để kiểm tra hệ thức tự động thay đổi k',
+          'Kéo các điểm U, V, W hoặc điều chỉnh thanh trượt để tự động thay đổi k',
         ],
         tags: ['lượng giác', 'hệ thức chasles', 'góc lượng giác'],
         difficulty: 'intermediate',
         isPublished: true,
       },
-      // Demo 2.3: Tính độ dài cung tròn (Toán 11 - Bài 1.3)
+      // Demo 2.3: Tính độ dài cung tròn (Toán 11)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
@@ -747,6 +894,22 @@ function initSimulation(board, params) {
     highlight: false
   });
 
+  // Create native sliders inside SVG
+  board.sliderR = createCustomSlider(board, [-1.2, -1.45], [0.3, -1.45], 0.8, params.R !== undefined ? params.R : 1.0, 1.2, 'Bán kính R', 0.1, '#6366f1');
+  
+  board.sliderAngle = createCustomSlider(board, [1.0, -1.45], [3.5, -1.45], 0, params.angle !== undefined ? params.angle : 90, 360, 'Góc', 5, '#fb923c');
+  
+  var specialDegVals = ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'];
+  board.sliderSpecDeg = createCustomSlider(board, [1.0, -1.45], [3.5, -1.45], 0, params.specialDeg !== undefined ? params.specialDeg : 4, 16, 'Góc đặc biệt', 1, '#fb923c', specialDegVals);
+  
+  var specialRadVals = ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'];
+  board.sliderSpecRad = createCustomSlider(board, [1.0, -1.45], [3.5, -1.45], 0, params.specialRad !== undefined ? params.specialRad : 4, 16, 'Radian đặc biệt', 1, '#c084fc', specialRadVals);
+
+  board.sliderR.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'R', value: board.sliderR.Value() }, '*'); });
+  board.sliderAngle.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angle', value: board.sliderAngle.Value() }, '*'); });
+  board.sliderSpecDeg.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialDeg', value: board.sliderSpecDeg.Value() }, '*'); });
+  board.sliderSpecRad.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialRad', value: board.sliderSpecRad.Value() }, '*'); });
+
   board.unsuspendUpdate();
   updateSimulation(board, params);
 }
@@ -758,22 +921,33 @@ function updateSimulation(board, params) {
   var deg = 90;
   var idx = 4;
   
+  board.sliderAngle.setAttribute({ visible: mode === 'Kéo tự do' });
+  board.sliderSpecDeg.setAttribute({ visible: mode === 'Góc độ đặc biệt' });
+  board.sliderSpecRad.setAttribute({ visible: mode === 'Góc radian đặc biệt' });
+
+  if (board.sliderR && !board.sliderR.isDragging && Math.abs(board.sliderR.Value() - R) > 1e-4) board.sliderR.setValue(R);
+
   if (mode === 'Kéo tự do') {
     deg = params.angle !== undefined ? params.angle : 90;
+    if (board.sliderAngle && !board.sliderAngle.isDragging && Math.abs(board.sliderAngle.Value() - deg) > 1e-4) board.sliderAngle.setValue(deg);
   } else if (mode === 'Góc độ đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
     idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 4;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecDeg && !board.sliderSpecDeg.isDragging && Math.abs(board.sliderSpecDeg.Value() - idx) > 1e-4) board.sliderSpecDeg.setValue(idx);
   } else if (mode === 'Góc radian đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
     idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 4;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecRad && !board.sliderSpecRad.isDragging && Math.abs(board.sliderSpecRad.Value() - idx) > 1e-4) board.sliderSpecRad.setValue(idx);
   }
 
   var rad = deg * Math.PI / 180;
   var px = R * Math.cos(rad);
   var py = R * Math.sin(rad);
-  board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+  if (board.M && !board.M.isDragging) {
+    board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+  }
 
   var l = R * rad;
 
@@ -826,7 +1000,7 @@ function updateSimulation(board, params) {
         difficulty: 'basic',
         isPublished: true,
       },
-      // Demo 2.4: Bảng dấu & Giá trị Lượng giác
+      // Demo 2.4: Bảng dấu & Giá trị Lượng giác (Toán 11)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
@@ -837,7 +1011,6 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   // Highlight Quadrants
-  // Bounding box: [-2, 2.2, 2, -2.5]
   board.quad1 = board.create('polygon', [[0,0], [2.2, 0], [2.2, 2.2], [0, 2.2]], {
     fillColor: '#6366f1', fillOpacity: 0.01, borders: { visible: false }, vertices: { visible: false }
   });
@@ -973,31 +1146,55 @@ function initSimulation(board, params) {
     withLabel: false
   });
 
+  // Create native sliders inside SVG
+  board.sliderAngle = createCustomSlider(board, [-1.5, -1.5], [1.5, -1.5], 0, params.angle !== undefined ? params.angle : 45, 360, 'Góc', 5, '#fb923c');
+  
+  var specialDegVals = ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'];
+  board.sliderSpecDeg = createCustomSlider(board, [-1.5, -1.5], [1.5, -1.5], 0, params.specialDeg !== undefined ? params.specialDeg : 2, 16, 'Góc đặc biệt', 1, '#fb923c', specialDegVals);
+  
+  var specialRadVals = ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'];
+  board.sliderSpecRad = createCustomSlider(board, [-1.5, -1.5], [1.5, -1.5], 0, params.specialRad !== undefined ? params.specialRad : 2, 16, 'Radian đặc biệt', 1, '#c084fc', specialRadVals);
+
+  board.sliderAngle.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angle', value: board.sliderAngle.Value() }, '*'); });
+  board.sliderSpecDeg.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialDeg', value: board.sliderSpecDeg.Value() }, '*'); });
+  board.sliderSpecRad.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialRad', value: board.sliderSpecRad.Value() }, '*'); });
+
   updateSimulation(board, params);
 }
 
 function updateSimulation(board, params) {
   var mode = params.mode || 'Kéo tự do';
   var deg = 45;
+  var idx = 2;
+
+  board.sliderAngle.setAttribute({ visible: mode === 'Kéo tự do' });
+  board.sliderSpecDeg.setAttribute({ visible: mode === 'Góc độ đặc biệt' });
+  board.sliderSpecRad.setAttribute({ visible: mode === 'Góc radian đặc biệt' });
+  
   if (mode === 'Kéo tự do') {
     deg = params.angle !== undefined ? params.angle : 45;
+    if (board.sliderAngle && !board.sliderAngle.isDragging && Math.abs(board.sliderAngle.Value() - deg) > 1e-4) board.sliderAngle.setValue(deg);
   } else if (mode === 'Góc độ đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    var idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 2;
+    idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 2;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecDeg && !board.sliderSpecDeg.isDragging && Math.abs(board.sliderSpecDeg.Value() - idx) > 1e-4) board.sliderSpecDeg.setValue(idx);
   } else if (mode === 'Góc radian đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    var idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 2;
+    idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 2;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecRad && !board.sliderSpecRad.isDragging && Math.abs(board.sliderSpecRad.Value() - idx) > 1e-4) board.sliderSpecRad.setValue(idx);
   }
   var angle = deg * Math.PI / 180;
 
   var px = Math.cos(angle);
   var py = Math.sin(angle);
 
-  board.P.setPosition(JXG.COORDS_BY_USER, [px, py]);
-  board.H.setPosition(JXG.COORDS_BY_USER, [px, 0]);
-  board.K.setPosition(JXG.COORDS_BY_USER, [0, py]);
+  if (board.P && !board.P.isDragging) {
+    board.P.setPosition(JXG.COORDS_BY_USER, [px, py]);
+  }
+  board.H.setPosition(JXG.COORDS_BY_USER, [board.P.X(), 0]);
+  board.K.setPosition(JXG.COORDS_BY_USER, [0, board.P.Y()]);
 
   // Update angle arc
   board.arcEnd.setPosition(JXG.COORDS_BY_USER, [0.3 * px, 0.3 * py]);
@@ -1089,7 +1286,7 @@ function updateSimulation(board, params) {
         difficulty: 'basic',
         isPublished: true,
       },
-      // Demo 2.5: Góc liên quan đặc biệt (Toán 11 - Bài 1.3)
+      // Demo 2.5: Góc liên quan đặc biệt (Toán 11)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
@@ -1251,6 +1448,19 @@ function initSimulation(board, params) {
     visible: false
   });
 
+  // Create native sliders inside SVG
+  board.sliderAngle = createCustomSlider(board, [-1.4, -1.35], [1.4, -1.35], 0, params.angle !== undefined ? params.angle : 45, 360, 'Góc', 5, '#fb923c');
+  
+  var specialDegVals = ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'];
+  board.sliderSpecDeg = createCustomSlider(board, [-1.4, -1.35], [1.4, -1.35], 0, params.specialDeg !== undefined ? params.specialDeg : 2, 16, 'Góc đặc biệt', 1, '#fb923c', specialDegVals);
+  
+  var specialRadVals = ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'];
+  board.sliderSpecRad = createCustomSlider(board, [-1.4, -1.35], [1.4, -1.35], 0, params.specialRad !== undefined ? params.specialRad : 2, 16, 'Radian đặc biệt', 1, '#c084fc', specialRadVals);
+
+  board.sliderAngle.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angle', value: board.sliderAngle.Value() }, '*'); });
+  board.sliderSpecDeg.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialDeg', value: board.sliderSpecDeg.Value() }, '*'); });
+  board.sliderSpecRad.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialRad', value: board.sliderSpecRad.Value() }, '*'); });
+
   board.unsuspendUpdate();
   updateSimulation(board, params);
 }
@@ -1262,22 +1472,31 @@ function updateSimulation(board, params) {
   var deg = 45;
   var idx = 2;
   
+  board.sliderAngle.setAttribute({ visible: mode === 'Kéo tự do' });
+  board.sliderSpecDeg.setAttribute({ visible: mode === 'Góc độ đặc biệt' });
+  board.sliderSpecRad.setAttribute({ visible: mode === 'Góc radian đặc biệt' });
+
   if (mode === 'Kéo tự do') {
     deg = params.angle !== undefined ? params.angle : 45;
+    if (board.sliderAngle && !board.sliderAngle.isDragging && Math.abs(board.sliderAngle.Value() - deg) > 1e-4) board.sliderAngle.setValue(deg);
   } else if (mode === 'Góc độ đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
     idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 2;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecDeg && !board.sliderSpecDeg.isDragging && Math.abs(board.sliderSpecDeg.Value() - idx) > 1e-4) board.sliderSpecDeg.setValue(idx);
   } else if (mode === 'Góc radian đặc biệt') {
     var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
     idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 2;
     deg = specialDegVals[idx] || 0;
+    if (board.sliderSpecRad && !board.sliderSpecRad.isDragging && Math.abs(board.sliderSpecRad.Value() - idx) > 1e-4) board.sliderSpecRad.setValue(idx);
   }
 
   var angle = deg * Math.PI / 180;
   var mx = Math.cos(angle);
   var my = Math.sin(angle);
-  board.M.setPosition(JXG.COORDS_BY_USER, [mx, my]);
+  if (board.M && !board.M.isDragging) {
+    board.M.setPosition(JXG.COORDS_BY_USER, [mx, my]);
+  }
 
   // Determine M' based on relation
   var symAngle = 0;
@@ -1353,10 +1572,8 @@ function updateSimulation(board, params) {
   else if (symFrac === 1) symRadText = 'π';
   else if (symFrac === -1) symRadText = '-π';
   else if (Number.isInteger(symFrac * 6)) {
-    // try to write as nice fraction
     var num = Math.round(symFrac * 6);
     var den = 6;
-    // simplify fraction
     function gcd(a, b) { return b ? gcd(b, a % b) : a; }
     var g = Math.abs(gcd(num, den));
     num = num / g;
@@ -1434,7 +1651,8 @@ function updateSimulation(board, params) {
         tags: ['lượng giác', 'đối xứng', 'góc lượng giác', 'liên hệ đặc biệt'],
         difficulty: 'intermediate',
         isPublished: true,
-      },      // Demo 3: Khảo sát hàm số bậc 3 (Toán 12)
+      },
+      // Demo 3: Khảo sát hàm số bậc 3 (Toán 12)
       {
         grade: 12,
         chapterSlug: 'ung-dung-dao-ham-ksdt',
@@ -1445,13 +1663,26 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
+  board.a = params.a !== undefined ? params.a : 1;
+  board.b = params.b !== undefined ? params.b : 0;
+  board.c = params.c !== undefined ? params.c : -3;
+  board.d = params.d !== undefined ? params.d : 0;
 
-  var a = params.a, b = params.b, c = params.c, d = params.d;
+  // Create native sliders inside SVG
+  board.sliderA = createCustomSlider(board, [-5.0, -5.0], [-2.8, -5.0], -2, board.a, 2, 'a', 0.1, '#6366f1');
+  board.sliderB = createCustomSlider(board, [-2.2, -5.0], [0.0, -5.0], -5, board.b, 5, 'b', 0.5, '#fb923c');
+  board.sliderC = createCustomSlider(board, [0.6, -5.0], [2.8, -5.0], -5, board.c, 5, 'c', 0.5, '#c084fc');
+  board.sliderD = createCustomSlider(board, [3.4, -5.0], [5.6, -5.0], -5, board.d, 5, 'd', 0.5, '#10b981');
+
+  board.sliderA.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'a', value: board.sliderA.Value() }, '*'); });
+  board.sliderB.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'b', value: board.sliderB.Value() }, '*'); });
+  board.sliderC.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'c', value: board.sliderC.Value() }, '*'); });
+  board.sliderD.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'd', value: board.sliderD.Value() }, '*'); });
 
   // f(x) = ax³ + bx² + cx + d
-  var f = function(x) { return a*x*x*x + b*x*x + c*x + d; };
+  var f = function(x) { return board.a*x*x*x + board.b*x*x + board.c*x + board.d; };
   // f'(x) = 3ax² + 2bx + c
-  var df = function(x) { return 3*a*x*x + 2*b*x + c; };
+  var df = function(x) { return 3*board.a*x*x + 2*board.b*x + board.c; };
 
   // Main function graph
   board.create('functiongraph', [f], {
@@ -1468,49 +1699,79 @@ function initSimulation(board, params) {
     highlight: false
   });
 
-  // Find critical points: 3ax² + 2bx + c = 0
-  if (a !== 0) {
-    var disc = 4*b*b - 12*a*c;
-    if (disc > 0) {
-      var x1 = (-2*b - Math.sqrt(disc)) / (6*a);
-      var x2 = (-2*b + Math.sqrt(disc)) / (6*a);
+  // Critical points
+  board.cp1 = board.create('point', [0, 0], {
+    name: 'CĐ/CT',
+    size: 5,
+    fillColor: '#ef4444',
+    strokeColor: '#dc2626',
+    visible: false,
+    label: { fontSize: 12, offset: [10, 10] }
+  });
 
-      board.create('point', [x1, f(x1)], {
-        name: 'CĐ/CT',
-        size: 5,
-        fillColor: '#ef4444',
-        strokeColor: '#dc2626',
-        label: { fontSize: 12, offset: [10, 10] }
-      });
+  board.cp2 = board.create('point', [0, 0], {
+    name: 'CĐ/CT',
+    size: 5,
+    fillColor: '#ef4444',
+    strokeColor: '#dc2626',
+    visible: false,
+    label: { fontSize: 12, offset: [10, -15] }
+  });
 
-      board.create('point', [x2, f(x2)], {
-        name: 'CĐ/CT',
-        size: 5,
-        fillColor: '#ef4444',
-        strokeColor: '#dc2626',
-        label: { fontSize: 12, offset: [10, -15] }
-      });
+  // Inflection point
+  board.inflection = board.create('point', [0, 0], {
+    name: 'Uốn',
+    size: 4,
+    fillColor: '#22c55e',
+    strokeColor: '#16a34a',
+    visible: false,
+    label: { fontSize: 12, offset: [-30, 10] }
+  });
+
+  board.on('update', function() {
+    var a = board.a, b = board.b, c = board.c, d = board.d;
+    if (a !== 0) {
+      var disc = 4*b*b - 12*a*c;
+      if (disc > 0) {
+        var x1 = (-2*b - Math.sqrt(disc)) / (6*a);
+        var x2 = (-2*b + Math.sqrt(disc)) / (6*a);
+        board.cp1.setPosition(JXG.COORDS_BY_USER, [x1, f(x1)]);
+        board.cp1.setAttribute({ visible: true });
+        board.cp2.setPosition(JXG.COORDS_BY_USER, [x2, f(x2)]);
+        board.cp2.setAttribute({ visible: true });
+      } else {
+        board.cp1.setAttribute({ visible: false });
+        board.cp2.setAttribute({ visible: false });
+      }
+      var xI = -b / (3*a);
+      board.inflection.setPosition(JXG.COORDS_BY_USER, [xI, f(xI)]);
+      board.inflection.setAttribute({ visible: true });
+    } else {
+      board.cp1.setAttribute({ visible: false });
+      board.cp2.setAttribute({ visible: false });
+      board.inflection.setAttribute({ visible: false });
     }
-  }
-
-  // Inflection point: f''(x) = 6ax + 2b = 0 => x = -b/(3a)
-  if (a !== 0) {
-    var xI = -b / (3*a);
-    board.create('point', [xI, f(xI)], {
-      name: 'Uốn',
-      size: 4,
-      fillColor: '#22c55e',
-      strokeColor: '#16a34a',
-      label: { fontSize: 12, offset: [-30, 10] }
-    });
-  }
+  });
 
   // Legend
   board.create('text', [-5.5, 5.5, 'f(x) — nét liền'], { fontSize: 12, color: '#6366f1' });
   board.create('text', [-5.5, 5.0, "f'(x) — nét đứt"], { fontSize: 12, color: '#f59e0b' });
 
   board.unsuspendUpdate();
-}`,
+}
+
+function updateSimulation(board, params) {
+  board.a = params.a !== undefined ? params.a : 1;
+  board.b = params.b !== undefined ? params.b : 0;
+  board.c = params.c !== undefined ? params.c : -3;
+  board.d = params.d !== undefined ? params.d : 0;
+
+  if (board.sliderA && !board.sliderA.isDragging && Math.abs(board.sliderA.Value() - board.a) > 1e-4) board.sliderA.setValue(board.a);
+  if (board.sliderB && !board.sliderB.isDragging && Math.abs(board.sliderB.Value() - board.b) > 1e-4) board.sliderB.setValue(board.b);
+  if (board.sliderC && !board.sliderC.isDragging && Math.abs(board.sliderC.Value() - board.c) > 1e-4) board.sliderC.setValue(board.c);
+  if (board.sliderD && !board.sliderD.isDragging && Math.abs(board.sliderD.Value() - board.d) > 1e-4) board.sliderD.setValue(board.d);
+}
+`,
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },

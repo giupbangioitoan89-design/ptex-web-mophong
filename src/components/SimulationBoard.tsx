@@ -48,6 +48,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [playingControl, setPlayingControl] = useState<string | null>(null);
   const [readoutRows, setReadoutRows] = useState<any[]>([]);
+  const [controlsOpen, setControlsOpen] = useState(false);
 
   // Clear autoplay state and readouts when switching simulations
   useEffect(() => {
@@ -120,7 +121,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #fafbfc; overflow: hidden; }
-    #board { width: 100%; height: 100vh; }
+    #board { width: 100%; height: 100vh; touch-action: none; }
     .sim-formula { font-family: 'Inter', sans-serif; font-weight: 600; color: #4f46e5; }
     .sim-readout {
       font-family: 'Inter', sans-serif;
@@ -132,13 +133,6 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       padding: 4px 8px;
       white-space: nowrap;
       box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    }
-    /* Hardware acceleration rules to completely prevent HTML labels flickering during movement */
-    .jxgbox div, .jxgbox .jxglabel {
-      -webkit-backface-visibility: hidden !important;
-      backface-visibility: hidden !important;
-      will-change: transform, left, top !important;
-      transform: translate3d(0,0,0) !important;
     }
     /* Beautiful KaTeX overrides inside JSXGraph labels */
     .jxgbox .katex { font-size: 1.1rem !important; }
@@ -161,6 +155,43 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       }
     }
 
+    /* =============================================================
+     * INTERACTION GUARD — The core fix for drag feedback loops.
+     * 
+     * Problem: User drags element → iframe posts value to React →
+     * React sends UPDATE_PARAMS back → updateSimulation calls
+     * setPosition/setValue → overrides drag position → stuck.
+     *
+     * Solution: While pointer is down on the board, queue all
+     * incoming UPDATE_PARAMS. Apply them only after release.
+     * JSXGraph handles dragging 100% natively with zero interference.
+     * ============================================================= */
+    var _pointerDown = false;
+    var _pendingParams = null;
+
+    document.addEventListener('mousedown', function() {
+      _pointerDown = true;
+    }, true);
+    document.addEventListener('touchstart', function() {
+      _pointerDown = true;
+    }, { capture: true, passive: true });
+
+    function _onPointerRelease() {
+      _pointerDown = false;
+      if (_pendingParams) {
+        var p = _pendingParams;
+        _pendingParams = null;
+        render(p);
+      }
+    }
+
+    window.addEventListener('mouseup', _onPointerRelease);
+    window.addEventListener('touchend', _onPointerRelease);
+    window.addEventListener('touchcancel', _onPointerRelease);
+
+    /* =============================================================
+     * DRAG SNAPPING — posts angle values to React during drag
+     * ============================================================= */
     function registerDragSnapping(board, point, sliderName) {
       point.on('drag', function() {
         var x = point.X();
@@ -172,15 +203,12 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         var params = window.currentParams || {};
         var mode = params.mode || 'Kéo tự do';
         
-        var targetSlider = '';
-        if (sliderName === 'angleU') {
-          targetSlider = (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') ? 'specialU' : 'angleU';
-        } else if (sliderName === 'angleV') {
-          targetSlider = (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') ? 'specialV' : 'angleV';
-        } else if (sliderName === 'angleW') {
-          targetSlider = (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') ? 'specialW' : 'angleW';
-        } else {
-          targetSlider = (mode === 'Góc độ đặc biệt') ? 'specialDeg' : 'specialRad';
+        var targetSlider = sliderName;
+        if (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') {
+          if (sliderName === 'angleU') targetSlider = 'specialU';
+          else if (sliderName === 'angleV') targetSlider = 'specialV';
+          else if (sliderName === 'angleW') targetSlider = 'specialW';
+          else targetSlider = (mode === 'Góc độ đặc biệt') ? 'specialDeg' : 'specialRad';
         }
         
         if (mode === 'Kéo tự do') {
@@ -198,13 +226,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
           } else if (sliderName === 'angle' || sliderName === 'angleU' || sliderName === 'angleV' || sliderName === 'angleW') {
             val = Math.round(val / 5) * 5;
           }
-          
-          var snapRad = val * Math.PI / 180;
-          point.setPosition(JXG.COORDS_BY_USER, [Math.cos(snapRad), Math.sin(snapRad)]);
-          board.update();
-          
           window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: sliderName, value: val }, '*');
-        } else if (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') {
+        } else {
           var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
           var closestIdx = 0;
           var minDiff = 360;
@@ -215,20 +238,54 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
               closestIdx = i;
             }
           }
-          
-          var snapDeg = specialDegVals[closestIdx];
-          var snapRad = snapDeg * Math.PI / 180;
-          point.setPosition(JXG.COORDS_BY_USER, [Math.cos(snapRad), Math.sin(snapRad)]);
-          board.update();
-          
           window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: targetSlider, value: closestIdx }, '*');
         }
       });
     }
     window.registerDragSnapping = registerDragSnapping;
 
+    /* =============================================================
+     * CUSTOM SLIDER — creates JSXGraph sliders with drag handlers
+     * ============================================================= */
+    function createCustomSlider(board, p1, p2, min, start, max, label, step, color, displayValues) {
+      color = color || '#6366f1';
+      var s = board.create('slider', [p1, p2, [min, start, max]], {
+        name: label,
+        snapWidth: step,
+        size: 4,
+        strokeColor: '#cbd5e1',
+        fillColor: color,
+        highlightFillColor: color,
+        highlightStrokeColor: color,
+        point1: { visible: true, size: 1.5, strokeColor: '#cbd5e1', fillColor: '#cbd5e1', fixed: true },
+        point2: { visible: true, size: 1.5, strokeColor: '#cbd5e1', fillColor: '#cbd5e1', fixed: true },
+        baseline: { strokeColor: '#cbd5e1', strokeWidth: 3, fixed: true },
+        highline: { strokeColor: color, strokeWidth: 4, fixed: true },
+        label: {
+          fontSize: 12,
+          color: '#475569',
+          strokeColor: 'none',
+          offset: [-15, 12],
+          formatter: function() {
+            var val = s.Value();
+            if (displayValues && displayValues.length > 0) {
+              var idx = Math.min(displayValues.length - 1, Math.max(0, Math.round(val)));
+              return label + ': ' + displayValues[idx];
+            }
+            return label + ': ' + val.toFixed(step < 1 ? (step < 0.1 ? 2 : 1) : 0);
+          }
+        }
+      });
+      return s;
+    }
+    window.createCustomSlider = createCustomSlider;
+
+    /* =============================================================
+     * BOARD INIT & RENDER
+     * ============================================================= */
     var board = null;
     window.currentParams = null;
+
     function render(params) {
       window.currentParams = params;
       if (board && typeof updateSimulation === 'function') {
@@ -248,8 +305,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         grid: ${config.showGrid},
         showCopyright: false,
         showNavigation: false,
-        pan: { enabled: true },
-        zoom: { enabled: true, wheel: true },
+        pan: { enabled: false },
+        zoom: { enabled: false, wheel: false },
         keepAspectRatio: true,
         keepaspectratio: true,
         resize: { enabled: true, throttle: 200 }
@@ -261,11 +318,27 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         console.error('Simulation error:', e);
       }
     }
+
+    /* =============================================================
+     * MESSAGE HANDLER — Queues params during interaction
+     * ============================================================= */
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'UPDATE_PARAMS') {
+        if (_pointerDown) {
+          /* Pointer is down — user is dragging something.
+             Store params for later, DON'T call render().
+             This prevents setPosition/setValue from fighting the drag. */
+          _pendingParams = e.data.params;
+          window.currentParams = e.data.params;
+          return;
+        }
         render(e.data.params);
+      } else if (e.data && e.data.type === 'RELEASE_DRAG') {
+        /* Parent detected mouseup/touchend outside iframe */
+        _onPointerRelease();
       }
     });
+
     window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
   <\/script>
 </body>
@@ -360,6 +433,20 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   }, [sendParams]);
 
   useEffect(() => {
+    const handleRelease = () => {
+      if (iframeRef.current?.contentWindow) {
+        iframeRef.current.contentWindow.postMessage({ type: 'RELEASE_DRAG' }, '*');
+      }
+    };
+    window.addEventListener('mouseup', handleRelease);
+    window.addEventListener('touchend', handleRelease);
+    return () => {
+      window.removeEventListener('mouseup', handleRelease);
+      window.removeEventListener('touchend', handleRelease);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isLoading) sendParams();
   }, [controlValues, isLoading, sendParams]);
 
@@ -408,53 +495,120 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                 minHeight: '360px',
                 border: 'none',
               }}
-              sandbox="allow-scripts"
+              sandbox="allow-scripts allow-same-origin"
               title={simulation.title}
             />
 
-            {/* Integrated compact controls block inside graph box at bottom */}
+            {/* Integrated compact controls block inside graph box */}
             {simulation.controls.length > 0 && (
-              <div className="board-control-panel">
-                <div className="control-list-horizontal">
-                  {simulation.controls.map((ctrl) => {
-                    if (ctrl.showIf) {
-                      const dependVal = controlValues[ctrl.showIf.control];
-                      if (dependVal !== ctrl.showIf.value) {
-                        return null;
+              !controlsOpen ? (
+                <button
+                  type="button"
+                  onClick={() => setControlsOpen(true)}
+                  className="control-panel-toggle-btn"
+                  title="Mở bảng điều chỉnh"
+                >
+                  <span>⚙️</span>
+                  <span>Điều chỉnh</span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.7 }}>▼</span>
+                </button>
+              ) : (
+                <div className="board-control-panel">
+                  {/* Expanded Header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    paddingBottom: '6px',
+                    marginBottom: '8px'
+                  }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'rgba(255, 255, 255, 0.9)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span>⚙️</span> Điều chỉnh
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setControlsOpen(false)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        padding: '2px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '2px',
+                        transition: 'color 0.2s'
+                      }}
+                      title="Ẩn bảng điều chỉnh"
+                      onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'}
+                    >
+                      ▲ Ẩn
+                    </button>
+                  </div>
+                  <div className="control-list-horizontal">
+                    {simulation.controls.map((ctrl) => {
+                      if (ctrl.showIf) {
+                        const dependVal = controlValues[ctrl.showIf.control];
+                        if (dependVal !== ctrl.showIf.value) {
+                          return null;
+                        }
                       }
-                    }
-                    const themeColor = getControlThemeColor(ctrl.name);
-                    const themeColorLight = themeColor + '20'; // 12% opacity hex representation
-                    return (
-                      <div 
-                        key={ctrl.name} 
-                        className="control-item"
-                        style={{
-                          '--control-theme-color': themeColor,
-                          '--control-theme-color-light': themeColorLight
-                        } as React.CSSProperties}
-                      >
-                        {ctrl.type === 'slider' && (
-                          <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <label htmlFor={ctrl.name} style={{ cursor: 'pointer', fontSize: '0.78rem' }}>{ctrl.label}</label>
-                                <button
-                                  type="button"
-                                  onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
-                                  className={`play-btn ${playingControl === ctrl.name ? 'playing' : ''}`}
-                                  style={{
-                                    background: 'none', border: 'none', cursor: 'pointer',
-                                    fontSize: '0.8rem', padding: '0 2px',
-                                    display: 'inline-flex', alignItems: 'center',
-                                    transition: 'color 0.2s, text-shadow 0.2s'
-                                  }}
-                                  title={playingControl === ctrl.name ? "Tạm dừng chạy tự động" : "Chạy tự động chậm"}
-                                >
-                                  {playingControl === ctrl.name ? '⏸' : '▶'}
-                                </button>
+                      const themeColor = getControlThemeColor(ctrl.name);
+                      const themeColorLight = themeColor + '20'; // 12% opacity hex representation
+                      return (
+                        <div 
+                          key={ctrl.name} 
+                          className="control-item"
+                          style={{
+                            '--control-theme-color': themeColor,
+                            '--control-theme-color-light': themeColorLight
+                          } as React.CSSProperties}
+                        >
+                          {ctrl.type === 'slider' && (
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              background: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: '20px',
+                              padding: '4px 10px 4px 12px',
+                              height: '32px',
+                              width: '100%'
+                            }}>
+                              <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                {ctrl.label}
                               </span>
-                              <span className="value">
+                              <button
+                                type="button"
+                                onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
+                                className={`play-btn ${playingControl === ctrl.name ? 'playing' : ''}`}
+                                style={{
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                  fontSize: '0.8rem', padding: '0 2px',
+                                  display: 'inline-flex', alignItems: 'center',
+                                  transition: 'color 0.2s', color: playingControl === ctrl.name ? 'var(--control-theme-color)' : '#94a3b8'
+                                }}
+                                title={playingControl === ctrl.name ? "Tạm dừng chạy tự động" : "Chạy tự động"}
+                              >
+                                {playingControl === ctrl.name ? '⏸' : '▶'}
+                              </button>
+                              <span 
+                                className="value" 
+                                style={{ 
+                                  fontWeight: 700, 
+                                  fontVariantNumeric: 'tabular-nums',
+                                  color: 'var(--control-theme-color, #818cf8)',
+                                  background: 'var(--control-theme-color-light, rgba(99, 102, 241, 0.12))',
+                                  padding: '1px 6px',
+                                  borderRadius: '4px',
+                                  fontSize: '0.75rem',
+                                  marginLeft: 'auto'
+                                }}
+                              >
                                 {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
                                   ? ctrl.displayValues[controlValues[ctrl.name] as number]
                                   : typeof controlValues[ctrl.name] === 'number'
@@ -464,51 +618,51 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                                   : String(controlValues[ctrl.name])}
                               </span>
                             </div>
-                            <input
-                              id={ctrl.name}
-                              type="range"
-                              min={ctrl.min}
-                              max={ctrl.max}
-                              step={ctrl.step}
-                              value={controlValues[ctrl.name] as number}
-                              onChange={(e) =>
-                                handleControlChange(ctrl.name, parseFloat(e.target.value))
-                              }
-                            />
-                          </>
-                        )}
-                        {ctrl.type === 'checkbox' && (
-                          <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', height: '32px' }}>
-                            <input
-                              type="checkbox"
-                              checked={controlValues[ctrl.name] as boolean}
-                              onChange={(e) =>
-                                handleControlChange(ctrl.name, e.target.checked)
-                              }
-                            />
-                            {ctrl.label}
-                          </label>
-                        )}
-                        {ctrl.type === 'select' && (
-                          <>
-                            <label style={{ fontSize: '0.78rem', marginBottom: '2px' }}>{ctrl.label}</label>
-                            <select
-                              value={controlValues[ctrl.name] as string}
-                              onChange={(e) =>
-                                handleControlChange(ctrl.name, e.target.value)
-                              }
-                            >
-                              {ctrl.options?.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                              ))}
-                            </select>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
+                          )}
+                          {ctrl.type === 'checkbox' && (
+                            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', height: '32px', color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>
+                              <input
+                                type="checkbox"
+                                checked={controlValues[ctrl.name] as boolean}
+                                onChange={(e) =>
+                                  handleControlChange(ctrl.name, e.target.checked)
+                                }
+                              />
+                              {ctrl.label}
+                            </label>
+                          )}
+                          {ctrl.type === 'select' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '32px' }}>
+                              <label style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)', fontWeight: 500, whiteSpace: 'nowrap' }}>{ctrl.label}</label>
+                              <select
+                                value={controlValues[ctrl.name] as string}
+                                onChange={(e) =>
+                                  handleControlChange(ctrl.name, e.target.value)
+                                }
+                                style={{
+                                  background: 'rgba(15, 23, 42, 0.6)',
+                                  border: '1px solid rgba(255,255,255,0.12)',
+                                  borderRadius: '6px',
+                                  color: '#f8fafc',
+                                  padding: '2px 8px',
+                                  fontSize: '0.78rem',
+                                  outline: 'none',
+                                  cursor: 'pointer',
+                                  height: '26px'
+                                }}
+                              >
+                                {ctrl.options?.map((opt) => (
+                                  <option key={opt} value={opt} style={{ background: '#0f172a', color: '#f8fafc' }}>{opt}</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </div>
         </div>
