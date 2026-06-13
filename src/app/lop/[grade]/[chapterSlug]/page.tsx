@@ -6,7 +6,8 @@ import Chapter from '@/models/Chapter';
 import Simulation from '@/models/Simulation';
 import type { IChapter } from '@/types';
 
-export const dynamic = 'force-dynamic';
+// ✅ ISR: cache for 30 min (sim counts may change more often)
+export const revalidate = 1800;
 
 interface PageProps {
   params: Promise<{ grade: string; chapterSlug: string }>;
@@ -18,7 +19,14 @@ export default async function ChapterPage({ params }: PageProps) {
 
   await connectDB();
 
-  const chapter = await Chapter.findOne({ grade, slug: chapterSlug }).lean() as unknown as IChapter | null;
+  // ✅ Run both queries in parallel
+  const [chapter, simCounts] = await Promise.all([
+    Chapter.findOne({ grade, slug: chapterSlug }).lean() as Promise<IChapter | null>,
+    Simulation.aggregate([
+      { $match: { grade, chapterSlug, isPublished: true } },
+      { $group: { _id: '$lessonSlug', count: { $sum: 1 } } },
+    ]),
+  ]);
 
   if (!chapter) {
     return (
@@ -29,7 +37,7 @@ export default async function ChapterPage({ params }: PageProps) {
             <div className="empty-icon">❌</div>
             <h3>Không tìm thấy chương</h3>
             <p>
-              <Link href={`/lop/${grade}`} style={{ color: 'var(--color-primary-light)' }}>
+              <Link href={`/lop/${grade}`} className="back-btn">
                 ← Quay lại Toán {grade}
               </Link>
             </p>
@@ -39,11 +47,6 @@ export default async function ChapterPage({ params }: PageProps) {
     );
   }
 
-  // Get simulation counts per lesson
-  const simCounts = await Simulation.aggregate([
-    { $match: { grade, chapterSlug, isPublished: true } },
-    { $group: { _id: '$lessonSlug', count: { $sum: 1 } } },
-  ]);
   const simCountMap: Record<string, number> = {};
   for (const s of simCounts) {
     simCountMap[s._id] = s.count;
@@ -55,7 +58,6 @@ export default async function ChapterPage({ params }: PageProps) {
 
       <main style={{ position: 'relative', zIndex: 1 }}>
         <div className="content-section">
-          {/* Breadcrumbs */}
           <div className="breadcrumbs">
             <Link href="/">Trang chủ</Link>
             <span className="separator">›</span>
@@ -64,7 +66,6 @@ export default async function ChapterPage({ params }: PageProps) {
             <span>{chapter.icon} Chương {chapter.chapterNumber}</span>
           </div>
 
-          {/* Header */}
           <div style={{ marginBottom: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.5rem' }}>
               <span style={{
@@ -85,7 +86,6 @@ export default async function ChapterPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Lessons List */}
           <div className="lesson-list">
             {chapter.lessons.map((lesson) => {
               const simCount = simCountMap[lesson.slug] || 0;
@@ -119,16 +119,11 @@ export default async function ChapterPage({ params }: PageProps) {
   );
 }
 
+// ✅ Metadata without extra DB call
 export async function generateMetadata({ params }: PageProps) {
   const { grade, chapterSlug } = await params;
-  await connectDB();
-  const chapter = await Chapter.findOne({ grade: parseInt(grade), slug: chapterSlug }).lean() as unknown as IChapter | null;
   return {
-    title: chapter
-      ? `${chapter.chapterTitle} — Toán ${grade} — PTex Mô Phỏng`
-      : `Chương — PTex Mô Phỏng`,
-    description: chapter
-      ? `Mô phỏng trực quan cho ${chapter.chapterTitle} — Toán ${grade} Kết nối tri thức`
-      : '',
+    title: `Chương — Toán ${grade} — PTex Mô Phỏng`,
+    description: `Mô phỏng trực quan Toán ${grade} — ${chapterSlug} — Kết nối tri thức`,
   };
 }

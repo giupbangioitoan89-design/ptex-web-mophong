@@ -6,7 +6,8 @@ import connectDB from '@/lib/db';
 import Chapter from '@/models/Chapter';
 import type { IChapter } from '@/types';
 
-export const dynamic = 'force-dynamic';
+// ✅ ISR: cache page for 1 hour, rebuild on next request after expiry
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ grade: string }>;
@@ -24,7 +25,9 @@ export default async function GradePage({ params }: PageProps) {
   const info = GRADE_INFO[grade] || GRADE_INFO[10];
 
   await connectDB();
-  const chapters = await Chapter.find({ grade }).sort({ order: 1 }).lean() as unknown as IChapter[];
+  const chapters = await Chapter.find({ grade })
+    .sort({ order: 1 })
+    .lean() as unknown as IChapter[];
 
   return (
     <>
@@ -32,14 +35,12 @@ export default async function GradePage({ params }: PageProps) {
 
       <main style={{ position: 'relative', zIndex: 1 }}>
         <div className="content-section">
-          {/* Breadcrumbs */}
           <div className="breadcrumbs">
             <Link href="/">Trang chủ</Link>
             <span className="separator">›</span>
             <span style={{ color: info.color }}>{info.icon} {info.label}</span>
           </div>
 
-          {/* Header */}
           <div className="section-header">
             <h1 className="section-title" style={{ color: info.color }}>
               {info.icon} {info.label} — Kết nối tri thức
@@ -49,7 +50,6 @@ export default async function GradePage({ params }: PageProps) {
             </span>
           </div>
 
-          {/* Chapter Grid */}
           {chapters.length > 0 ? (
             <div className="chapter-grid">
               {chapters.map((chapter) => (
@@ -78,7 +78,7 @@ export default async function GradePage({ params }: PageProps) {
   );
 }
 
-
+// ✅ Static metadata — no DB query needed
 export async function generateMetadata({ params }: PageProps) {
   const { grade } = await params;
   const info = GRADE_INFO[parseInt(grade)] || GRADE_INFO[10];
