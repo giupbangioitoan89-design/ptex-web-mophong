@@ -117,7 +117,7 @@ function initSimulation(board, params) {
       // Demo 1.2: Chiều biến thiên hàm số bậc hai (Toán 10)
       {
         grade: 10,
-        chapterSlug: 'ham-so-do-thi-va-ung-dung',
+        chapterSlug: 'ham-so-do-thi-ung-dung',
         lessonSlug: 'ham-bac-hai-do-thi',
         title: 'Chiều biến thiên hàm số bậc hai',
         description: 'Khảo sát chiều biến thiên (đồng biến, nghịch biến) của hàm số bậc hai trên các khoảng. Di chuyển x0 để quan sát chiều mũi tên đồ thị!',
@@ -454,6 +454,9 @@ function initSimulation(board, params) {
         isPublished: true,
       },
     ];
+
+    // Clean up incorrect slug simulation if exists
+    await Simulation.deleteMany({ chapterSlug: 'ham-so-do-thi-va-ung-dung' });
 
     let simsCreated = 0;
     for (const sim of demoSimulations) {
