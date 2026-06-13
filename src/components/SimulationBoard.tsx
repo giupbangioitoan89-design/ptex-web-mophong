@@ -36,9 +36,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     
     // Check if it's a discrete selection slider (has displayValues)
     const isDiscrete = !!ctrl.displayValues;
-    const intervalTime = isDiscrete ? 1000 : 30; // 1 second for discrete concepts, 30ms for continuous motion
+    const intervalTime = isDiscrete ? 600 : 30; // 600ms for discrete concepts, 30ms for continuous motion
     
-    const interval = setInterval(() => {
+    const tick = () => {
       setControlValues(prev => {
         const current = (prev[playingControl] as number) ?? ctrl.defaultValue;
         
@@ -62,7 +62,12 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         }
         return { ...prev, [playingControl]: next };
       });
-    }, intervalTime);
+    };
+
+    // Run first frame immediately to prevent UI freeze delay
+    tick();
+    
+    const interval = setInterval(tick, intervalTime);
 
     return () => clearInterval(interval);
   }, [playingControl, simulation.controls]);
@@ -312,6 +317,10 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 
   const handleControlChange = (name: string, value: number | string | boolean) => {
     setControlValues(prev => ({ ...prev, [name]: value }));
+    // Reset play state if mode changes to avoid ghost autoplay
+    if (name === 'mode') {
+      setPlayingControl(null);
+    }
   };
 
   return (
