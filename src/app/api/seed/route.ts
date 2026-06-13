@@ -237,7 +237,19 @@ function initSimulation(board, params) {
 function initSimulation(board, params) {
   board.suspendUpdate();
 
-  var deg = params.deg;
+  var mode = params.mode || 'Kéo tự do';
+  var deg = 120;
+  if (mode === 'Kéo tự do') {
+    deg = params.deg !== undefined ? params.deg : 120;
+  } else if (mode === 'Góc độ đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 4;
+    deg = specialDegVals[idx] || 0;
+  } else if (mode === 'Góc radian đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 4;
+    deg = specialDegVals[idx] || 0;
+  }
   var rad = deg * Math.PI / 180;
 
   // Unit circle
@@ -252,11 +264,31 @@ function initSimulation(board, params) {
   var px = Math.cos(rad);
   var py = Math.sin(rad);
   var P = board.create('point', [px, py], {
-    name: 'M',
+    name: math('M'),
     size: 5,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
-    label: { fontSize: 13, offset: [10, 10] }
+    label: { display: 'html', fontSize: 14, offset: [10, 10] }
+  });
+
+  // Origin O
+  board.create('point', [0, 0], {
+    name: math('O'),
+    size: 3,
+    fillColor: '#64748b',
+    strokeColor: '#475569',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+
+  // Start point A
+  board.create('point', [1, 0], {
+    name: math('A'),
+    size: 3,
+    fillColor: '#10b981',
+    strokeColor: '#059669',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [10, -10] }
   });
 
   // Radius line
@@ -302,15 +334,29 @@ function initSimulation(board, params) {
     });
   }
 
-  // Display texts
-  var turns = (deg / 360).toFixed(1);
-  var radFraction = (deg / 180).toFixed(2);
-  var dirText = deg > 0 ? "Chiều Dương (+)" : (deg < 0 ? "Chiều Âm (-)" : "Không quay");
+  // Display texts in KaTeX format
+  var turns = (deg / 360).toFixed(2);
+  
+  // Calculate clean radian fraction string
+  var radText = '';
+  if (mode === 'Góc radian đặc biệt') {
+    var radLabels = ['0', '\\frac{\\pi}{6}', '\\frac{\\pi}{4}', '\\frac{\\pi}{3}', '\\frac{\\pi}{2}', '\\frac{2\\pi}{3}', '\\frac{3\\pi}{4}', '\\frac{5\\pi}{6}', '\\pi', '\\frac{7\\pi}{6}', '\\frac{5\\pi}{4}', '\\frac{4\\pi}{3}', '\\frac{3\\pi}{2}', '\\frac{5\\pi}{3}', '\\frac{7\\pi}{4}', '\\frac{11\\pi}{6}', '2\\pi'];
+    radText = radLabels[idx] || '0';
+  } else {
+    var frac = deg / 180;
+    if (frac === 0) radText = '0';
+    else if (frac === 1) radText = '\\pi';
+    else if (frac === -1) radText = '-\\pi';
+    else radText = frac.toFixed(2) + '\\pi';
+  }
 
-  board.create('text', [-1.6, 1.5, 'Số đo Độ: ' + deg + '°'], { fontSize: 13, color: '#fff' });
-  board.create('text', [-1.6, 1.3, 'Số đo Radian: ' + radFraction + 'π rad'], { fontSize: 13, color: '#60a5fa' });
-  board.create('text', [-1.6, 1.1, 'Số vòng quay: ' + turns + ' vòng'], { fontSize: 13, color: '#a855f7' });
-  board.create('text', [-1.6, 0.9, 'Hướng quay: ' + dirText], { fontSize: 13, color: deg >= 0 ? '#22c55e' : '#ef4444' });
+  var dirText = deg > 0 ? '\\text{Chiều Dương (+)}' : (deg < 0 ? '\\text{Chiều Âm (-)}' : '\\text{Không quay}');
+  var dirColor = deg > 0 ? '#22c55e' : (deg < 0 ? '#ef4444' : '#94a3b8');
+
+  board.create('text', [-1.6, 1.5, math('\\text{Số đo Độ: } ' + deg + '^\\circ')], { display: 'html', fontSize: 14 });
+  board.create('text', [-1.6, 1.3, math('\\text{Số đo Radian: } ' + radText + ' \\text{ rad}')], { display: 'html', fontSize: 14 });
+  board.create('text', [-1.6, 1.1, math('\\text{Số vòng quay: } ' + turns + ' \\text{ vòng}')], { display: 'html', fontSize: 14 });
+  board.create('text', [-1.6, 0.9, math('\\text{Hướng quay: } ' + dirText)], { display: 'html', fontSize: 14, color: dirColor });
 
   board.unsuspendUpdate();
 }`,
@@ -323,7 +369,10 @@ function initSimulation(board, params) {
           theme: 'light',
         },
         controls: [
-          { type: 'slider', name: 'deg', label: 'Góc quay (độ)', min: -720, max: 720, step: 10, defaultValue: 120 },
+          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt', 'Góc radian đặc biệt'] },
+          { type: 'slider', name: 'deg', label: 'Góc tự do (độ)', min: -720, max: 720, step: 10, defaultValue: 120, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
         ],
         mathContent: '1 \\text{ rad} = \\left(\\frac{180}{\\pi}\\right)^\\circ \\quad \\text{và} \\quad 1^\circ = \\frac{\\pi}{180} \\text{ rad}',
         explanation: 'Khác với góc hình học thông thường (chỉ từ 0° đến 180°), góc lượng giác có hướng quay (ngược chiều kim đồng hồ là chiều dương, cùng chiều là chiều âm) và số đo có thể lớn hơn 360° (tương ứng nhiều vòng quay).',
@@ -349,7 +398,20 @@ function initSimulation(board, params) {
 function initSimulation(board, params) {
   board.suspendUpdate();
 
-  var angle = params.angle * Math.PI / 180;
+  var mode = params.mode || 'Kéo tự do';
+  var deg = 45;
+  if (mode === 'Kéo tự do') {
+    deg = params.angle !== undefined ? params.angle : 45;
+  } else if (mode === 'Góc độ đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 2;
+    deg = specialDegVals[idx] || 0;
+  } else if (mode === 'Góc radian đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 2;
+    deg = specialDegVals[idx] || 0;
+  }
+  var angle = deg * Math.PI / 180;
 
   // Unit circle
   board.create('circle', [[0,0], 1], {
@@ -359,15 +421,84 @@ function initSimulation(board, params) {
     fixed: true
   });
 
-  // Point on circle
-  var px = Math.cos(angle), py = Math.sin(angle);
+  // Origin O
+  board.create('point', [0, 0], {
+    name: math('O'),
+    size: 3,
+    fillColor: '#64748b',
+    strokeColor: '#475569',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+
+  // Coordinates of P
+  var px = Math.cos(angle);
+  var py = Math.sin(angle);
+
+  // Cos projection point
+  var H = board.create('point', [px, 0], {
+    name: math('H(\\cos \\alpha; 0)'),
+    size: 4,
+    fillColor: '#22c55e',
+    strokeColor: '#16a34a',
+    label: { display: 'html', fontSize: 12, offset: [-30, -20] }
+  });
+
+  // Sin projection point
+  var K = board.create('point', [0, py], {
+    name: math('K(0; \\sin \\alpha)'),
+    size: 4,
+    fillColor: '#ef4444',
+    strokeColor: '#dc2626',
+    label: { display: 'html', fontSize: 12, offset: [-95, 0] }
+  });
+
+  // Target point P
   var P = board.create('point', [px, py], {
-    name: 'P',
+    name: math('P(\\cos \\alpha; \\sin \\alpha)'),
     size: 5,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
-    label: { fontSize: 14, offset: [10, 10] }
+    label: { display: 'html', fontSize: 14, offset: [10, 10] }
   });
+
+  // Special axis boundary points
+  board.create('point', [1, 0], {
+    name: math('A(1;0)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [8, -12] }
+  });
+  board.create('point', [-1, 0], {
+    name: math('A\'(-1;0)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [-65, -12] }
+  });
+  board.create('point', [0, 1], {
+    name: math('B(0;1)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [8, 12] }
+  });
+  board.create('point', [0, -1], {
+    name: math('B\'(0;-1)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [8, -12] }
+  });
+
+  // Label Axis names
+  board.create('text', [1.8, 0.1, math('\\text{trục cos}')], { display: 'html', fontSize: 13, color: '#16a34a' });
+  board.create('text', [0.08, 1.8, math('\\text{trục sin}')], { display: 'html', fontSize: 13, color: '#dc2626' });
 
   // Radius line
   board.create('segment', [[0,0], P], {
@@ -375,45 +506,26 @@ function initSimulation(board, params) {
     strokeWidth: 2
   });
 
-  // cos projection (horizontal)
-  board.create('segment', [[0,0], [px, 0]], {
+  // cos projection segment
+  board.create('segment', [[0,0], H], {
     strokeColor: '#22c55e',
     strokeWidth: 3,
     highlight: false
   });
-  board.create('point', [px, 0], {
-    name: 'cos α',
-    size: 3,
-    fillColor: '#22c55e',
-    strokeColor: '#16a34a',
-    label: { fontSize: 12, offset: [0, -15] }
-  });
 
-  // sin projection (vertical)
-  board.create('segment', [[px, 0], P], {
+  // sin projection segment
+  board.create('segment', [[0,0], K], {
     strokeColor: '#ef4444',
     strokeWidth: 3,
     highlight: false
   });
-  board.create('segment', [[0, 0], [0, py]], {
-    strokeColor: '#ef4444',
-    strokeWidth: 3,
-    highlight: false
-  });
-  board.create('point', [0, py], {
-    name: 'sin α',
-    size: 3,
-    fillColor: '#ef4444',
-    strokeColor: '#dc2626',
-    label: { fontSize: 12, offset: [-40, 0] }
-  });
 
-  // Dashed projections
-  board.create('segment', [P, [px, 0]], {
-    dash: 2, strokeColor: '#d1d5db', strokeWidth: 1
+  // Dashed projections lines
+  board.create('segment', [P, H], {
+    dash: 2, strokeColor: '#94a3b8', strokeWidth: 1
   });
-  board.create('segment', [P, [0, py]], {
-    dash: 2, strokeColor: '#d1d5db', strokeWidth: 1
+  board.create('segment', [P, K], {
+    dash: 2, strokeColor: '#94a3b8', strokeWidth: 1
   });
 
   // Angle arc
@@ -424,18 +536,21 @@ function initSimulation(board, params) {
     });
   }
 
-  // Values text
-  board.create('text', [-1.8, -1.5,
-    'α = ' + params.angle + '°'
-  ], { fontSize: 14, color: '#6366f1' });
+  // Display texts in graph corner in KaTeX
+  var radText = '';
+  if (mode === 'Góc radian đặc biệt') {
+    var radLabels = ['0', '\\frac{\\pi}{6}', '\\frac{\\pi}{4}', '\\frac{\\pi}{3}', '\\frac{\\pi}{2}', '\\frac{2\\pi}{3}', '\\frac{3\\pi}{4}', '\\frac{5\\pi}{6}', '\\pi', '\\frac{7\\pi}{6}', '\\frac{5\\pi}{4}', '\\frac{4\\pi}{3}', '\\frac{3\\pi}{2}', '\\frac{5\\pi}{3}', '\\frac{7\\pi}{4}', '\\frac{11\\pi}{6}', '2\\pi'];
+    radText = radLabels[idx] || '0';
+  } else {
+    var frac = deg / 180;
+    if (frac === 0) radText = '0';
+    else if (frac === 1) radText = '\\pi';
+    else radText = frac.toFixed(2) + '\\pi';
+  }
 
-  board.create('text', [-1.8, -1.8,
-    'sin α = ' + py.toFixed(3)
-  ], { fontSize: 14, color: '#ef4444' });
-
-  board.create('text', [-1.8, -2.1,
-    'cos α = ' + px.toFixed(3)
-  ], { fontSize: 14, color: '#22c55e' });
+  board.create('text', [-1.8, 1.8, math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}')], { display: 'html', fontSize: 14, color: '#6366f1' });
+  board.create('text', [-1.8, 1.5, math('\\sin \\alpha = ' + py.toFixed(3))], { display: 'html', fontSize: 14, color: '#ef4444' });
+  board.create('text', [-1.8, 1.2, math('\\cos \\alpha = ' + px.toFixed(3))], { display: 'html', fontSize: 14, color: '#22c55e' });
 
   board.unsuspendUpdate();
 }`,
@@ -448,7 +563,10 @@ function initSimulation(board, params) {
           theme: 'light',
         },
         controls: [
-          { type: 'slider', name: 'angle', label: 'Góc α (độ)', min: 0, max: 360, step: 5, defaultValue: 45 },
+          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt', 'Góc radian đặc biệt'] },
+          { type: 'slider', name: 'angle', label: 'Góc tự do (độ)', min: 0, max: 360, step: 5, defaultValue: 45, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 2, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 2, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
         ],
         mathContent: '\\sin^2\\alpha + \\cos^2\\alpha = 1',
         explanation: 'Trên đường tròn đơn vị (bán kính = 1), điểm P ứng với góc lượng giác α có tọa độ (cos α, sin α). Hình chiếu lên trục Ox cho giá trị cos, lên Oy cho giá trị sin.',
@@ -474,8 +592,20 @@ function initSimulation(board, params) {
 function initSimulation(board, params) {
   board.suspendUpdate();
 
-  var angle = params.angle * Math.PI / 180;
-  var deg = params.angle;
+  var mode = params.mode || 'Kéo tự do';
+  var deg = 45;
+  if (mode === 'Kéo tự do') {
+    deg = params.angle !== undefined ? params.angle : 45;
+  } else if (mode === 'Góc độ đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialDeg !== undefined ? Math.round(params.specialDeg) : 2;
+    deg = specialDegVals[idx] || 0;
+  } else if (mode === 'Góc radian đặc biệt') {
+    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+    var idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 2;
+    deg = specialDegVals[idx] || 0;
+  }
+  var angle = deg * Math.PI / 180;
 
   // Unit circle
   board.create('circle', [[0,0], 1], {
@@ -485,14 +615,24 @@ function initSimulation(board, params) {
     fixed: true
   });
 
-  // OM line
+  // Origin O
+  board.create('point', [0, 0], {
+    name: math('O'),
+    size: 3,
+    fillColor: '#64748b',
+    strokeColor: '#475569',
+    fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+
   var mx = Math.cos(angle);
   var my = Math.sin(angle);
   var M = board.create('point', [mx, my], {
-    name: 'M',
+    name: math('M'),
     size: 4,
     fillColor: '#fff',
-    strokeColor: '#6366f1'
+    strokeColor: '#6366f1',
+    label: { display: 'html', fontSize: 14, offset: [8, 8] }
   });
 
   // Radial line extending beyond circle
@@ -508,27 +648,28 @@ function initSimulation(board, params) {
   board.create('line', [[1, -10], [1, 10]], {
     strokeColor: '#f59e0b',
     strokeWidth: 2,
-    highlight: false,
-    name: 'Trục Tan'
+    highlight: false
   });
+  board.create('text', [1.1, 2.2, math('\\text{Trục Tan}')], { display: 'html', fontSize: 12, color: '#f59e0b' });
+
   // Cot axis (y = 1)
   board.create('line', [[-10, 1], [10, 1]], {
     strokeColor: '#ec4899',
     strokeWidth: 2,
-    highlight: false,
-    name: 'Trục Cot'
+    highlight: false
   });
+  board.create('text', [2.1, 1.1, math('\\text{Trục Cot}')], { display: 'html', fontSize: 12, color: '#ec4899' });
 
   // Tan projection point: x = 1, y = tan(angle)
   var showTan = (deg !== 90 && deg !== 270);
   if (showTan) {
     var tanValue = Math.tan(angle);
     var T = board.create('point', [1, tanValue], {
-      name: 'T(1, tan α)',
+      name: math('T(1; \\tan \\alpha)'),
       size: 5,
       fillColor: '#f59e0b',
       strokeColor: '#d97706',
-      label: { fontSize: 12, offset: [10, 0] }
+      label: { display: 'html', fontSize: 12, offset: [10, 0] }
     });
     // Segment from origin to T
     board.create('segment', [[1, 0], T], {
@@ -542,11 +683,11 @@ function initSimulation(board, params) {
   if (showCot) {
     var cotValue = 1 / Math.tan(angle);
     var C = board.create('point', [cotValue, 1], {
-      name: 'C(cot α, 1)',
+      name: math('C(\\cot \\alpha; 1)'),
       size: 5,
       fillColor: '#ec4899',
       strokeColor: '#db2777',
-      label: { fontSize: 12, offset: [0, 10] }
+      label: { display: 'html', fontSize: 12, offset: [-30, 15] }
     });
     // Segment from origin to C
     board.create('segment', [[0, 1], C], {
@@ -555,17 +696,46 @@ function initSimulation(board, params) {
     });
   }
 
-  // Value readouts
-  board.create('text', [-2.3, -1.8, 'α = ' + deg + '°'], { fontSize: 13, color: '#fff' });
-  if (showTan) {
-    board.create('text', [-2.3, -2.0, 'tan α = ' + Math.tan(angle).toFixed(3)], { fontSize: 13, color: '#f59e0b' });
+  // A(1,0) and B(0,1)
+  board.create('point', [1, 0], {
+    name: math('A(1;0)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [8, -12] }
+  });
+  board.create('point', [0, 1], {
+    name: math('B(0;1)'),
+    size: 2,
+    fillColor: '#94a3b8',
+    strokeColor: '#64748b',
+    fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [-45, 12] }
+  });
+
+  // Display texts in graph corner in KaTeX
+  var radText = '';
+  if (mode === 'Góc radian đặc biệt') {
+    var radLabels = ['0', '\\frac{\\pi}{6}', '\\frac{\\pi}{4}', '\\frac{\\pi}{3}', '\\frac{\\pi}{2}', '\\frac{2\\pi}{3}', '\\frac{3\\pi}{4}', '\\frac{5\\pi}{6}', '\\pi', '\\frac{7\\pi}{6}', '\\frac{5\\pi}{4}', '\\frac{4\\pi}{3}', '\\frac{3\\pi}{2}', '\\frac{5\\pi}{3}', '\\frac{7\\pi}{4}', '\\frac{11\\pi}{6}', '2\\pi'];
+    radText = radLabels[idx] || '0';
   } else {
-    board.create('text', [-2.3, -2.0, 'tan α = Không xác định'], { fontSize: 13, color: '#ef4444' });
+    var frac = deg / 180;
+    if (frac === 0) radText = '0';
+    else if (frac === 1) radText = '\\pi';
+    else radText = frac.toFixed(2) + '\\pi';
+  }
+
+  board.create('text', [-2.3, -1.6, math('\\alpha = ' + deg + '^\\circ = ' + radText + ' \\text{ rad}')], { display: 'html', fontSize: 13, color: '#6366f1' });
+  if (showTan) {
+    board.create('text', [-2.3, -1.9, math('\\tan \\alpha = ' + Math.tan(angle).toFixed(3))], { display: 'html', fontSize: 13, color: '#f59e0b' });
+  } else {
+    board.create('text', [-2.3, -1.9, math('\\tan \\alpha = \\text{Không xác định}')], { display: 'html', fontSize: 13, color: '#ef4444' });
   }
   if (showCot) {
-    board.create('text', [-2.3, -2.2, 'cot α = ' + (1/Math.tan(angle)).toFixed(3)], { fontSize: 13, color: '#ec4899' });
+    board.create('text', [-2.3, -2.2, math('\\cot \\alpha = ' + (1/Math.tan(angle)).toFixed(3))], { display: 'html', fontSize: 13, color: '#ec4899' });
   } else {
-    board.create('text', [-2.3, -2.2, 'cot α = Không xác định'], { fontSize: 13, color: '#ef4444' });
+    board.create('text', [-2.3, -2.2, math('\\cot \\alpha = \\text{Không xác định}')], { display: 'html', fontSize: 13, color: '#ef4444' });
   }
 
   board.unsuspendUpdate();
@@ -579,7 +749,10 @@ function initSimulation(board, params) {
           theme: 'light',
         },
         controls: [
-          { type: 'slider', name: 'angle', label: 'Góc α (độ)', min: 0, max: 360, step: 5, defaultValue: 45 },
+          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt', 'Góc radian đặc biệt'] },
+          { type: 'slider', name: 'angle', label: 'Góc tự do (độ)', min: 0, max: 360, step: 5, defaultValue: 45, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 2, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 2, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
         ],
         mathContent: '\\tan\\alpha = \\frac{\\sin\\alpha}{\\cos\\alpha} \\quad \\text{và} \\quad \\cot\\alpha = \\frac{\\cos\\alpha}{\\sin\\alpha}',
         explanation: 'Trục tan là trục thẳng đứng đi qua điểm (1,0) song song với Oy. Trục cot là trục nằm ngang đi qua điểm (0,1) song song với Ox. Giao điểm của tia OM kéo dài với các trục này xác định giá trị tan α và cot α.',

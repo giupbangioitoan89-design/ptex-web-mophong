@@ -29,6 +29,11 @@ export interface IControl {
   step?: number;
   defaultValue: number | string | boolean;
   options?: string[];
+  showIf?: {
+    control: string;
+    value: number | string | boolean;
+  };
+  displayValues?: string[];
 }
 
 export interface ISimulationConfig {

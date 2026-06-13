@@ -18,6 +18,36 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     return defaults;
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [playingControl, setPlayingControl] = useState<string | null>(null);
+
+  // Clear autoplay state when switching simulations
+  useEffect(() => {
+    setPlayingControl(null);
+  }, [simulation]);
+
+  // Autoplay effect for sliders
+  useEffect(() => {
+    if (!playingControl) return;
+    const ctrl = simulation.controls.find(c => c.name === playingControl);
+    if (!ctrl || ctrl.type !== 'slider') return;
+
+    const min = ctrl.min ?? 0;
+    const max = ctrl.max ?? 100;
+    const step = ctrl.step ?? 1;
+
+    const interval = setInterval(() => {
+      setControlValues(prev => {
+        const current = (prev[playingControl] as number) ?? ctrl.defaultValue;
+        let next = current + step;
+        if (next > max) {
+          next = min;
+        }
+        return { ...prev, [playingControl]: next };
+      });
+    }, 85); // 12 fps autoplay (smooth and slow)
+
+    return () => clearInterval(interval);
+  }, [playingControl, simulation.controls]);
 
   const buildIframeContent = useCallback(() => {
     const { config, visualizationType } = simulation;
@@ -31,16 +61,29 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.11.1/distrib/jsxgraph.css">
   <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.11.1/distrib/jsxgraphcore.js"><\/script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"><\/script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #fafbfc; overflow: hidden; }
     #board { width: 100%; height: 100vh; }
     .sim-formula { font-family: 'Inter', sans-serif; font-weight: 600; color: #4f46e5; }
+    /* Beautiful KaTeX overrides inside JSXGraph labels */
+    .jxgbox .katex { font-size: 1.1rem !important; }
+    .jxgbox .katex-display { margin: 0.5em 0; }
   </style>
 </head>
 <body>
   <div id="board" class="jxgbox"></div>
   <script>
+    function math(latex) {
+      try {
+        return katex.renderToString(latex, { throwOnError: false });
+      } catch (e) {
+        return latex;
+      }
+    }
+
     var board = null;
     function render(params) {
       if (board) JXG.JSXGraph.freeBoard(board);
@@ -52,7 +95,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         showNavigation: false,
         pan: { enabled: true },
         zoom: { enabled: true, wheel: true },
-        keepAspectRatio: false,
+        keepAspectRatio: true,
+        keepaspectratio: true,
         resize: { enabled: true, throttle: 200 }
       });
       try {
@@ -177,9 +221,18 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       <div className="sim-layout-main">
         {/* Left Column: Board */}
         <div className="sim-board-column">
-          <div className="sim-board">
+          <div className="sim-board" style={{ position: 'relative' }}>
             {isLoading && (
-              <div className="loading-board">
+              <div className="loading-board" style={{
+                position: 'absolute',
+                inset: 0,
+                background: '#fafbfc',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10
+              }}>
                 <div className="spinner" />
                 <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>Đang tải mô phỏng...</p>
               </div>
@@ -187,7 +240,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
             <iframe
               ref={iframeRef}
               style={{
-                display: isLoading ? 'none' : 'block',
+                width: '100%',
+                height: '100%',
+                border: 'none',
               }}
               sandbox="allow-scripts"
               title={simulation.title}
@@ -201,69 +256,94 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
             <div className="control-panel">
               <h3>⚙️ Điều chỉnh tham số</h3>
               <div className="control-list">
-                {simulation.controls.map((ctrl) => (
-                  <div key={ctrl.name} className="control-item">
-                    {ctrl.type === 'slider' && (
-                      <>
-                        <label>
+                {simulation.controls.map((ctrl) => {
+                  if (ctrl.showIf) {
+                    const dependVal = controlValues[ctrl.showIf.control];
+                    if (dependVal !== ctrl.showIf.value) {
+                      return null;
+                    }
+                  }
+                  return (
+                    <div key={ctrl.name} className="control-item">
+                      {ctrl.type === 'slider' && (
+                        <>
+                          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {ctrl.label}
+                              <button
+                                onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
+                                style={{
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                  fontSize: '0.85rem', padding: '0 4px',
+                                  color: playingControl === ctrl.name ? 'var(--color-primary-light)' : 'var(--text-muted)',
+                                  transition: 'color 0.2s',
+                                  display: 'inline-flex', alignItems: 'center'
+                                }}
+                                title={playingControl === ctrl.name ? "Tạm dừng chạy tự động" : "Chạy tự động chậm"}
+                              >
+                                {playingControl === ctrl.name ? '⏸' : '▶'}
+                              </button>
+                            </span>
+                            <span className="value">
+                              {ctrl.displayValues && typeof controlValues[ctrl.name] === 'number'
+                                ? ctrl.displayValues[controlValues[ctrl.name] as number]
+                                : typeof controlValues[ctrl.name] === 'number'
+                                ? (controlValues[ctrl.name] as number).toFixed(
+                                    ctrl.step && ctrl.step < 1 ? 1 : 0
+                                  )
+                                : String(controlValues[ctrl.name])}
+                            </span>
+                          </label>
+                          <input
+                            type="range"
+                            min={ctrl.min}
+                            max={ctrl.max}
+                            step={ctrl.step}
+                            value={controlValues[ctrl.name] as number}
+                            onChange={(e) =>
+                              handleControlChange(ctrl.name, parseFloat(e.target.value))
+                            }
+                          />
+                        </>
+                      )}
+                      {ctrl.type === 'checkbox' && (
+                        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="checkbox"
+                            checked={controlValues[ctrl.name] as boolean}
+                            onChange={(e) =>
+                              handleControlChange(ctrl.name, e.target.checked)
+                            }
+                          />
                           {ctrl.label}
-                          <span className="value">
-                            {typeof controlValues[ctrl.name] === 'number'
-                              ? (controlValues[ctrl.name] as number).toFixed(
-                                  ctrl.step && ctrl.step < 1 ? 1 : 0
-                                )
-                              : String(controlValues[ctrl.name])}
-                          </span>
                         </label>
-                        <input
-                          type="range"
-                          min={ctrl.min}
-                          max={ctrl.max}
-                          step={ctrl.step}
-                          value={controlValues[ctrl.name] as number}
-                          onChange={(e) =>
-                            handleControlChange(ctrl.name, parseFloat(e.target.value))
-                          }
-                        />
-                      </>
-                    )}
-                    {ctrl.type === 'checkbox' && (
-                      <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <input
-                          type="checkbox"
-                          checked={controlValues[ctrl.name] as boolean}
-                          onChange={(e) =>
-                            handleControlChange(ctrl.name, e.target.checked)
-                          }
-                        />
-                        {ctrl.label}
-                      </label>
-                    )}
-                    {ctrl.type === 'select' && (
-                      <>
-                        <label>{ctrl.label}</label>
-                        <select
-                          value={controlValues[ctrl.name] as string}
-                          onChange={(e) =>
-                            handleControlChange(ctrl.name, e.target.value)
-                          }
-                          style={{
-                            background: 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.15)',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            color: 'var(--text-primary)',
-                            fontSize: '0.85rem',
-                          }}
-                        >
-                          {ctrl.options?.map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                      </>
-                    )}
-                  </div>
-                ))}
+                      )}
+                      {ctrl.type === 'select' && (
+                        <>
+                          <label>{ctrl.label}</label>
+                          <select
+                            value={controlValues[ctrl.name] as string}
+                            onChange={(e) =>
+                              handleControlChange(ctrl.name, e.target.value)
+                            }
+                            style={{
+                              background: 'rgba(255,255,255,0.08)',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.85rem',
+                            }}
+                          >
+                            {ctrl.options?.map((opt) => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
