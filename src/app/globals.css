@@ -314,14 +314,17 @@ body::after {
 
 /* Integrated Control Panel inside the Graph box at bottom */
 .board-control-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 0.75rem 1.25rem;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.88)) !important;
+  background: rgba(15, 23, 42, 0.75) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  z-index: 5;
+  z-index: 10;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
