@@ -9,6 +9,11 @@ export interface IControlDoc {
   step?: number;
   defaultValue: mongoose.Schema.Types.Mixed;
   options?: string[];
+  showIf?: {
+    control: string;
+    value: mongoose.Schema.Types.Mixed;
+  };
+  displayValues?: string[];
 }
 
 export interface ISimulationDoc extends Document {
@@ -51,6 +56,8 @@ const ControlSchema = new Schema<IControlDoc>(
     step: Number,
     defaultValue: { type: Schema.Types.Mixed, required: true },
     options: [String],
+    showIf: { type: Schema.Types.Mixed },
+    displayValues: [String],
   },
   { _id: false }
 );
