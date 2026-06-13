@@ -1071,6 +1071,13 @@ function initSimulation(board, params) {
     // Clean up incorrect slug simulation if exists
     await Simulation.deleteMany({ chapterSlug: 'ham-so-do-thi-va-ung-dung' });
 
+    // Clean up all old simulations for this grade 11 trig lesson
+    await Simulation.deleteMany({
+      grade: 11,
+      chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+      lessonSlug: 'goc-luong-giac-duong-tron'
+    });
+
     let simsCreated = 0;
     for (const sim of demoSimulations) {
       await Simulation.findOneAndUpdate(

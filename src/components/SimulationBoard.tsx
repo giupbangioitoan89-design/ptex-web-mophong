@@ -35,7 +35,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     const max = Number(ctrl.max ?? 100);
     
     // Check if it's a discrete selection slider (has displayValues)
-    const isDiscrete = !!ctrl.displayValues;
+    const isDiscrete = !!(ctrl.displayValues && ctrl.displayValues.length > 0);
     const intervalTime = isDiscrete ? 600 : 30; // 600ms for discrete concepts, 30ms for continuous motion
     
     const tick = () => {
@@ -208,7 +208,15 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
               else targetVal -= 360;
             }
             val = Math.max(-720, Math.min(720, targetVal));
+            val = Math.round(val / 10) * 10;
+          } else if (sliderName === 'angle') {
+            val = Math.round(val / 5) * 5;
           }
+          
+          var snapRad = val * Math.PI / 180;
+          point.setPosition(JXG.COORDS_BY_USER, [Math.cos(snapRad), Math.sin(snapRad)]);
+          board.update();
+          
           window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: sliderName, value: val }, '*');
         } else if (mode === 'Góc độ đặc biệt' || mode === 'Góc radian đặc biệt') {
           var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
@@ -221,6 +229,12 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
               closestIdx = i;
             }
           }
+          
+          var snapDeg = specialDegVals[closestIdx];
+          var snapRad = snapDeg * Math.PI / 180;
+          point.setPosition(JXG.COORDS_BY_USER, [Math.cos(snapRad), Math.sin(snapRad)]);
+          board.update();
+          
           var targetSlider = (mode === 'Góc độ đặc biệt') ? 'specialDeg' : 'specialRad';
           window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: targetSlider, value: closestIdx }, '*');
         }
@@ -449,7 +463,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                               </button>
                             </span>
                             <span className="value">
-                              {ctrl.displayValues && typeof controlValues[ctrl.name] === 'number'
+                              {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
                                 ? ctrl.displayValues[controlValues[ctrl.name] as number]
                                 : typeof controlValues[ctrl.name] === 'number'
                                 ? (controlValues[ctrl.name] as number).toFixed(
