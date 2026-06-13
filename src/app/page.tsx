@@ -5,20 +5,29 @@ import Footer from '@/components/Footer';
 const GRADE_CARDS = [
   {
     grade: 10,
-    color: '#22c55e',
-    desc: '7 chương · Hàm số, Vectơ, Tam giác, Tọa độ...',
+    color: 'var(--grade-10)',
+    bgColor: 'var(--grade-10-bg)',
+    label: 'Toán 10',
+    chapters: 7,
+    desc: 'Hàm số bậc 2 · Vectơ · Tam giác · Tọa độ mặt phẳng',
     icon: '📗',
   },
   {
     grade: 11,
-    color: '#3b82f6',
-    desc: '7 chương · Lượng giác, Dãy số, Giới hạn, Không gian...',
+    color: 'var(--grade-11)',
+    bgColor: 'var(--grade-11-bg)',
+    label: 'Toán 11',
+    chapters: 7,
+    desc: 'Lượng giác · Dãy số · Giới hạn · Hình không gian',
     icon: '📘',
   },
   {
     grade: 12,
-    color: '#ef4444',
-    desc: '6 chương · Đạo hàm, Tích phân, Tọa độ KG, Xác suất...',
+    color: 'var(--grade-12)',
+    bgColor: 'var(--grade-12-bg)',
+    label: 'Toán 12',
+    chapters: 6,
+    desc: 'Đạo hàm · Tích phân · Tọa độ KG · Xác suất',
     icon: '📕',
   },
 ];
@@ -32,68 +41,95 @@ export default function HomePage() {
         {/* Hero */}
         <section className="hero">
           <h1>
-            Mô Phỏng Toán Học
+            Toán Học
             <br />
             Trực Quan
           </h1>
-          <p>
-            Khám phá Toán 10-11-12 qua các mô phỏng tương tác.
-            Kéo, thả, điều chỉnh — hiểu bản chất toán học ngay trên trình duyệt.
+          <p className="subtitle">
+            Mô phỏng tương tác cho Toán 10-11-12 · Kết nối tri thức.
+            <br />
+            Kéo thanh trượt, quan sát đồ thị — hiểu ngay bản chất.
           </p>
 
-          {/* Stats */}
+          <div className="cta-row">
+            <Link href="/lop/10" className="cta-btn primary">
+              🚀 Bắt đầu khám phá
+            </Link>
+            <Link href="/lop/12" className="cta-btn secondary">
+              📐 Lớp 12 — Đạo hàm
+            </Link>
+          </div>
+
+          {/* Stats Pill */}
           <div className="stats-bar">
             <div className="stat-item">
-              <div className="stat-number">20</div>
-              <div className="stat-label">Chương</div>
+              <span className="stat-number">20</span>
+              <span className="stat-label">Chương</span>
             </div>
             <div className="stat-item">
-              <div className="stat-number">3</div>
-              <div className="stat-label">Khối lớp</div>
+              <span className="stat-number">63</span>
+              <span className="stat-label">Bài</span>
             </div>
             <div className="stat-item">
-              <div className="stat-number">∞</div>
-              <div className="stat-label">Mô phỏng</div>
+              <span className="stat-number">3</span>
+              <span className="stat-label">Khối lớp</span>
             </div>
           </div>
         </section>
 
         {/* Grade Cards */}
         <section className="grade-cards">
-          {GRADE_CARDS.map(({ grade, color, desc, icon }) => (
+          {GRADE_CARDS.map(({ grade, color, bgColor, label, chapters, desc, icon }) => (
             <Link
               key={grade}
               href={`/lop/${grade}`}
               className="grade-card animate-in"
               style={{ '--card-color': color } as React.CSSProperties}
             >
-              <div
-                className="grade-number"
-                style={{ color }}
-              >
-                {icon}
-              </div>
-              <div className="grade-label">Toán {grade}</div>
+              <div className="glow" />
+              <div className="grade-icon">{icon}</div>
+              <div className="grade-label">{label}</div>
               <div className="grade-desc">{desc}</div>
+              <div
+                className="grade-chapters"
+                style={{ background: bgColor, color }}
+              >
+                📚 {chapters} chương
+              </div>
             </Link>
           ))}
         </section>
 
         {/* How it works */}
         <section className="content-section" style={{ marginTop: '4rem' }}>
-          <h2 className="section-title" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            Cách hoạt động
+          <h2
+            className="section-title"
+            style={{ textAlign: 'center', marginBottom: '1.5rem' }}
+          >
+            Đơn giản 3 bước
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
+          <div className="features-grid">
             {[
-              { icon: '📚', title: 'Chọn bài học', desc: 'Duyệt theo lớp và chương trong chương trình Kết nối tri thức' },
-              { icon: '🎯', title: 'Tương tác trực quan', desc: 'Kéo thanh trượt, thay đổi tham số, quan sát đồ thị thay đổi real-time' },
-              { icon: '💡', title: 'Hiểu bản chất', desc: 'Nắm vững kiến thức qua trải nghiệm trực quan, không chỉ công thức' },
+              {
+                icon: '📚',
+                title: '1. Chọn bài',
+                desc: 'Duyệt theo lớp → chương → bài',
+              },
+              {
+                icon: '🎯',
+                title: '2. Tương tác',
+                desc: 'Kéo slider, thay đổi tham số, xem đồ thị đổi real-time',
+              },
+              {
+                icon: '💡',
+                title: '3. Hiểu ngay',
+                desc: 'Quan sát trực quan, nắm vững bản chất toán học',
+              },
             ].map((step, i) => (
-              <div key={i} className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{step.icon}</div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem' }}>{step.title}</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{step.desc}</p>
+              <div key={i} className="feature-card animate-in">
+                <div className="feat-icon">{step.icon}</div>
+                <h3>{step.title}</h3>
+                <p>{step.desc}</p>
               </div>
             ))}
           </div>

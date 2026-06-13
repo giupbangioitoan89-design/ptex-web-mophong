@@ -93,20 +93,20 @@ export default async function ChapterPage({ params }: PageProps) {
                 <Link
                   key={lesson.slug}
                   href={`/lop/${grade}/${chapterSlug}/${lesson.slug}`}
-                  className="lesson-item animate-in"
+                  className={`lesson-item animate-in ${simCount > 0 ? 'has-sim' : ''}`}
                 >
-                  <div className="lesson-number" style={{ background: `${chapter.color}20`, color: chapter.color }}>
+                  <div className="lesson-number" style={{ background: simCount > 0 ? `${chapter.color}20` : 'rgba(255,255,255,0.05)', color: simCount > 0 ? chapter.color : 'var(--text-muted)' }}>
                     {lesson.lessonNumber}
                   </div>
                   <div className="lesson-info">
                     <div className="lesson-title">{lesson.lessonTitle}</div>
                     <div className="lesson-meta">
                       {simCount > 0
-                        ? `🎯 ${simCount} mô phỏng`
-                        : '📝 Chưa có mô phỏng'}
+                        ? `🎯 ${simCount} mô phỏng tương tác`
+                        : '📝 Sắp có mô phỏng'}
                     </div>
                   </div>
-                  <div className="lesson-arrow">→</div>
+                  <div className="lesson-arrow">{simCount > 0 ? '▶' : '→'}</div>
                 </Link>
               );
             })}

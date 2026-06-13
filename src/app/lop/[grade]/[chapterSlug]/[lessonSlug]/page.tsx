@@ -113,18 +113,8 @@ export default async function LessonSimulationPage({ params }: PageProps) {
               </p>
               <Link
                 href={`/lop/${grade}/${chapterSlug}`}
-                style={{
-                  display: 'inline-block',
-                  marginTop: '1rem',
-                  padding: '10px 24px',
-                  background: 'var(--color-primary)',
-                  borderRadius: '10px',
-                  color: 'white',
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  transition: 'all var(--transition-fast)',
-                }}
+                className="back-btn"
+                style={{ marginTop: '1rem' }}
               >
                 ← Quay lại chương
               </Link>

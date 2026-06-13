@@ -2,16 +2,12 @@ import mongoose from 'mongoose';
 import dns from 'dns';
 import { promisify } from 'util';
 
-// Force Google DNS — fix SRV lookup failures on restrictive networks
+// Force Google DNS
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
 const resolveSrv = promisify(dns.resolveSrv);
 const resolveTxt = promisify(dns.resolveTxt);
 
-/**
- * Convert mongodb+srv:// URI to standard mongodb:// URI
- * by manually resolving SRV and TXT records via Google DNS.
- */
 async function resolveSrvUri(srvUri: string): Promise<string> {
   const match = srvUri.match(/^mongodb\+srv:\/\/([^@]+)@([^/?]+)\/?([^?]*)(\?.*)?$/);
   if (!match) return srvUri;
@@ -24,12 +20,8 @@ async function resolveSrvUri(srvUri: string): Promise<string> {
   let txtOptions = '';
   try {
     const txtRecords = await resolveTxt(srvHost);
-    if (txtRecords.length > 0) {
-      txtOptions = txtRecords[0].join('');
-    }
-  } catch {
-    // TXT record is optional
-  }
+    if (txtRecords.length > 0) txtOptions = txtRecords[0].join('');
+  } catch { /* optional */ }
 
   let uri = `mongodb://${credentials}@${hosts}/${dbName}?tls=true`;
   if (txtOptions) uri += `&${txtOptions}`;
@@ -42,43 +34,63 @@ async function resolveSrvUri(srvUri: string): Promise<string> {
   return uri;
 }
 
-// Use a dedicated connection instance to avoid conflict with multiple connect() calls
-let cachedConn: typeof mongoose | null = null;
-let cachedPromise: Promise<typeof mongoose> | null = null;
-let cachedUri: string | null = null;
+// Use globalThis to persist across HMR in dev
+interface CachedMongo {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoConn: CachedMongo | undefined;
+}
+const cached: CachedMongo = globalThis._mongoConn ?? { conn: null, promise: null };
+if (!globalThis._mongoConn) globalThis._mongoConn = cached;
 
 export async function connectDB(): Promise<typeof mongoose> {
   const MONGODB_URI = process.env.MONGODB_URI;
-  if (!MONGODB_URI) {
-    throw new Error('Please define the MONGODB_URI environment variable');
+  if (!MONGODB_URI) throw new Error('MONGODB_URI not set');
+
+  // Already connected — reuse
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
   }
 
-  // If already connected with the same URI, return cached
-  if (cachedConn && mongoose.connection.readyState === 1) {
-    return cachedConn;
+  // Connection in progress — await it
+  if (cached.promise) {
+    try {
+      cached.conn = await cached.promise;
+      return cached.conn;
+    } catch {
+      cached.promise = null;
+    }
   }
 
-  if (!cachedPromise) {
-    // Resolve SRV if needed (only on non-Vercel environments)
-    const resolvedUri = (MONGODB_URI.startsWith('mongodb+srv://') && !process.env.VERCEL)
-      ? await resolveSrvUri(MONGODB_URI)
-      : MONGODB_URI;
-
-    cachedUri = resolvedUri;
-    cachedPromise = mongoose.connect(resolvedUri, {
-      bufferCommands: false,
-    });
+  // If already connected (e.g. from another module), just reuse
+  if (mongoose.connection.readyState === 1) {
+    cached.conn = mongoose;
+    return cached.conn;
   }
+
+  // Disconnect stale connections
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+
+  // Resolve SRV → standard URI (skip on Vercel — they handle it)
+  const resolvedUri = (MONGODB_URI.startsWith('mongodb+srv://') && !process.env.VERCEL)
+    ? await resolveSrvUri(MONGODB_URI)
+    : MONGODB_URI;
+
+  cached.promise = mongoose.connect(resolvedUri, { bufferCommands: false });
 
   try {
-    cachedConn = await cachedPromise;
+    cached.conn = await cached.promise;
   } catch (e) {
-    cachedPromise = null;
-    cachedUri = null;
+    cached.promise = null;
     throw e;
   }
 
-  return cachedConn;
+  return cached.conn;
 }
 
 export default connectDB;
