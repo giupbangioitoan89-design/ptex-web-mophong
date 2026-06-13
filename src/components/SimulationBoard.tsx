@@ -156,44 +156,48 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     }
 
     /* =============================================================
-     * INTERACTION GUARD — The core fix for drag feedback loops.
-     * 
-     * Problem: User drags element → iframe posts value to React →
-     * React sends UPDATE_PARAMS back → updateSimulation calls
-     * setPosition/setValue → overrides drag position → stuck.
+     * PER-ELEMENT isDragging TRACKING
      *
-     * Solution: While pointer is down on the board, queue all
-     * incoming UPDATE_PARAMS. Apply them only after release.
-     * JSXGraph handles dragging 100% natively with zero interference.
+     * Key insight: The simulation code already has checks like
+     *   if (!board.sliderA.isDragging) board.sliderA.setValue(...)
+     *   if (!board.M.isDragging) board.M.setPosition(...)
+     *
+     * We just need isDragging to be TRUE on the element being
+     * dragged, and FALSE on everything else. This way:
+     *   - Dragging slider A → A.isDragging=true → skip A.setValue
+     *     but M.isDragging=false → DO call M.setPosition ✅
+     *   - Dragging point M → M.isDragging=true → skip M.setPosition
+     *     but sliderDeg.isDragging=false → DO call sliderDeg.setValue ✅
+     *   - showReadouts() always runs → real-time readout updates ✅
+     *
+     * Previous approach was broken because:
+     * 1. board.on('update') was overriding isDragging based on
+     *    board.draggedObject which doesn't match for sliders
+     * 2. Queuing UPDATE_PARAMS blocked readout updates entirely
      * ============================================================= */
-    var _pointerDown = false;
-    var _pendingParams = null;
 
-    document.addEventListener('mousedown', function() {
-      _pointerDown = true;
-    }, true);
-    document.addEventListener('touchstart', function() {
-      _pointerDown = true;
-    }, { capture: true, passive: true });
-
-    function _onPointerRelease() {
-      _pointerDown = false;
-      if (_pendingParams) {
-        var p = _pendingParams;
-        _pendingParams = null;
-        render(p);
+    function _clearAllDragging() {
+      if (typeof board !== 'undefined' && board && board.objects) {
+        for (var id in board.objects) {
+          if (board.objects.hasOwnProperty(id) && board.objects[id]) {
+            board.objects[id].isDragging = false;
+          }
+        }
       }
     }
 
-    window.addEventListener('mouseup', _onPointerRelease);
-    window.addEventListener('touchend', _onPointerRelease);
-    window.addEventListener('touchcancel', _onPointerRelease);
+    window.addEventListener('mouseup', _clearAllDragging);
+    window.addEventListener('touchend', _clearAllDragging);
+    window.addEventListener('touchcancel', _clearAllDragging);
 
     /* =============================================================
      * DRAG SNAPPING — posts angle values to React during drag
      * ============================================================= */
     function registerDragSnapping(board, point, sliderName) {
+      point.isDragging = false;
+      point.on('down', function() { point.isDragging = true; });
       point.on('drag', function() {
+        point.isDragging = true;
         var x = point.X();
         var y = point.Y();
         var rad = Math.atan2(y, x);
@@ -245,7 +249,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     window.registerDragSnapping = registerDragSnapping;
 
     /* =============================================================
-     * CUSTOM SLIDER — creates JSXGraph sliders with drag handlers
+     * CUSTOM SLIDER — with per-element isDragging tracking
      * ============================================================= */
     function createCustomSlider(board, p1, p2, min, start, max, label, step, color, displayValues) {
       color = color || '#6366f1';
@@ -276,12 +280,18 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
           }
         }
       });
+      /* Track isDragging on the slider itself.
+         JSXGraph sliders are composite: the draggable knob is a sub-point.
+         We track on the slider so the simulation isDragging check works. */
+      s.isDragging = false;
+      s.on('down', function() { s.isDragging = true; });
+      s.on('drag', function() { s.isDragging = true; });
       return s;
     }
     window.createCustomSlider = createCustomSlider;
 
     /* =============================================================
-     * BOARD INIT & RENDER
+     * BOARD INIT & RENDER — always runs, isDragging prevents conflicts
      * ============================================================= */
     var board = null;
     window.currentParams = null;
@@ -311,6 +321,12 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         keepaspectratio: true,
         resize: { enabled: true, throttle: 200 }
       });
+
+      /* Board 'up' event — clear isDragging on ALL objects.
+         This is the ONLY place we clear isDragging. No board.on('update')
+         override — that was the bug in previous versions. */
+      board.on('up', _clearAllDragging);
+
       try {
         ${simulation.simulationCode}
         initSimulation(board, params);
@@ -320,22 +336,16 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     }
 
     /* =============================================================
-     * MESSAGE HANDLER — Queues params during interaction
+     * MESSAGE HANDLER — Always render (no more queuing).
+     * isDragging on each element prevents position overrides
+     * while letting readouts and other elements update freely.
      * ============================================================= */
     window.addEventListener('message', function(e) {
       if (e.data && e.data.type === 'UPDATE_PARAMS') {
-        if (_pointerDown) {
-          /* Pointer is down — user is dragging something.
-             Store params for later, DON'T call render().
-             This prevents setPosition/setValue from fighting the drag. */
-          _pendingParams = e.data.params;
-          window.currentParams = e.data.params;
-          return;
-        }
         render(e.data.params);
       } else if (e.data && e.data.type === 'RELEASE_DRAG') {
-        /* Parent detected mouseup/touchend outside iframe */
-        _onPointerRelease();
+        _clearAllDragging();
+        if (window.currentParams) render(window.currentParams);
       }
     });
 
