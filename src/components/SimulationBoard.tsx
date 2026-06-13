@@ -8,6 +8,20 @@ interface SimulationBoardProps {
   simulation: ISimulation;
 }
 
+
+function parseStyle(styleStr?: string): React.CSSProperties {
+  if (!styleStr) return {};
+  const styles: Record<string, string> = {};
+  styleStr.split(';').forEach(rule => {
+    const [key, value] = rule.split(':');
+    if (key && value) {
+      const camelKey = key.trim().replace(/-./g, c => c.substr(1).toUpperCase());
+      styles[camelKey] = value.trim();
+    }
+  });
+  return styles as React.CSSProperties;
+}
+
 export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [controlValues, setControlValues] = useState<Record<string, number | string | boolean>>(() => {
@@ -19,10 +33,12 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [playingControl, setPlayingControl] = useState<string | null>(null);
+  const [readoutRows, setReadoutRows] = useState<any[]>([]);
 
-  // Clear autoplay state when switching simulations
+  // Clear autoplay state and readouts when switching simulations
   useEffect(() => {
     setPlayingControl(null);
+    setReadoutRows([]);
   }, [simulation]);
 
   // Autoplay effect for sliders
@@ -103,46 +119,6 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       white-space: nowrap;
       box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
-    #readout-panel {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      display: none;
-      flex-direction: column;
-      gap: 4px;
-      pointer-events: none;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(226, 232, 240, 0.7);
-      border-radius: 6px;
-      padding: 6px 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-      font-family: 'Inter', sans-serif;
-      min-width: 210px;
-      max-width: 280px;
-    }
-    .readout-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.75rem;
-      color: #334155;
-      line-height: 1.35;
-    }
-    .readout-label {
-      font-weight: 600;
-      color: #475569;
-      margin-right: 12px;
-    }
-    .readout-value {
-      font-family: 'Courier New', Courier, monospace;
-      font-variant-numeric: tabular-nums;
-      font-weight: 700;
-      color: #0f172a;
-      text-align: right;
-    }
     /* Hardware acceleration rules to completely prevent HTML labels flickering during movement */
     .jxgbox div, .jxgbox .jxglabel {
       -webkit-backface-visibility: hidden !important;
@@ -157,27 +133,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 </head>
 <body>
   <div id="board" class="jxgbox"></div>
-  <div id="readout-panel"></div>
   <script>
     function showReadouts(rows) {
-      var panel = document.getElementById('readout-panel');
-      if (!panel) return;
-      if (!rows || rows.length === 0) {
-        panel.style.display = 'none';
-        return;
-      }
-      panel.style.display = 'flex';
-      var html = '';
-      for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        html += '<div class="readout-row">';
-        var labelStyle = row.labelStyle || '';
-        html += '<span class="readout-label" style="' + labelStyle + '">' + row.label + '</span>';
-        var style = row.valueStyle || '';
-        html += '<span class="readout-value" style="' + style + '">' + row.value + '</span>';
-        html += '</div>';
-      }
-      panel.innerHTML = html;
+      window.parent.postMessage({ type: 'SHOW_READOUTS', rows: rows }, '*');
     }
     window.showReadouts = showReadouts;
 
@@ -379,6 +337,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       } else if (e.data?.type === 'UPDATE_CONTROL_VALUE') {
         const { name, value } = e.data;
         setControlValues(prev => ({ ...prev, [name]: value }));
+      } else if (e.data?.type === 'SHOW_READOUTS') {
+        setReadoutRows(e.data.rows || []);
       }
     };
     window.addEventListener('message', handler);
@@ -442,6 +402,26 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 
         {/* Right Column: Controls */}
         <div className="sim-controls-column">
+          {readoutRows.length > 0 && (
+            <div className="readout-panel-react">
+              <h3>📊 Thông số mô phỏng</h3>
+              <div className="readout-list-react">
+                {readoutRows.map((row, idx) => (
+                  <div key={idx} className="readout-row-react">
+                    <span className="readout-label-react" style={parseStyle(row.labelStyle)}>
+                      {row.label}
+                    </span>
+                    <span 
+                      className="readout-value-react" 
+                      style={parseStyle(row.valueStyle)}
+                      dangerouslySetInnerHTML={{ __html: row.value }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {simulation.controls.length > 0 && (
             <div className="control-panel">
               <h3>⚙️ Điều chỉnh tham số</h3>
