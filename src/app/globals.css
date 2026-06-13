@@ -768,7 +768,7 @@ body::after {
 }
 
 .control-item select option {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
   padding: 8px;
 }
