@@ -2595,10 +2595,10 @@ function updateSimulation(board, params) {
         explanation: 'Công thức nhân đôi là trường hợp đặc biệt của công thức cộng khi a = b. Từ công thức nhân đôi, ta cũng suy ra công thức hạ bậc của sin²a, cos²a và tan²a giúp giảm bậc của các biểu thức lượng giác.',
         keyInsights: [
           '📖 Thơ học công thức nhân đôi dễ thuộc:',
-          'Sin gấp đôi bằng hai lần sin cos: \\\\sin 2a = 2\\\\sin a\\\\cos a',
-          'Cos gấp đôi bằng cos bình trừ sin bình: \\\\cos 2a = \\\\cos^2 a - \\\\sin^2 a = 2\\\\cos^2 a - 1 = 1 - 2\\\\sin^2 a',
-          'Tan gấp đôi bằng hai tan chia một trừ tan bình: \\\\tan 2a = \\\\frac{2\\\\tan a}{1 - \\\\tan^2 a}',
-          'Công thức hạ bậc (giảm bậc): \\\\sin^2 a = \\\\frac{1-\\\\cos 2a}{2}, \\\\cos^2 a = \\\\frac{1+\\\\cos 2a}{2}, \\\\tan^2 a = \\\\frac{1-\\\\cos 2a}{1+\\\\cos 2a}'
+          'Sin gấp đôi bằng hai lần sin cos: $$\\\\sin 2a = 2\\\\sin a\\\\cos a$$',
+          'Cos gấp đôi bằng cos bình trừ sin bình: $$\\\\begin{aligned} \\\\cos 2a &= \\\\cos^2 a - \\\\sin^2 a \\\\\\\\ &= 2\\\\cos^2 a - 1 \\\\\\\\ &= 1 - 2\\\\sin^2 a \\\\end{aligned}$$',
+          'Tan gấp đôi bằng hai tan chia một trừ tan bình: $$\\\\tan 2a = \\\\frac{2\\\\tan a}{1 - \\\\tan^2 a}$$',
+          'Công thức hạ bậc (giảm bậc): $$\\\\begin{aligned} \\\\sin^2 a &= \\\\frac{1-\\\\cos 2a}{2} \\\\\\\\ \\\\cos^2 a &= \\\\frac{1+\\\\cos 2a}{2} \\\\\\\\ \\\\tan^2 a &= \\\\frac{1-\\\\cos 2a}{1+\\\\cos 2a} \\\\end{aligned}$$'
         ],
         tags: ['lượng giác', 'công thức lượng giác', 'nhân đôi', 'hạ bậc', 'toán 11'],
         difficulty: 'basic',
