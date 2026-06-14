@@ -719,29 +719,33 @@ function updateSimulation(board, params) {
   if (board.U && !board.U.isDragging) board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
   if (board.V && !board.V.isDragging) board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
   if (board.W && !board.W.isDragging) board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
-  // Directed angles — normalized to (-180, 180]
+  // Directed angle: sđ(Ou,Ov) = degV - degU, normalized to (-180, 180]
+  // Like vectors: (Ou,Ov) > 0 counterclockwise, (Ov,Ou) = -(Ou,Ov) < 0
   function normAngle(a) {
     a = a % 360;
     if (a > 180) a -= 360;
     if (a <= -180) a += 360;
     return a;
   }
-  var diffUV = normAngle(degV - degU);
-  var diffVW = normAngle(degW - degV);
-  var diffUW = normAngle(degW - degU);
+  function fmtDeg(d) { return (d >= 0 ? '+' : '') + d + '\\u00b0'; }
+  function fmtRad(d) { return (d >= 0 ? '+' : '') + (d / 180).toFixed(2) + '\\u03c0'; }
 
-  var sum = diffUV + diffVW;
-  var k = Math.round((sum - diffUW) / 360);
+  var aUV = normAngle(degV - degU);  // sđ(Ou, Ov)
+  var aVW = normAngle(degW - degV);  // sđ(Ov, Ow)
+  var aUW = normAngle(degW - degU);  // sđ(Ou, Ow)
 
-  var radUV = (diffUV / 180).toFixed(2) + '\\u03c0';
-  var radVW = (diffVW / 180).toFixed(2) + '\\u03c0';
-  var radUW = (diffUW / 180).toFixed(2) + '\\u03c0';
+  var sum = aUV + aVW;
+  var k = Math.round((sum - aUW) / 360);
+
+  // Chasles equation with proper sign display
+  var chaslesLeft = fmtDeg(aUV) + ' + (' + fmtDeg(aVW) + ')';
+  var chaslesRight = fmtDeg(aUW) + (k !== 0 ? ' + ' + (k * 360) + '\\u00b0' : '');
 
   showReadouts([
-    { label: '\\u03b1 G\\u00f3c (Ou, Ov):', value: diffUV + '\\u00b0 (' + radUV + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
-    { label: '\\u03b2 G\\u00f3c (Ov, Ow):', value: diffVW + '\\u00b0 (' + radVW + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
-    { label: '\\u03b3 G\\u00f3c (Ou, Ow):', value: diffUW + '\\u00b0 (' + radUW + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
-    { label: 'H\\u1ec7 th\\u1ee9c Chasles:', value: diffUV + '\\u00b0 + ' + diffVW + '\\u00b0 = ' + diffUW + '\\u00b0 + ' + (k * 360) + '\\u00b0', labelStyle: 'color: #a5b4fc; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #c084fc; font-weight: bold; background: rgba(99, 102, 241, 0.18); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
+    { label: '\\u03b1 = s\\u0111(Ou, Ov):', value: fmtDeg(aUV) + '  (' + fmtRad(aUV) + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
+    { label: '\\u03b2 = s\\u0111(Ov, Ow):', value: fmtDeg(aVW) + '  (' + fmtRad(aVW) + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
+    { label: '\\u03b3 = s\\u0111(Ou, Ow):', value: fmtDeg(aUW) + '  (' + fmtRad(aUW) + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
+    { label: '\\u03b1 + \\u03b2 = \\u03b3 + k\\u00b7360\\u00b0:', value: chaslesLeft + ' = ' + chaslesRight, labelStyle: 'color: #a5b4fc; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #c084fc; font-weight: bold; background: rgba(99, 102, 241, 0.18); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
   ]);
   board.unsuspendUpdate();
 }
@@ -756,12 +760,12 @@ function updateSimulation(board, params) {
         },
         controls: [
           { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt'] },
-          { type: 'slider', name: 'angleU', label: 'Góc tia U (độ)', min: 0, max: 360, step: 5, defaultValue: 30, showIf: { control: 'mode', value: 'Kéo tự do' } },
-          { type: 'slider', name: 'angleV', label: 'Góc tia V (độ)', min: 0, max: 360, step: 5, defaultValue: 120, showIf: { control: 'mode', value: 'Kéo tự do' } },
-          { type: 'slider', name: 'angleW', label: 'Góc tia W (độ)', min: 0, max: 360, step: 5, defaultValue: 270, showIf: { control: 'mode', value: 'Kéo tự do' } },
-          { type: 'slider', name: 'specialU', label: 'Góc đặc biệt U', min: 0, max: 16, step: 1, defaultValue: 1, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
-          { type: 'slider', name: 'specialV', label: 'Góc đặc biệt V', min: 0, max: 16, step: 1, defaultValue: 5, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
-          { type: 'slider', name: 'specialW', label: 'Góc đặc biệt W', min: 0, max: 16, step: 1, defaultValue: 12, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'angleU', label: 'Tia Ou (°)', min: 0, max: 360, step: 5, defaultValue: 30, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'angleV', label: 'Tia Ov (°)', min: 0, max: 360, step: 5, defaultValue: 120, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'angleW', label: 'Tia Ow (°)', min: 0, max: 360, step: 5, defaultValue: 270, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'specialU', label: 'Tia Ou', min: 0, max: 16, step: 1, defaultValue: 1, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialV', label: 'Tia Ov', min: 0, max: 16, step: 1, defaultValue: 5, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'specialW', label: 'Tia Ow', min: 0, max: 16, step: 1, defaultValue: 12, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
         ],
         mathContent: '(Ou, Ov) + (Ov, Ow) \\\\equiv (Ou, Ow) \\\\pmod{2\\\\pi}',
         explanation: 'Hệ thức Chasles khẳng định rằng với ba tia Ou, Ov, Ow bất kỳ trên mặt phẳng định hướng, tổng số đo của hai góc lượng giác (Ou, Ov) và (Ov, Ow) luôn bằng số đo của góc lượng giác (Ou, Ow) cộng với một bội nguyên của 360 độ (hoặc 2π radian).',
