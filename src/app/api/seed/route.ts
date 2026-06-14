@@ -320,6 +320,9 @@ function updateSimulation(board, params) {
         order: 1,
         simulationCode: `
 function initSimulation(board, params) {
+  // Axis labels
+  board.create('text', [1.45, 0.1, math('cos')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorX: 'right' });
+  board.create('text', [0.1, 1.45, math('sin')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorY: 'top' });
   board.suspendUpdate();
 
   // Unit circle
@@ -513,7 +516,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.5, 1.8, -1.5],
+          boundingBox: [-1.8, 1.9, 1.8, -1.1],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -549,8 +552,8 @@ function initSimulation(board, params) {
   board.suspendUpdate();
 
   // Axis labels
-  board.create('text', [1.5, 0.1, 'cos'], { fontSize: 11, color: '#94a3b8', fixed: true, anchorX: 'right', highlight: false });
-  board.create('text', [0.12, 1.5, 'sin'], { fontSize: 11, color: '#94a3b8', fixed: true, anchorX: 'left', highlight: false });
+  board.create('text', [1.45, 0.1, math('cos')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorX: 'right' });
+  board.create('text', [0.1, 1.45, math('sin')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorY: 'top' });
 
   // Unit circle
   board.circle = board.create('circle', [[0,0], 1], {
@@ -2199,6 +2202,10 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
+
+  // Axis labels
+  board.create('text', [1.45, 0.1, math('cos')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorX: 'right' });
+  board.create('text', [0.1, 1.45, math('sin')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorY: 'top' });
   
   board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8', strokeWidth: 2, highlight: false, fixed: true
@@ -2312,7 +2319,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.75, 1.8, -1.75],
+          boundingBox: [-1.8, 2.2, 1.8, -1.3],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -2345,6 +2352,10 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
+
+  // Axis labels
+  board.create('text', [1.45, 0.1, math('cos')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorX: 'right' });
+  board.create('text', [0.1, 1.45, math('sin')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorY: 'top' });
   
   board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8', strokeWidth: 2, highlight: false, fixed: true
@@ -2418,7 +2429,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.75, 1.8, -1.75],
+          boundingBox: [-1.8, 2.2, 1.8, -1.3],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -2449,6 +2460,10 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
+
+  // Axis labels
+  board.create('text', [1.45, 0.1, math('cos')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorX: 'right' });
+  board.create('text', [0.1, 1.45, math('sin')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorY: 'top' });
   
   board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8', strokeWidth: 2, highlight: false, fixed: true
@@ -2533,7 +2548,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.75, 1.8, -1.75],
+          boundingBox: [-1.8, 2.2, 1.8, -1.3],
           showAxis: true,
           showGrid: true,
           theme: 'light',
@@ -2566,6 +2581,10 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
+
+  // Axis labels
+  board.create('text', [1.75, 0.1, math('cos')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorX: 'right' });
+  board.create('text', [0.1, 1.75, math('sin')], { fontSize: 13, color: '#94a3b8', fixed: true, highlight: false, anchorY: 'top' });
   
   board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#cbd5e1', strokeWidth: 1.5, highlight: false, fixed: true
@@ -2677,7 +2696,7 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-2.1, 1.85, 2.1, -1.85],
+          boundingBox: [-2.1, 2.3, 2.1, -1.4],
           showAxis: true,
           showGrid: true,
           theme: 'light',

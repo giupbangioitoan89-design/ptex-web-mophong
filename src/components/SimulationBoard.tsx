@@ -583,29 +583,25 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                       style={{ '--ctrl-color': themeColor } as React.CSSProperties}
                     >
                       {ctrl.type === 'slider' && (
-                        <>
-                          <div className="glass-slider-header">
-                            <span className="glass-slider-label">{ctrl.label}</span>
-                            <div className="glass-slider-actions">
-                              <button
-                                type="button"
-                                onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
-                                className={`glass-play-btn ${playingControl === ctrl.name ? 'active' : ''}`}
-                                title={playingControl === ctrl.name ? 'Tạm dừng' : 'Chạy tự động'}
-                              >
-                                {playingControl === ctrl.name ? '⏸' : '▶'}
-                              </button>
-                              <span className="glass-slider-value">
-                                {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
-                                  ? ctrl.displayValues[controlValues[ctrl.name] as number]
-                                  : typeof controlValues[ctrl.name] === 'number'
-                                  ? (controlValues[ctrl.name] as number).toFixed(
-                                      ctrl.step && ctrl.step < 0.1 ? 2 : ctrl.step && ctrl.step < 1 ? 1 : 0
-                                    )
-                                  : String(controlValues[ctrl.name])}
-                              </span>
-                            </div>
-                          </div>
+                        <div className="glass-slider-row" style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '10px' }}>
+                          <span className="glass-slider-label">{ctrl.label}</span>
+                          <button
+                            type="button"
+                            onClick={() => setPlayingControl(prev => prev === ctrl.name ? null : ctrl.name)}
+                            className={`glass-play-btn ${playingControl === ctrl.name ? 'active' : ''}`}
+                            title={playingControl === ctrl.name ? 'Tạm dừng' : 'Chạy tự động'}
+                          >
+                            {playingControl === ctrl.name ? '⏸' : '▶'}
+                          </button>
+                          <span className="glass-slider-value">
+                            {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
+                              ? ctrl.displayValues[controlValues[ctrl.name] as number]
+                              : typeof controlValues[ctrl.name] === 'number'
+                              ? (controlValues[ctrl.name] as number).toFixed(
+                                  ctrl.step && ctrl.step < 0.1 ? 2 : ctrl.step && ctrl.step < 1 ? 1 : 0
+                                )
+                              : String(controlValues[ctrl.name])}
+                          </span>
                           <input
                             type="range"
                             min={ctrl.min ?? 0}
@@ -615,7 +611,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                             onChange={(e) => handleControlChange(ctrl.name, Number(e.target.value))}
                             className="glass-range"
                           />
-                        </>
+                        </div>
                       )}
                       {ctrl.type === 'checkbox' && (
                         <label className="glass-checkbox">
