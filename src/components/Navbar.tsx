@@ -20,9 +20,12 @@ export default function Navbar() {
     <nav className="navbar">
       <Link href="/" className="navbar-logo">
         <span className="logo-icon" style={{ overflow: 'hidden' }}>
-          <img src="/logo.png" alt="PTex" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src="/icon.png" alt="PTex" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }} />
         </span>
-        <span>PTex Mô Phỏng</span>
+        <span className="logo-text">
+          <span className="logo-brand">PTex</span>
+          <span className="logo-sub">Mô Phỏng Toán</span>
+        </span>
       </Link>
 
       <div className="grade-selector">

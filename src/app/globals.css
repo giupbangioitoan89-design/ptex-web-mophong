@@ -87,15 +87,25 @@ body::after {
 .navbar-logo {
   display: flex; align-items: center; gap: 10px;
   text-decoration: none; color: var(--text-primary);
-  font-weight: 700; font-size: 1.15rem;
-  letter-spacing: -0.02em;
 }
 .navbar-logo .logo-icon {
-  width: 34px; height: 34px; border-radius: 9px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  width: 34px; height: 34px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1rem;
+  flex-shrink: 0;
   box-shadow: 0 2px 12px rgba(99, 102, 241, 0.35);
+  overflow: hidden;
+}
+.navbar-logo .logo-text {
+  display: flex; flex-direction: column; line-height: 1.15;
+}
+.navbar-logo .logo-brand {
+  font-weight: 800; font-size: 1.1rem; letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #e0e7ff, #818cf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.navbar-logo .logo-sub {
+  font-size: 0.62rem; font-weight: 500; color: var(--text-muted);
+  letter-spacing: 0.04em;
 }
 .grade-selector {
   display: flex; gap: 3px;
