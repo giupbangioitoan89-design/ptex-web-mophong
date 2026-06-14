@@ -36,6 +36,49 @@ function getControlThemeColor(name: string): string {
   return '#6366f1';
 }
 
+function renderInsightItem(insight: string, index: number) {
+  const isHeader = insight.startsWith('📖') || insight.startsWith('📌') || insight.startsWith('💡');
+  if (isHeader) {
+    const icon = insight.slice(0, 2);
+    const text = insight.slice(2).trim();
+    return (
+      <li key={index} className="insight-header-item">
+        <span className="insight-header-icon">{icon}</span>
+        <span className="insight-header-text">{text}</span>
+      </li>
+    );
+  }
+
+  if (insight.includes(':')) {
+    const [poem, formula] = insight.split(':');
+    return (
+      <li key={index} className="insight-poem-item">
+        <div className="insight-poem-text">“ {poem.trim()} ”</div>
+        <div className="insight-poem-formula">
+          <MathText>{formula.trim()}</MathText>
+        </div>
+      </li>
+    );
+  }
+
+  const lower = insight.toLowerCase();
+  const isPoemLine = lower.startsWith('cos ') || lower.startsWith('sin ') || lower.startsWith('tan ') || 
+                     lower.includes('bằng') || lower.includes('thì') || lower.includes('cộng') || lower.includes('trừ');
+  if (isPoemLine && insight.length < 100 && !insight.includes('hạ bậc') && !insight.includes('tích phân')) {
+    return (
+      <li key={index} className="insight-poem-item alone">
+        <div className="insight-poem-text">“ {insight.trim()} ”</div>
+      </li>
+    );
+  }
+
+  return (
+    <li key={index} className="insight-general-item">
+      <MathText>{insight}</MathText>
+    </li>
+  );
+}
+
 export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [controlValues, setControlValues] = useState<Record<string, number | string | boolean>>(() => {
@@ -646,9 +689,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
             <div className="insight-box">
               <h4>💡 Điểm chính</h4>
               <ul>
-                {simulation.keyInsights.map((insight, i) => (
-                  <li key={i}><MathText>{insight}</MathText></li>
-                ))}
+                {simulation.keyInsights.map((insight, i) => renderInsightItem(insight, i))}
               </ul>
             </div>
           )}

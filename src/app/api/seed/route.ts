@@ -2326,9 +2326,9 @@ function updateSimulation(board, params) {
         explanation: 'Công thức cộng lượng giác cho phép biến đổi các hàm lượng giác của tổng/hiệu thành tích và tổng của các góc thành phần. Đây là nền tảng để suy ra tất cả các nhóm công thức lượng giác khác.',
         keyInsights: [
           '📖 Thơ học công thức cộng dễ thuộc:',
-          'Cos thì cos cos sin sin, coi chừng trái dấu: cos(a±b) = cos a cos b ∓ sin a sin b',
-          'Sin thì sin cos cos sin, cùng dấu vững tin: sin(a±b) = sin a cos b ± cos a sin b',
-          'Tan thì tan nọ tan kia, thương sầu cộng lại chia một trừ tích tan'
+          'Cos thì cos cos sin sin, coi chừng trái dấu: \\\\cos(a \\\\pm b) = \\\\cos a \\\\cos b \\\\mp \\\\sin a \\\\sin b',
+          'Sin thì sin cos cos sin, cùng dấu vững tin: \\\\sin(a \\\\pm b) = \\\\sin a \\\\cos b \\\\pm \\\\cos a \\\\sin b',
+          'Tan thì tan nọ tan kia, thương sầu cộng lại chia một trừ tích tan: \\\\tan(a \\\\pm b) = \\\\frac{\\\\tan a \\\\pm \\\\tan b}{1 \\\\mp \\\\tan a \\\\tan b}'
         ],
         tags: ['lượng giác', 'công thức lượng giác', 'công thức cộng', 'toán 11'],
         difficulty: 'intermediate',
@@ -2430,8 +2430,8 @@ function updateSimulation(board, params) {
         explanation: 'Công thức nhân đôi là trường hợp đặc biệt của công thức cộng khi hai góc bằng nhau (a = b). Từ công thức nhân đôi, ta cũng có thể suy ngược ra công thức hạ bậc để giảm lũy thừa của sin và cos.',
         keyInsights: [
           '📖 Thơ học công thức nhân đôi dễ thuộc:',
-          'Sin gấp đôi bằng hai lần sin cos: sin 2a = 2 sin a cos a',
-          'Cos gấp đôi bằng cos bình trừ sin bình: cos 2a = cos²a - sin²a = 2cos²a - 1 = 1 - 2sin²a',
+          'Sin gấp đôi bằng hai lần sin cos: \\\\sin 2a = 2\\\\sin a\\\\cos a',
+          'Cos gấp đôi bằng cos bình trừ sin bình: \\\\cos 2a = \\\\cos^2 a - \\\\sin^2 a = 2\\\\cos^2 a - 1 = 1 - 2\\\\sin^2 a',
           'Từ cos 2a suy ra công thức hạ bậc rất quan trọng khi giải toán tích phân và lượng giác.'
         ],
         tags: ['lượng giác', 'công thức lượng giác', 'nhân đôi', 'hạ bậc', 'toán 11'],
@@ -2547,9 +2547,9 @@ function updateSimulation(board, params) {
         explanation: 'Công thức biến đổi tích thành tổng giúp phân tách tích của hai hàm số lượng giác thành tổng/hiệu. Điều này đặc biệt có ích trong tích phân và các bài toán biến đổi dao động.',
         keyInsights: [
           '📖 Thơ học tích thành tổng dễ thuộc:',
-          'Cos cos bằng nửa cos tổng cộng cos hiệu: cos a cos b = 1/2 [cos(a+b) + cos(a-b)]',
-          'Sin sin bằng nửa cos hiệu trừ cos tổng: sin a sin b = 1/2 [cos(a-b) - cos(a+b)]',
-          'Sin cos bằng nửa sin tổng cộng sin hiệu: sin a cos b = 1/2 [sin(a+b) + sin(a-b)]'
+          'Cos cos bằng nửa cos tổng cộng cos hiệu: \\\\cos a\\\\cos b = \\\\frac{1}{2}[\\\\cos(a+b) + \\\\cos(a-b)]',
+          'Sin sin bằng nửa cos hiệu trừ cos tổng: \\\\sin a\\\\sin b = \\\\frac{1}{2}[\\\\cos(a-b) - \\\\cos(a+b)]',
+          'Sin cos bằng nửa sin tổng cộng sin hiệu: \\\\sin a\\\\cos b = \\\\frac{1}{2}[\\\\sin(a+b) + \\\\sin(a-b)]'
         ],
         tags: ['lượng giác', 'công thức lượng giác', 'tích thành tổng', 'toán 11'],
         difficulty: 'intermediate',
@@ -2691,10 +2691,10 @@ function updateSimulation(board, params) {
         explanation: 'Phép cộng lượng giác tương đương với phép tổng hợp dao động hoặc tổng vectơ. Bằng hình học, ta thấy vectơ tổng O->S luôn có cùng hướng với góc trung bình (u+v)/2 và có chiều dài gấp 2*cos((u-v)/2) lần bán kính.',
         keyInsights: [
           '📖 Thơ học tổng thành tích dễ thuộc:',
-          'Cos cộng cos bằng hai cos cos: cos u + cos v = 2 cos((u+v)/2) cos((u-v)/2)',
-          'Cos trừ cos bằng trừ hai sin sin: cos u - cos v = -2 sin((u+v)/2) sin((u-v)/2)',
-          'Sin cộng sin bằng hai sin cos',
-          'Sin trừ sin bằng hai cos sin'
+          'Cos cộng cos bằng hai cos cos: \\\\cos u + \\\\cos v = 2\\\\cos\\\\frac{u+v}{2}\\\\cos\\\\frac{u-v}{2}',
+          'Cos trừ cos bằng trừ hai sin sin: \\\\cos u - \\\\cos v = -2\\\\sin\\\\frac{u+v}{2}\\\\sin\\\\frac{u-v}{2}',
+          'Sin cộng sin bằng hai sin cos: \\\\sin u + \\\\sin v = 2\\\\sin\\\\frac{u+v}{2}\\\\cos\\\\frac{u-v}{2}',
+          'Sin trừ sin bằng hai cos sin: \\\\sin u - \\\\sin v = 2\\\\cos\\\\frac{u+v}{2}\\\\sin\\\\frac{u-v}{2}'
         ],
         tags: ['lượng giác', 'công thức lượng giác', 'tổng thành tích', 'toán 11'],
         difficulty: 'intermediate',
