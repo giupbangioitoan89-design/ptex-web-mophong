@@ -524,8 +524,8 @@ function updateSimulation(board, params) {
           { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
           { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
         ],
-        mathContent: '\\alpha = \\theta + k \\cdot 2\\pi \\quad (k \\in \\mathbb{Z}, \\ 0 \\le \\theta < 2\\pi)',
-        explanation: 'Một góc lượng giác có vô số số đo sai lệch nhau bội nguyên của $2\\pi$ (hoặc $360^\\circ$). Cung xoắn ốc trực quan hóa số vòng quay lượng giác (chiều quay ngược chiều kim đồng hồ là chiều dương, cùng chiều kim đồng hồ là chiều âm).',
+        mathContent: '\\\\alpha = \\\\theta + k \\\\cdot 2\\\\pi \\\\quad (k \\\\in \\\\mathbb{Z}, \\\\ 0 \\\\le \\\\theta < 2\\\\pi)',
+        explanation: 'Một góc lượng giác có vô số số đo sai lệch nhau bội nguyên của $2\\\\pi$ (hoặc $360^\\\\circ$). Cung xoắn ốc trực quan hóa số vòng quay lượng giác (chiều quay ngược chiều kim đồng hồ là chiều dương, cùng chiều kim đồng hồ là chiều âm).',
         keyInsights: [
           'Chiều dương (+): màu xanh lá, quay ngược chiều kim đồng hồ',
           'Chiều âm (-): màu đỏ, quay cùng chiều kim đồng hồ',
@@ -563,21 +563,17 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 14, offset: [-15, -15] }
   });
 
-  // U — position controlled by degU slider
+  // Points U, V, W
   board.U = board.create('point', [1, 0], {
     name: math('U'), size: 5, fillColor: '#10b981', strokeColor: '#059669',
     label: { display: 'html', fontSize: 14, offset: [10, 10] }
   });
-
-  // V position derived from alpha
   board.V = board.create('point', [0, 1], {
-    name: math('V'), size: 5, fillColor: '#f59e0b', strokeColor: '#d97706', fixed: true,
+    name: math('V'), size: 5, fillColor: '#f59e0b', strokeColor: '#d97706',
     label: { display: 'html', fontSize: 14, offset: [-15, 15] }
   });
-
-  // W position derived from alpha + beta
   board.W = board.create('point', [0, -1], {
-    name: math('W'), size: 5, fillColor: '#6366f1', strokeColor: '#4f46e5', fixed: true,
+    name: math('W'), size: 5, fillColor: '#6366f1', strokeColor: '#4f46e5',
     label: { display: 'html', fontSize: 14, offset: [10, -10] }
   });
 
@@ -586,56 +582,96 @@ function initSimulation(board, params) {
   board.OV = board.create('segment', [board.O, board.V], { strokeColor: '#f59e0b', strokeWidth: 1.5 });
   board.OW = board.create('segment', [board.O, board.W], { strokeColor: '#6366f1', strokeWidth: 1.5 });
 
-  // Colored angle arcs with labels
-  board.angleUV = board.create('angle', [board.U, board.O, board.V], {
-    radius: 0.28, name: function() { return '\\u03b1'; },
-    fillColor: 'rgba(16, 185, 129, 0.15)', strokeColor: '#10b981', strokeWidth: 2,
-    label: { fontSize: 13, color: '#10b981', offset: [0, 0] }
+  // Custom directed angle arcs (sectors) — drawn correctly for +/- direction
+  // Convention: + = counterclockwise, - = clockwise
+  board.sectorAlpha = board.create('curve', [[], []], {
+    strokeColor: '#10b981', strokeWidth: 2, fillColor: 'rgba(16,185,129,0.18)', fillOpacity: 1, highlight: false
   });
-  board.angleVW = board.create('angle', [board.V, board.O, board.W], {
-    radius: 0.38, name: function() { return '\\u03b2'; },
-    fillColor: 'rgba(245, 158, 11, 0.12)', strokeColor: '#f59e0b', strokeWidth: 2,
-    label: { fontSize: 13, color: '#f59e0b', offset: [0, 0] }
+  board.sectorBeta = board.create('curve', [[], []], {
+    strokeColor: '#f59e0b', strokeWidth: 2, fillColor: 'rgba(245,158,11,0.15)', fillOpacity: 1, highlight: false
   });
-  board.angleUW = board.create('angle', [board.U, board.O, board.W], {
-    radius: 0.48, name: function() { return '\\u03b3'; },
-    fillColor: 'rgba(99, 102, 241, 0.1)', strokeColor: '#6366f1', strokeWidth: 2, dash: 2,
-    label: { fontSize: 13, color: '#6366f1', offset: [0, 0] }
+  board.sectorGamma = board.create('curve', [[], []], {
+    strokeColor: '#6366f1', strokeWidth: 2, dash: 2, fillColor: 'rgba(99,102,241,0.1)', fillOpacity: 1, highlight: false
   });
 
-  // Outer arcs
-  board.arcUV = board.create('arc', [board.O, board.U, board.V], {
-    strokeColor: '#10b981', strokeWidth: 3, withLabel: false, selection: 'minor'
-  });
-  board.arcVW = board.create('arc', [board.O, board.V, board.W], {
-    strokeColor: '#f59e0b', strokeWidth: 3, withLabel: false, selection: 'minor'
-  });
-  board.arcUW = board.create('arc', [board.O, board.U, board.W], {
-    strokeColor: '#6366f1', strokeWidth: 2, dash: 1, withLabel: false, selection: 'minor'
-  });
+  // Angle labels
+  board.lblAlpha = board.create('text', [0.2, 0.2, '\\u03b1'], { fontSize: 13, color: '#10b981', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+  board.lblBeta = board.create('text', [0.2, 0.2, '\\u03b2'], { fontSize: 13, color: '#f59e0b', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+  board.lblGamma = board.create('text', [0.2, 0.2, '\\u03b3'], { fontSize: 13, color: '#6366f1', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+  // Direction arrow indicators on outer circle
+  board.arcUV = board.create('curve', [[], []], { strokeColor: '#10b981', strokeWidth: 3, highlight: false });
+  board.arcVW = board.create('curve', [[], []], { strokeColor: '#f59e0b', strokeWidth: 3, highlight: false });
+  board.arcUW = board.create('curve', [[], []], { strokeColor: '#6366f1', strokeWidth: 2, dash: 1, highlight: false });
 
   board.unsuspendUpdate();
   updateSimulation(board, params);
 }
 
+// Helper: draw a filled sector arc from startDeg sweeping angleDeg at radius r
+// + angleDeg = counterclockwise, - angleDeg = clockwise
+function drawSector(curve, r, startDeg, angleDeg, N) {
+  var xArr = [0], yArr = [0]; // start at center
+  var s = startDeg * Math.PI / 180;
+  var step = (angleDeg * Math.PI / 180) / N;
+  for (var i = 0; i <= N; i++) {
+    var t = s + i * step;
+    xArr.push(r * Math.cos(t));
+    yArr.push(r * Math.sin(t));
+  }
+  xArr.push(0); yArr.push(0); // close to center
+  curve.dataX = xArr;
+  curve.dataY = yArr;
+}
+
+// Helper: draw an arc on the unit circle from startDeg sweeping angleDeg
+function drawCircleArc(curve, startDeg, angleDeg, N) {
+  var xArr = [], yArr = [];
+  var s = startDeg * Math.PI / 180;
+  var step = (angleDeg * Math.PI / 180) / N;
+  for (var i = 0; i <= N; i++) {
+    var t = s + i * step;
+    xArr.push(Math.cos(t));
+    yArr.push(Math.sin(t));
+  }
+  curve.dataX = xArr;
+  curve.dataY = yArr;
+}
+
 function updateSimulation(board, params) {
   board.suspendUpdate();
-  // 3 params: degU = starting angle of Ou, alpha = sd(Ou,Ov), beta = sd(Ov,Ow)
-  var degU = params.degU !== undefined ? params.degU : 0;
-  var alpha = params.alpha !== undefined ? params.alpha : 90;
-  var beta = params.beta !== undefined ? params.beta : 60;
 
-  // Positions: U at degU, V at degU+alpha, W at degU+alpha+beta
+  // Params
+  var degU = params.degU !== undefined ? params.degU : 0;
+  var alpha = params.alpha !== undefined ? params.alpha : 90;  // sd(Ou,Ov)
+  var beta = params.beta !== undefined ? params.beta : 60;     // sd(Ov,Ow)
+
+  // Convention: + = counterclockwise, - = clockwise
+  // Positions on unit circle
   var degV = degU + alpha;
   var degW = degU + alpha + beta;
 
-  var radU = degU * Math.PI / 180;
-  var radV = degV * Math.PI / 180;
-  var radW = degW * Math.PI / 180;
+  board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(degU * Math.PI / 180), Math.sin(degU * Math.PI / 180)]);
+  board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(degV * Math.PI / 180), Math.sin(degV * Math.PI / 180)]);
+  board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(degW * Math.PI / 180), Math.sin(degW * Math.PI / 180)]);
 
-  board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
-  board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
-  board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
+  // Draw directed sector arcs (correct direction for + and -)
+  drawSector(board.sectorAlpha, 0.28, degU, alpha, 40);
+  drawSector(board.sectorBeta, 0.38, degV, beta, 40);
+  drawSector(board.sectorGamma, 0.48, degU, alpha + beta, 40);
+
+  // Draw outer circle arcs
+  drawCircleArc(board.arcUV, degU, alpha, 40);
+  drawCircleArc(board.arcVW, degV, beta, 40);
+  drawCircleArc(board.arcUW, degU, alpha + beta, 40);
+
+  // Position labels at midpoint of each arc
+  var midA = (degU + alpha / 2) * Math.PI / 180;
+  var midB = (degV + beta / 2) * Math.PI / 180;
+  var midG = (degU + (alpha + beta) / 2) * Math.PI / 180;
+  board.lblAlpha.setPosition(JXG.COORDS_BY_USER, [0.38 * Math.cos(midA), 0.38 * Math.sin(midA)]);
+  board.lblBeta.setPosition(JXG.COORDS_BY_USER, [0.50 * Math.cos(midB), 0.50 * Math.sin(midB)]);
+  board.lblGamma.setPosition(JXG.COORDS_BY_USER, [0.62 * Math.cos(midG), 0.62 * Math.sin(midG)]);
 
   // gamma = sd(Ou, Ow) normalized to (-180, 180]
   function normAngle(a) {
