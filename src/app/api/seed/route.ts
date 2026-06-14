@@ -2329,7 +2329,7 @@ function updateSimulation(board, params) {
           { type: 'slider', name: 'a', label: 'Góc a (độ)', min: 0, max: 360, step: 5, defaultValue: 60 },
           { type: 'slider', name: 'b', label: 'Góc b (độ)', min: 0, max: 360, step: 5, defaultValue: 45 },
         ],
-        mathContent: '\\cos(a \\pm b) = \\cos a \\cos b \\mp \\sin a \\sin b \\quad \\text{và} \\quad \\sin(a \\pm b) = \\sin a \\cos b \\pm \\cos a \\sin b',
+        mathContent: '\\\\begin{aligned} \\\\cos(a \\\\pm b) &= \\\\cos a \\\\cos b \\\\mp \\\\sin a \\\\sin b \\\\\\\\ \\\\sin(a \\\\pm b) &= \\\\sin a \\\\cos b \\\\pm \\\\cos a \\\\sin b \\\\\\\\ \\\\tan(a \\\\pm b) &= \\\\frac{\\\\tan a \\\\pm \\\\tan b}{1 \\\\mp \\\\tan a \\\\tan b} \\\\end{aligned}',
         explanation: 'Công thức cộng lượng giác cho phép biến đổi các hàm lượng giác của tổng/hiệu thành tích và tổng của các góc thành phần. Đây là nền tảng để suy ra tất cả các nhóm công thức lượng giác khác.',
         keyInsights: [
           '📖 Thơ học công thức cộng dễ thuộc:',
@@ -2591,7 +2591,7 @@ function updateSimulation(board, params) {
           { type: 'select', name: 'mode', label: 'Công thức', defaultValue: 'sin 2a, cos 2a', options: ['sin 2a, cos 2a', 'tan 2a', 'hạ bậc'] },
           { type: 'slider', name: 'a', label: 'Góc a (độ)', min: 0, max: 360, step: 5, defaultValue: 30 },
         ],
-        mathContent: '\\sin 2a = 2\\sin a\\cos a \\quad \\text{và} \\quad \\cos 2a = \\cos^2 a - \\sin^2 a = 2\\cos^2 a - 1 = 1 - 2\\sin^2 a \\quad \\text{và} \\quad \\tan 2a = \\frac{2\\tan a}{1-\\tan^2 a}',
+        mathContent: '\\\\begin{aligned} \\\\sin 2a &= 2\\\\sin a\\\\cos a \\\\\\\\ \\\\cos 2a &= \\\\cos^2 a - \\\\sin^2 a = 2\\\\cos^2 a - 1 = 1 - 2\\\\sin^2 a \\\\\\\\ \\\\tan 2a &= \\\\frac{2\\\\tan a}{1-\\\\tan^2 a} \\\\end{aligned}',
         explanation: 'Công thức nhân đôi là trường hợp đặc biệt của công thức cộng khi a = b. Từ công thức nhân đôi, ta cũng suy ra công thức hạ bậc của sin²a, cos²a và tan²a giúp giảm bậc của các biểu thức lượng giác.',
         keyInsights: [
           '📖 Thơ học công thức nhân đôi dễ thuộc:',
@@ -2893,7 +2893,7 @@ function updateSimulation(board, params) {
           { type: 'slider', name: 'a', label: 'Góc a (độ)', min: 0, max: 360, step: 5, defaultValue: 50 },
           { type: 'slider', name: 'b', label: 'Góc b (độ)', min: 0, max: 360, step: 5, defaultValue: 20 },
         ],
-        mathContent: '\\cos a\\cos b = \\frac{1}{2}[\\cos(a-b) + \\cos(a+b)] \\quad \\text{và} \\quad \\sin a\\sin b = \\frac{1}{2}[\\cos(a-b) - \\cos(a+b)]',
+        mathContent: '\\\\begin{aligned} \\\\cos a\\\\cos b &= \\\\frac{1}{2}[\\\\cos(a-b) + \\\\cos(a+b)] \\\\\\\\ \\\\sin a\\\\sin b &= \\\\frac{1}{2}[\\\\cos(a-b) - \\\\cos(a+b)] \\\\\\\\ \\\\sin a\\\\cos b &= \\\\frac{1}{2}[\\\\sin(a+b) + \\\\sin(a-b)] \\\\end{aligned}',
         explanation: 'Công thức biến đổi tích thành tổng giúp phân tách tích của hai hàm số lượng giác thành tổng/hiệu. Điều này đặc biệt có ích trong tích phân và các bài toán biến đổi dao động.',
         keyInsights: [
           '📖 Thơ học tích thành tổng dễ thuộc:',
@@ -3116,7 +3116,7 @@ function updateSimulation(board, params) {
           { type: 'slider', name: 'u', label: 'Góc u (độ)', min: 0, max: 360, step: 5, defaultValue: 70 },
           { type: 'slider', name: 'v', label: 'Góc v (độ)', min: 0, max: 360, step: 5, defaultValue: 10 },
         ],
-        mathContent: '\\cos u + \\cos v = 2\\cos\\frac{u+v}{2}\\cos\\frac{u-v}{2} \\quad \\text{và} \\quad \\sin u + \\sin v = 2\\sin\\frac{u+v}{2}\\cos\\frac{u-v}{2}',
+        mathContent: '\\\\begin{aligned} \\\\cos u + \\\\cos v &= 2\\\\cos\\\\frac{u+v}{2}\\\\cos\\\\frac{u-v}{2} \\\\\\\\ \\\\cos u - \\\\cos v &= -2\\\\sin\\\\frac{u+v}{2}\\\\sin\\\\frac{u-v}{2} \\\\\\\\ \\\\sin u + \\\\sin v &= 2\\\\sin\\\\frac{u+v}{2}\\\\cos\\\\frac{u-v}{2} \\\\\\\\ \\\\sin u - \\\\sin v &= 2\\\\cos\\\\frac{u+v}{2}\\\\sin\\\\frac{u-v}{2} \\\\end{aligned}',
         explanation: 'Phép cộng lượng giác tương đương với phép tổng hợp dao động hoặc tổng vectơ. Bằng hình học, ta thấy vectơ tổng O->S luôn có cùng hướng với góc trung bình (u+v)/2 và có chiều dài gấp 2*cos((u-v)/2) lần bán kính.',
         keyInsights: [
           '📖 Thơ học tổng thành tích dễ thuộc:',
