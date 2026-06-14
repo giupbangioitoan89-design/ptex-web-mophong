@@ -582,13 +582,14 @@ body::after {
 
 /* Golden literary text for mnemonic poems */
 .insight-poem-text {
-  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 1.05rem;
   font-weight: 600;
-  font-style: italic;
+  font-style: normal;
   color: #fef08a; /* Soft warm golden yellow */
-  text-shadow: 0 0 12px rgba(254, 240, 138, 0.4), 0 2px 4px rgba(0, 0, 0, 0.4);
-  line-height: 1.5;
+  text-shadow: 0 0 8px rgba(254, 240, 138, 0.3), 0 1px 2px rgba(0, 0, 0, 0.5);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
 /* Formula block aligned inside the poem box */
