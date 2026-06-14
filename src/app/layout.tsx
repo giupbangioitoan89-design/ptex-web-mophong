@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     "Nền tảng mô phỏng toán học trực quan cho chương trình Toán 10, 11, 12 — Kết nối tri thức. Tương tác, khám phá, hiểu bản chất.",
   keywords: ["toán học", "mô phỏng", "trực quan", "lớp 10", "lớp 11", "lớp 12", "kết nối tri thức"],
   authors: [{ name: "PTex - Ths. Võ Thanh Phong" }],
+  icons: {
+    icon: "/icon.svg",
+  },
   openGraph: {
     title: "PTex Mô Phỏng Toán",
     description: "Trực quan hóa Toán học 10-11-12 — Kết nối tri thức",
