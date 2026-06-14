@@ -2494,8 +2494,8 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 13, offset: [10, 10] }
   });
   
-  board.create('segment', [board.O, board.U], { strokeColor: '#fb923c', strokeWidth: 1.5 });
-  board.create('segment', [board.O, board.V], { strokeColor: '#10b981', strokeWidth: 1.5 });
+  board.create('segment', [board.O, board.U], { strokeColor: 'rgba(251, 146, 60, 0.35)', strokeWidth: 1.2 });
+  board.create('segment', [board.O, board.V], { strokeColor: 'rgba(16, 185, 129, 0.35)', strokeWidth: 1.2 });
 
   // P(a+b)
   board.P = board.create('point', [
@@ -2530,9 +2530,6 @@ function initSimulation(board, params) {
     name: math('Q(a-b)'), size: 4, fillColor: '#0ea5e9', strokeColor: '#0284c7', fixed: true,
     label: { display: 'html', fontSize: 13, offset: [10, 10] }
   });
-
-  board.create('segment', [board.O, board.P], { strokeColor: '#c084fc', strokeWidth: 1.2, dash: 1 });
-  board.create('segment', [board.O, board.Q], { strokeColor: '#0ea5e9', strokeWidth: 1.2, dash: 1 });
   
   // Connecting chord PQ
   board.chordPQ = board.create('segment', [board.P, board.Q], {
@@ -2562,10 +2559,10 @@ function initSimulation(board, params) {
     visible: function() { return board.currentMode === 'cos a cos b'; }
   });
 
-  // Projection dashed lines for X-axis
-  board.create('segment', [board.P, board.Px], { strokeColor: '#c084fc', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a sin b'; } });
-  board.create('segment', [board.Q, board.Qx], { strokeColor: '#0ea5e9', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a sin b'; } });
-  board.create('segment', [board.M, board.Mx], { strokeColor: '#3b82f6', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'cos a cos b'; } });
+  // Projection dashed lines for X-axis (super faint to prevent clutter)
+  board.create('segment', [board.P, board.Px], { strokeColor: 'rgba(192, 132, 252, 0.18)', strokeWidth: 0.8, dash: 2, visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a sin b'; } });
+  board.create('segment', [board.Q, board.Qx], { strokeColor: 'rgba(14, 165, 233, 0.18)', strokeWidth: 0.8, dash: 2, visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a sin b'; } });
+  board.create('segment', [board.M, board.Mx], { strokeColor: 'rgba(59, 130, 246, 0.45)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos a cos b'; } });
 
   // Projections on Y-axis (for sin a cos b)
   board.Py = board.create('point', [0, function() { return board.P.Y(); }], {
@@ -2582,24 +2579,24 @@ function initSimulation(board, params) {
     visible: function() { return board.currentMode === 'sin a cos b'; }
   });
 
-  // Projection dashed lines for Y-axis
-  board.create('segment', [board.P, board.Py], { strokeColor: '#c084fc', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'sin a cos b'; } });
-  board.create('segment', [board.Q, board.Qy], { strokeColor: '#0ea5e9', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'sin a cos b'; } });
-  board.create('segment', [board.M, board.My], { strokeColor: '#3b82f6', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'sin a cos b'; } });
+  // Projection dashed lines for Y-axis (super faint to prevent clutter)
+  board.create('segment', [board.P, board.Py], { strokeColor: 'rgba(192, 132, 252, 0.18)', strokeWidth: 0.8, dash: 2, visible: function() { return board.currentMode === 'sin a cos b'; } });
+  board.create('segment', [board.Q, board.Qy], { strokeColor: 'rgba(14, 165, 233, 0.18)', strokeWidth: 0.8, dash: 2, visible: function() { return board.currentMode === 'sin a cos b'; } });
+  board.create('segment', [board.M, board.My], { strokeColor: 'rgba(59, 130, 246, 0.45)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'sin a cos b'; } });
 
   // Highlight segments on axes
   board.segOMx = board.create('segment', [board.O, board.Mx], {
-    strokeColor: '#fb923c', strokeWidth: 4,
+    strokeColor: '#34d399', strokeWidth: 4,
     visible: function() { return board.currentMode === 'cos a cos b'; }
   });
   board.segOMy = board.create('segment', [board.O, board.My], {
-    strokeColor: '#fb923c', strokeWidth: 4,
+    strokeColor: '#34d399', strokeWidth: 4,
     visible: function() { return board.currentMode === 'sin a cos b'; }
   });
 
   // For sin a sin b:
   board.segPxQx = board.create('segment', [board.Px, board.Qx], {
-    strokeColor: '#ef4444', strokeWidth: 3,
+    strokeColor: '#ef4444', strokeWidth: 2,
     visible: function() { return board.currentMode === 'sin a sin b'; }
   });
   board.S_val = board.create('point', [
@@ -2615,7 +2612,7 @@ function initSimulation(board, params) {
     visible: function() { return board.currentMode === 'sin a sin b'; }
   });
   board.segOSval = board.create('segment', [board.O, board.S_val], {
-    strokeColor: '#10b981', strokeWidth: 4,
+    strokeColor: '#34d399', strokeWidth: 4,
     visible: function() { return board.currentMode === 'sin a sin b'; }
   });
 
