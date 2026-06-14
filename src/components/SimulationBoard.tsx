@@ -24,16 +24,17 @@ function parseStyle(styleStr?: string): React.CSSProperties {
 
 function getControlThemeColor(name: string): string {
   const n = name.toLowerCase();
-  if (n.includes('u') || n.includes('deg') || n === 'angle' || n === 'r') {
-    return '#818cf8'; // Indigo-400 (Primary)
-  }
-  if (n.includes('v') || n.includes('relation') || n === 'a' || n === 'b') {
-    return '#fb923c'; // Orange-400 (Secondary)
-  }
-  if (n.includes('w') || n === 'c' || n === 'd') {
-    return '#c084fc'; // Purple-400 (Third)
-  }
-  return '#6366f1'; // Default Indigo
+  // Match exact control names to their graph element colors
+  if (n === 'angleu' || n === 'specialu') return '#10b981'; // Green — matches point U
+  if (n === 'anglev' || n === 'specialv') return '#f59e0b'; // Orange — matches point V
+  if (n === 'anglew' || n === 'specialw') return '#6366f1'; // Indigo — matches point W
+  if (n === 'deg' || n === 'angle' || n === 'specialdeg' || n === 'specialrad') return '#818cf8'; // Sim 1 primary
+  if (n === 'r' || n === 'a') return '#818cf8';
+  if (n === 'b') return '#fb923c';
+  if (n === 'c' || n === 'd') return '#c084fc';
+  // Select/checkbox controls — neutral
+  if (n === 'mode' || n === 'relation') return '#94a3b8';
+  return '#6366f1';
 }
 
 export default function SimulationBoard({ simulation }: SimulationBoardProps) {
