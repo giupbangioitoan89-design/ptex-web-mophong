@@ -2726,7 +2726,7 @@ function initSimulation(board, params) {
     function() { var u = board.sliderU.Value() * Math.PI / 180; return Math.cos(u); },
     function() { var u = board.sliderU.Value() * Math.PI / 180; return Math.sin(u); }
   ], {
-    name: math('U(u)'), size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
+    name: math('U'), size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
     label: { display: 'html', fontSize: 13, offset: [10, 10] }
   });
   
@@ -2734,13 +2734,13 @@ function initSimulation(board, params) {
     function() { var v = board.sliderV.Value() * Math.PI / 180; return Math.cos(v); },
     function() { var v = board.sliderV.Value() * Math.PI / 180; return Math.sin(v); }
   ], {
-    name: math('V(v)'), size: 4, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
+    name: math('V'), size: 4, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
     label: { display: 'html', fontSize: 13, offset: [10, 10] },
     visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; }
   });
   
-  board.create('segment', [board.O, board.U], { strokeColor: '#fb923c', strokeWidth: 1.5 });
-  board.create('segment', [board.O, board.V], { strokeColor: '#10b981', strokeWidth: 1.5, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
+  board.create('segment', [board.O, board.U], { strokeColor: 'rgba(251, 146, 60, 0.4)', strokeWidth: 1.2 });
+  board.create('segment', [board.O, board.V], { strokeColor: 'rgba(16, 185, 129, 0.4)', strokeWidth: 1.2, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
 
   // Vneg (opposite of V for difference)
   board.Vneg = board.create('point', [
@@ -2751,107 +2751,82 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 13, offset: [-15, -15] },
     visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; }
   });
-  board.create('segment', [board.O, board.Vneg], { strokeColor: '#059669', strokeWidth: 1.5, dash: 1, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
+  board.create('segment', [board.O, board.Vneg], { strokeColor: 'rgba(5, 150, 105, 0.4)', strokeWidth: 1.2, dash: 1, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
 
   // Sum Vector S = U + V
   board.S = board.create('point', [
     function() { return board.U.X() + board.V.X(); },
     function() { return board.U.Y() + board.V.Y(); }
   ], {
-    name: math('S(u+v)'), size: 5, fillColor: '#ef4444', strokeColor: '#b91c1c', fixed: true,
+    name: math('U+V'), size: 5, fillColor: '#ef4444', strokeColor: '#b91c1c', fixed: true,
     label: { display: 'html', fontSize: 13, offset: [12, 12] },
     visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; }
   });
-  board.create('segment', [board.U, board.S], { strokeColor: '#ef4444', strokeWidth: 1.2, dash: 1, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
-  board.create('segment', [board.V, board.S], { strokeColor: '#ef4444', strokeWidth: 1.2, dash: 1, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
-  board.create('segment', [board.O, board.S], { strokeColor: '#ef4444', strokeWidth: 2.5, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
-
-  // Midpoint M
-  board.chordUV = board.create('segment', [board.U, board.V], { strokeColor: '#94a3b8', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
-  board.M = board.create('midpoint', [board.chordUV], {
-    name: math('M'), size: 4, fillColor: '#38bdf8', strokeColor: '#0284c7',
-    label: { display: 'html', fontSize: 13, offset: [10, -10] },
-    visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; }
-  });
-  board.create('segment', [board.O, board.M], { strokeColor: '#0ea5e9', strokeWidth: 2, dash: 2, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
+  board.create('segment', [board.U, board.S], { strokeColor: 'rgba(239, 68, 68, 0.25)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
+  board.create('segment', [board.V, board.S], { strokeColor: 'rgba(239, 68, 68, 0.25)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
+  board.create('segment', [board.O, board.S], { strokeColor: '#ef4444', strokeWidth: 2.2, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'sin u + sin v'; } });
 
   // Difference Vector D = U - V = U + Vneg
   board.D = board.create('point', [
     function() { return board.U.X() + board.Vneg.X(); },
     function() { return board.U.Y() + board.Vneg.Y(); }
   ], {
-    name: math('D(u-v)'), size: 5, fillColor: '#c084fc', strokeColor: '#a855f7', fixed: true,
+    name: math('U-V'), size: 5, fillColor: '#c084fc', strokeColor: '#a855f7', fixed: true,
     label: { display: 'html', fontSize: 13, offset: [12, 12] },
     visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; }
   });
-  board.create('segment', [board.U, board.D], { strokeColor: '#c084fc', strokeWidth: 1.2, dash: 1, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
-  board.create('segment', [board.Vneg, board.D], { strokeColor: '#c084fc', strokeWidth: 1.2, dash: 1, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
-  board.create('segment', [board.O, board.D], { strokeColor: '#c084fc', strokeWidth: 2.5, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
+  board.create('segment', [board.U, board.D], { strokeColor: 'rgba(192, 132, 252, 0.25)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
+  board.create('segment', [board.Vneg, board.D], { strokeColor: 'rgba(192, 132, 252, 0.25)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
+  board.create('segment', [board.O, board.D], { strokeColor: '#c084fc', strokeWidth: 2.2, visible: function() { return board.currentMode === 'cos u - cos v' || board.currentMode === 'sin u - sin v'; } });
 
   // Projections on X-axis (for cos u + cos v, cos u - cos v)
-  board.Ux_x = board.create('point', [function() { return board.U.X(); }, 0], { name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8', visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'cos u - cos v'; } });
-  board.Vx_x = board.create('point', [function() { return board.V.X(); }, 0], { name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8', visible: function() { return board.currentMode === 'cos u + cos v'; } });
-  board.Vnegx_x = board.create('point', [function() { return board.Vneg.X(); }, 0], { name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8', visible: function() { return board.currentMode === 'cos u - cos v'; } });
-  
-  board.Resultx_x = board.create('point', [
-    function() {
-      return board.currentMode === 'cos u + cos v' ? board.S.X() : board.D.X();
-    },
-    0
-  ], {
-    name: math('LHS'), size: 4, fillColor: '#ef4444', strokeColor: '#b91c1c',
-    label: { display: 'html', fontSize: 12, offset: [5, -15] },
-    visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'cos u - cos v'; }
+  board.Sx_x = board.create('point', [function() { return board.S.X(); }, 0], {
+    name: math('cos\\\\,u+cos\\\\,v'), size: 4, fillColor: '#ef4444', strokeColor: '#b91c1c',
+    label: { display: 'html', fontSize: 11, offset: [-35, -18] },
+    visible: function() { return board.currentMode === 'cos u + cos v'; }
+  });
+  board.Dx_x = board.create('point', [function() { return board.D.X(); }, 0], {
+    name: math('cos\\\\,u-cos\\\\,v'), size: 4, fillColor: '#c084fc', strokeColor: '#a855f7',
+    label: { display: 'html', fontSize: 11, offset: [-35, -18] },
+    visible: function() { return board.currentMode === 'cos u - cos v'; }
   });
 
   // Projection dashed lines for X-axis
-  board.create('segment', [board.U, board.Ux_x], { strokeColor: '#fb923c', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'cos u - cos v'; } });
-  board.create('segment', [board.V, board.Vx_x], { strokeColor: '#10b981', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'cos u + cos v'; } });
-  board.create('segment', [board.Vneg, board.Vnegx_x], { strokeColor: '#059669', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'cos u - cos v'; } });
-  board.create('segment', [
-    function() { return board.currentMode === 'cos u + cos v' ? board.S : board.D; },
-    board.Resultx_x
-  ], {
-    strokeColor: '#ef4444', strokeWidth: 1.5, dash: 1,
-    visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'cos u - cos v'; }
-  });
+  board.create('segment', [board.S, board.Sx_x], { strokeColor: 'rgba(239, 68, 68, 0.35)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos u + cos v'; } });
+  board.create('segment', [board.D, board.Dx_x], { strokeColor: 'rgba(192, 132, 252, 0.35)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'cos u - cos v'; } });
 
   // Projections on Y-axis (for sin u + sin v, sin u - sin v)
-  board.Uy_y = board.create('point', [0, function() { return board.U.Y(); }], { name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8', visible: function() { return board.currentMode === 'sin u + sin v' || board.currentMode === 'sin u - sin v'; } });
-  board.Vy_y = board.create('point', [0, function() { return board.V.Y(); }], { name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8', visible: function() { return board.currentMode === 'sin u + sin v'; } });
-  board.Vnegy_y = board.create('point', [0, function() { return board.Vneg.Y(); }], { name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8', visible: function() { return board.currentMode === 'sin u - sin v'; } });
-  
-  board.Resulty_y = board.create('point', [
-    0,
-    function() {
-      return board.currentMode === 'sin u + sin v' ? board.S.Y() : board.D.Y();
-    }
-  ], {
-    name: math('LHS'), size: 4, fillColor: '#ef4444', strokeColor: '#b91c1c',
-    label: { display: 'html', fontSize: 12, offset: [-35, 5] },
-    visible: function() { return board.currentMode === 'sin u + sin v' || board.currentMode === 'sin u - sin v'; }
+  board.Sy_y = board.create('point', [0, function() { return board.S.Y(); }], {
+    name: math('sin\\\\,u+sin\\\\,v'), size: 4, fillColor: '#ef4444', strokeColor: '#b91c1c',
+    label: { display: 'html', fontSize: 11, offset: [-110, 0] },
+    visible: function() { return board.currentMode === 'sin u + sin v'; }
+  });
+  board.Dy_y = board.create('point', [0, function() { return board.D.Y(); }], {
+    name: math('sin\\\\,u-sin\\\\,v'), size: 4, fillColor: '#c084fc', strokeColor: '#a855f7',
+    label: { display: 'html', fontSize: 11, offset: [-110, 0] },
+    visible: function() { return board.currentMode === 'sin u - sin v'; }
   });
 
   // Projection dashed lines for Y-axis
-  board.create('segment', [board.U, board.Uy_y], { strokeColor: '#fb923c', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'sin u + sin v' || board.currentMode === 'sin u - sin v'; } });
-  board.create('segment', [board.V, board.Vy_y], { strokeColor: '#10b981', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'sin u + sin v'; } });
-  board.create('segment', [board.Vneg, board.Vnegy_y], { strokeColor: '#059669', strokeWidth: 1, dash: 1, visible: function() { return board.currentMode === 'sin u - sin v'; } });
-  board.create('segment', [
-    function() { return board.currentMode === 'sin u + sin v' ? board.S : board.D; },
-    board.Resulty_y
-  ], {
-    strokeColor: '#ef4444', strokeWidth: 1.5, dash: 1,
-    visible: function() { return board.currentMode === 'sin u + sin v' || board.currentMode === 'sin u - sin v'; }
-  });
+  board.create('segment', [board.S, board.Sy_y], { strokeColor: 'rgba(239, 68, 68, 0.35)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'sin u + sin v'; } });
+  board.create('segment', [board.D, board.Dy_y], { strokeColor: 'rgba(192, 132, 252, 0.35)', strokeWidth: 1, dash: 2, visible: function() { return board.currentMode === 'sin u - sin v'; } });
 
   // Highlight segment of result on axes
-  board.segResultX = board.create('segment', [board.O, board.Resultx_x], {
+  board.segResultSx = board.create('segment', [board.O, board.Sx_x], {
     strokeColor: '#f43f5e', strokeWidth: 4,
-    visible: function() { return board.currentMode === 'cos u + cos v' || board.currentMode === 'cos u - cos v'; }
+    visible: function() { return board.currentMode === 'cos u + cos v'; }
   });
-  board.segResultY = board.create('segment', [board.O, board.Resulty_y], {
+  board.segResultDx = board.create('segment', [board.O, board.Dx_x], {
+    strokeColor: '#a855f7', strokeWidth: 4,
+    visible: function() { return board.currentMode === 'cos u - cos v'; }
+  });
+  board.segResultSy = board.create('segment', [board.O, board.Sy_y], {
     strokeColor: '#f43f5e', strokeWidth: 4,
-    visible: function() { return board.currentMode === 'sin u + sin v' || board.currentMode === 'sin u - sin v'; }
+    visible: function() { return board.currentMode === 'sin u + sin v'; }
+  });
+  board.segResultDy = board.create('segment', [board.O, board.Dy_y], {
+    strokeColor: '#a855f7', strokeWidth: 4,
+    visible: function() { return board.currentMode === 'sin u - sin v'; }
   });
 
   board.sliderU.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'u', value: board.sliderU.Value() }, '*'); });
