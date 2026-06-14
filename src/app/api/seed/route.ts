@@ -500,9 +500,9 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Góc tổng quát α:', value: deg + '°', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-size: 0.85rem;' },
+    { label: 'Góc tổng quát α:', value: parseFloat(deg.toFixed(2)) + '°', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-size: 0.85rem;' },
     { label: 'Số đo radian:', value: radText + ' rad', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #c084fc;' },
-    { label: 'Góc hình học:', value: remainderDeg + '° (' + remainderRadStr + ')', labelStyle: 'color: #38bdf8;', valueStyle: 'color: #7dd3fc;' },
+    { label: 'Góc hình học:', value: parseFloat(remainderDeg.toFixed(2)) + '° (' + remainderRadStr + ')', labelStyle: 'color: #38bdf8;', valueStyle: 'color: #7dd3fc;' },
     { label: 'Chiều quay:', value: dirText, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: ' + dirColor + '; background: ' + (deg > 0 ? 'rgba(52, 211, 153, 0.15)' : (deg < 0 ? 'rgba(248, 113, 113, 0.15)' : 'rgba(203, 213, 225, 0.15)')) + '; padding: 2px 6px; border-radius: 4px; font-weight: bold;' },
     { label: 'Số vòng k:', value: turns.toString(), labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; background: rgba(249, 115, 22, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: bold;' },
     { label: 'Vị trí:', value: quadText, labelStyle: 'color: #c084fc;', valueStyle: 'color: #e879f9; font-weight: bold;' }
@@ -524,8 +524,8 @@ function updateSimulation(board, params) {
           { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
           { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
         ],
-        mathContent: '\\\\alpha = \\\\theta + k \\\\cdot 2\\\\pi \\\\quad (k \\\\in \\\\mathbb{Z}, \\\\ 0 \\\\le \\\\theta < 2\\\\pi)',
-        explanation: 'Một góc lượng giác có vô số số đo sai lệch nhau bội nguyên của $2\\\\pi$ (hoặc $360^\\\\circ$). Cung xoắn ốc trực quan hóa số vòng quay lượng giác (chiều quay ngược chiều kim đồng hồ là chiều dương, cùng chiều kim đồng hồ là chiều âm).',
+        mathContent: '\\alpha = \\theta + k \\cdot 2\\pi \\quad (k \\in \\mathbb{Z}, \\ 0 \\le \\theta < 2\\pi)',
+        explanation: 'Một góc lượng giác có vô số số đo sai lệch nhau bội nguyên của $2\\pi$ (hoặc $360^\\circ$). Cung xoắn ốc trực quan hóa số vòng quay lượng giác (chiều quay ngược chiều kim đồng hồ là chiều dương, cùng chiều kim đồng hồ là chiều âm).',
         keyInsights: [
           'Chiều dương (+): màu xanh lá, quay ngược chiều kim đồng hồ',
           'Chiều âm (-): màu đỏ, quay cùng chiều kim đồng hồ',
@@ -676,7 +676,7 @@ function updateSimulation(board, params) {
   var gamma = alpha + beta;
   var k = 0;
 
-  function fmtDeg(d) { return (d >= 0 ? '+' : '') + d + '\\u00b0'; }
+  function fmtDeg(d) { return (d >= 0 ? '+' : '') + parseFloat(d.toFixed(2)) + '\\u00b0'; }
   function fmtRad(d) { return (d >= 0 ? '+' : '') + (d / 180).toFixed(2) + '\\u03c0'; }
 
   var chaslesLeft = '(' + fmtDeg(alpha) + ') + (' + fmtDeg(beta) + ')';
@@ -704,7 +704,7 @@ function updateSimulation(board, params) {
           { type: 'slider', name: 'alpha', label: 'sđ(Ou, Ov) = α', min: -180, max: 180, step: 5, defaultValue: 90 },
           { type: 'slider', name: 'beta', label: 'sđ(Ov, Ow) = β', min: -180, max: 180, step: 5, defaultValue: 60 },
         ],
-        mathContent: '(Ou, Ov) + (Ov, Ow) \\\\equiv (Ou, Ow) \\\\pmod{2\\\\pi}',
+        mathContent: '(Ou, Ov) + (Ov, Ow) \\equiv (Ou, Ow) \\pmod{2\\pi}',
         explanation: 'Hệ thức Chasles khẳng định rằng với ba tia Ou, Ov, Ow bất kỳ trên mặt phẳng định hướng, tổng số đo của hai góc lượng giác (Ou, Ov) và (Ov, Ow) luôn bằng số đo của góc lượng giác (Ou, Ow) cộng với một bội nguyên của 360 độ (hoặc 2π radian).',
         keyInsights: [
           'Kéo thanh α để thay đổi góc (Ou, Ov) — điểm V di chuyển',
@@ -732,52 +732,122 @@ function initSimulation(board, params) {
     panel.style.right = '10px';
   }
 
+  // Cache variables to prevent setBoundingBox looping & label flickering
+  board.lastMode = '';
+  board.lastWidth = 0;
+  board.lastHeight = 0;
+
   // Origin O
-  board.O = board.create('point', [0, 0], {
+  board.O = board.create('point', [
+    function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+        var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+        var deg = window.currentParams?.rollAngle !== undefined ? window.currentParams.rollAngle : 90;
+        var theta = deg * Math.PI / 180;
+        return -1.0 + (R * theta) / 1.2;
+      }
+      return 0;
+    },
+    function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+        var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+        return -1.3 + R / 1.2;
+      }
+      return 0;
+    }
+  ], {
     name: math('O'),
     size: 3,
     fillColor: '#64748b',
     strokeColor: '#475569',
     fixed: true,
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+    },
     label: { display: 'html', fontSize: 14, offset: [-15, -15] }
   });
 
   // Point A
   board.A = board.create('point', [
-    function() { var R = params.R !== undefined ? params.R : 1.0; return R; },
-    0
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+        return board.O.X() + R / 1.2;
+      }
+      return R;
+    },
+    function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+        return board.O.Y();
+      }
+      return 0;
+    }
   ], {
     name: math('A'),
     size: 3,
     fillColor: '#6366f1',
     strokeColor: '#4f46e5',
     fixed: true,
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+    },
     label: { display: 'html', fontSize: 14, offset: [10, -10] }
   });
 
   // Circle
   board.circle = board.create('circle', [board.O, board.A], {
-    strokeColor: '#cbd5e1',
-    strokeWidth: 2,
+    strokeColor: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') ? '#000000' : '#cbd5e1';
+    },
+    strokeWidth: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') ? 3.5 : 2;
+    },
     highlight: false,
     fixed: true
   });
 
-  // Point M as a glider on the circle (colored Indigo to match radius segment)
+  // Point M
   board.M = board.create('glider', [0, 1.0, board.circle], {
     name: math('M'),
     size: 5,
-    fillColor: '#6366f1',
-    strokeColor: '#4f46e5',
+    fillColor: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') ? '#ef4444' : '#6366f1';
+    },
+    strokeColor: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') ? '#dc2626' : '#4f46e5';
+    },
     label: { display: 'html', fontSize: 14, offset: [10, 10] }
   });
   registerDragSnapping(board, board.M, 'angle');
 
-  // Segments representing Radius R (colored Indigo)
-  board.create('segment', [board.O, board.M], { strokeColor: '#6366f1', strokeWidth: 2.5 });
-  board.create('segment', [board.O, board.A], { strokeColor: '#6366f1', strokeWidth: 2.5 });
+  // Segments representing Radius R
+  board.radSeg = board.create('segment', [board.O, board.M], {
+    strokeColor: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') ? '#ef4444' : '#6366f1';
+    },
+    strokeWidth: 2.5
+  });
+  board.aSeg = board.create('segment', [board.O, board.A], {
+    strokeColor: '#6366f1',
+    strokeWidth: 2.5,
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+    }
+  });
 
-  // Central angle arc (colored Amber representing angle alpha)
+  // Central angle arc
   board.angleArcStart = board.create('point', [0.2, 0], { visible: false, withLabel: false });
   board.angleArcEnd = board.create('point', [
     function() {
@@ -798,17 +868,21 @@ function initSimulation(board, params) {
   board.angleArc = board.create('arc', [board.O, board.angleArcStart, board.angleArcEnd], {
     strokeColor: '#f59e0b',
     strokeWidth: 3,
-    withLabel: false
+    withLabel: false,
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+    }
   });
 
-  // Arc curve (colored Teal representing arc length l)
+  // Arc curve
   board.arcCurve = board.create('curve', [
     function(t) {
-      var R = params.R !== undefined ? params.R : 1.0;
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
       return R * Math.cos(t);
     },
     function(t) {
-      var R = params.R !== undefined ? params.R : 1.0;
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
       return R * Math.sin(t);
     },
     0,
@@ -822,40 +896,133 @@ function initSimulation(board, params) {
   ], {
     strokeColor: '#10b981',
     strokeWidth: 4,
-    highlight: false
+    highlight: false,
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+    }
   });
 
   // Ruler Axis
-  board.create('line', [[-1.0, -1.3], [4.0, -1.3]], {
+  board.rulerLine = board.create('segment', [
+    [-1.0, -1.3],
+    [
+      function() {
+        var mode = window.currentParams?.mode || 'Kéo tự do';
+        if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+          return 11.5;
+        }
+        return 4.0;
+      },
+      -1.3
+    ]
+  ], {
     strokeColor: '#cbd5e1',
     strokeWidth: 1.5,
     fixed: true,
     highlight: false
   });
 
-  // Ruler ticks
+  // Free mode ticks
   for (var tickX = -1.0; tickX <= 4.01; tickX += 0.5) {
-    var val = (tickX + 1.0).toFixed(1);
-    board.create('segment', [[tickX, -1.3], [tickX, -1.38]], { strokeColor: '#64748b', strokeWidth: 1, fixed: true });
-    if (Math.abs(tickX + 1.0 - Math.round(tickX + 1.0)) < 0.01) {
-      board.create('text', [tickX - 0.08, -1.55, math(Math.round(tickX + 1.0).toString())], { display: 'html', fontSize: 10, color: '#64748b' });
-    }
+    (function(tx) {
+      var val = Math.round(tx + 1.0);
+      var isInt = Math.abs(tx + 1.0 - val) < 0.01;
+      board.create('segment', [[tx, -1.3], [tx, -1.38]], {
+        strokeColor: '#64748b',
+        strokeWidth: 1,
+        fixed: true,
+        visible: function() {
+          var mode = window.currentParams?.mode || 'Kéo tự do';
+          return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+        }
+      });
+      if (isInt) {
+        board.create('text', [tx - 0.08, -1.6, math(val.toString())], {
+          display: 'html',
+          fontSize: 10,
+          color: '#64748b',
+          visible: function() {
+            var mode = window.currentParams?.mode || 'Kéo tự do';
+            return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+          }
+        });
+      }
+    })(tickX);
+  }
+
+  // Rolling mode ticks (from 0 to 15 meters)
+  for (var d = 0; d <= 15; d += 0.5) {
+    (function(dist) {
+      var tx = -1.0 + dist / 1.2;
+      var isInt = Math.abs(dist - Math.round(dist)) < 0.01;
+      var showLabel = isInt && (Math.round(dist) % 2 === 0);
+      board.create('segment', [[tx, -1.3], [tx, -1.38]], {
+        strokeColor: '#64748b',
+        strokeWidth: 1,
+        fixed: true,
+        visible: function() {
+          var mode = window.currentParams?.mode || 'Kéo tự do';
+          return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường');
+        }
+      });
+      if (showLabel) {
+        board.create('text', [tx - 0.1, -1.6, math(Math.round(dist).toString())], {
+          display: 'html',
+          fontSize: 10,
+          color: '#64748b',
+          visible: function() {
+            var mode = window.currentParams?.mode || 'Kéo tự do';
+            return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường');
+          }
+        });
+      }
+    })(d);
   }
 
   // Label for ruler
-  board.create('text', [-1.0, -1.1, 'Thước đo duỗi thẳng cung tròn l (m):'], { display: 'html', fontSize: 11, color: '#475569' });
+  board.rulerLabel = board.create('text', [
+    function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+        return 11.5;
+      }
+      return 4.0;
+    },
+    -2.1,
+    function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+        return 'Thước đo quãng đường s (m)';
+      }
+      return 'Thước đo duỗi thẳng cung tròn l (m)';
+    }
+  ], {
+    display: 'html',
+    anchorX: 'right',
+    cssStyle: 'font-weight: 700; color: #0f172a; font-size: 13px; font-family: Inter, sans-serif;',
+    highlight: false
+  });
 
-  // Unwrapped segment (colored Teal representing unwrapped arc length l)
+  // Unwrapped segment
   board.unwrappedStart = board.create('point', [-1.0, -1.3], { visible: false });
   board.unwrappedEnd = board.create('point', [
     function() {
-      var R = params.R !== undefined ? params.R : 1.0;
-      var x = board.M.X();
-      var y = board.M.Y();
-      var rad = Math.atan2(y, x);
-      if (rad < 0) rad += 2 * Math.PI;
-      var l = R * rad;
-      return -1.0 + l;
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+        var deg = window.currentParams?.rollAngle !== undefined ? window.currentParams.rollAngle : 90;
+        var rad = deg * Math.PI / 180;
+        var l = R * rad;
+        return -1.0 + l / 1.2;
+      } else {
+        var x = board.M.X();
+        var y = board.M.Y();
+        var rad = Math.atan2(y, x);
+        if (rad < 0) rad += 2 * Math.PI;
+        var l = R * rad;
+        return -1.0 + l;
+      }
     },
     -1.3
   ], {
@@ -863,6 +1030,10 @@ function initSimulation(board, params) {
     size: 5,
     fillColor: '#10b981',
     strokeColor: '#059669',
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode !== 'Bánh xe lăn trên đường' && mode !== 'Xe đạp chạy trên đường');
+    },
     label: { display: 'html', fontSize: 13, offset: [0, 10] }
   });
 
@@ -872,11 +1043,285 @@ function initSimulation(board, params) {
     highlight: false
   });
 
+  // Cycloid curve
+  board.cycloidCurve = board.create('curve', [
+    function(t) {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var xO = -1.0 + (R * t) / 1.2;
+      return xO - (R / 1.2) * Math.sin(t);
+    },
+    function(t) {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var yO = -1.3 + R / 1.2;
+      return yO - (R / 1.2) * Math.cos(t);
+    },
+    0,
+    function() {
+      var deg = window.currentParams?.rollAngle !== undefined ? window.currentParams.rollAngle : 90;
+      return deg * Math.PI / 180;
+    }
+  ], {
+    strokeColor: '#ef4444',
+    strokeWidth: 3,
+    highlight: false,
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường');
+    }
+  });
+
+  // Back wheel spokes
+  for (var i = 1; i < 8; i++) {
+    (function(idx) {
+      board.create('segment', [
+        board.O,
+        board.create('point', [
+          function() {
+            var x = board.M.X() - board.O.X();
+            var y = board.M.Y() - board.O.Y();
+            var r = Math.sqrt(x*x + y*y);
+            var phi = Math.atan2(y, x) + idx * Math.PI / 4;
+            return board.O.X() + 0.85 * r * Math.cos(phi);
+          },
+          function() {
+            var x = board.M.X() - board.O.X();
+            var y = board.M.Y() - board.O.Y();
+            var r = Math.sqrt(x*x + y*y);
+            var phi = Math.atan2(y, x) + idx * Math.PI / 4;
+            return board.O.Y() + 0.85 * r * Math.sin(phi);
+          }
+        ], { visible: false, withLabel: false })
+      ], {
+        strokeColor: '#94a3b8',
+        strokeWidth: 1.2,
+        dash: 1,
+        highlight: false,
+        visible: function() {
+          var mode = window.currentParams?.mode || 'Kéo tự do';
+          return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường');
+        }
+      });
+    })(i);
+  }
+
+  // Back Inner Rim
+  board.backInnerRim = board.create('circle', [
+    board.O,
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      var scale = (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') ? 1.2 : 1.0;
+      return 0.85 * (R / scale);
+    }
+  ], {
+    strokeColor: '#64748b',
+    strokeWidth: 1.5,
+    fillColor: 'transparent',
+    highlight: false,
+    visible: function() {
+      var mode = window.currentParams?.mode || 'Kéo tự do';
+      return (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường');
+    }
+  });
+
+  // Front wheel center
+  board.Of = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      return board.O.X() + 3.2 * (R / 1.2);
+    },
+    function() {
+      return board.O.Y();
+    }
+  ], { visible: false, withLabel: false });
+
+  // Front tire
+  board.frontCircle = board.create('circle', [
+    board.Of,
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      return R / 1.2;
+    }
+  ], {
+    strokeColor: '#000000',
+    strokeWidth: 3.5,
+    fillColor: 'transparent',
+    highlight: false,
+    visible: function() { return (window.currentParams?.mode === 'Xe đạp chạy trên đường'); }
+  });
+
+  // Front Inner Rim
+  board.frontInnerRim = board.create('circle', [
+    board.Of,
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      return 0.85 * (R / 1.2);
+    }
+  ], {
+    strokeColor: '#64748b',
+    strokeWidth: 1.5,
+    fillColor: 'transparent',
+    highlight: false,
+    visible: function() { return (window.currentParams?.mode === 'Xe đạp chạy trên đường'); }
+  });
+
+  // Front hub
+  board.frontHub = board.create('point', [
+    function() { return board.Of.X(); },
+    function() { return board.Of.Y(); }
+  ], {
+    name: '',
+    size: 4,
+    fillColor: '#475569',
+    strokeColor: '#334155',
+    fixed: true,
+    withLabel: false,
+    visible: function() { return (window.currentParams?.mode === 'Xe đạp chạy trên đường'); }
+  });
+
+  // Front spokes
+  for (var j = 0; j < 8; j++) {
+    (function(idx) {
+      board.create('segment', [
+        board.Of,
+        board.create('point', [
+          function() {
+            var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+            var deg = window.currentParams?.rollAngle !== undefined ? window.currentParams.rollAngle : 90;
+            var theta = deg * Math.PI / 180;
+            var phi = idx * Math.PI / 4 - theta;
+            return board.Of.X() + 0.85 * (R / 1.2) * Math.cos(phi);
+          },
+          function() {
+            var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+            var deg = window.currentParams?.rollAngle !== undefined ? window.currentParams.rollAngle : 90;
+            var theta = deg * Math.PI / 180;
+            var phi = idx * Math.PI / 4 - theta;
+            return board.Of.Y() + 0.85 * (R / 1.2) * Math.sin(phi);
+          }
+        ], { visible: false, withLabel: false })
+      ], {
+        strokeColor: '#94a3b8',
+        strokeWidth: 1.2,
+        dash: 1,
+        highlight: false,
+        visible: function() { return (window.currentParams?.mode === 'Xe đạp chạy trên đường'); }
+      });
+    })(j);
+  }
+
+  // Bicycle Frame Elements
+  var frameVisible = function() {
+    var mode = window.currentParams?.mode || 'Kéo tự do';
+    return mode === 'Xe đạp chạy trên đường';
+  };
+
+  board.bikeP = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.O.X() + 1.1 * r;
+    },
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.O.Y() - 0.2 * r;
+    }
+  ], { visible: false, withLabel: false });
+
+  board.bikeS = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.O.X() + 0.8 * r;
+    },
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.O.Y() + 1.2 * r;
+    }
+  ], { visible: false, withLabel: false });
+
+  board.bikeH = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.O.X() + 2.4 * r;
+    },
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.O.Y() + 1.4 * r;
+    }
+  ], { visible: false, withLabel: false });
+
+  board.bikeStem = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeH.X() + 0.05 * r;
+    },
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeH.Y() + 0.25 * r;
+    }
+  ], { visible: false, withLabel: false });
+
+  board.bikeBar = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeStem.X() - 0.2 * r;
+    },
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeStem.Y() + 0.05 * r;
+    }
+  ], { visible: false, withLabel: false });
+
+  board.bikeSeatL = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeS.X() - 0.18 * r;
+    },
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeS.Y() + 0.1 * r;
+    }
+  ], { visible: false, withLabel: false });
+
+  board.bikeSeatR = board.create('point', [
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeS.X() + 0.12 * r;
+    },
+    function() {
+      var R = window.currentParams?.R !== undefined ? window.currentParams.R : 1.0;
+      var r = R / 1.2;
+      return board.bikeS.Y() + 0.08 * r;
+    }
+  ], { visible: false, withLabel: false });
+
+  board.create('segment', [board.O, board.bikeP], { strokeColor: '#64748b', strokeWidth: 4, highlight: false, visible: frameVisible });
+  board.create('segment', [board.O, board.bikeS], { strokeColor: '#64748b', strokeWidth: 4, highlight: false, visible: frameVisible });
+  board.create('segment', [board.bikeP, board.bikeS], { strokeColor: '#4f46e5', strokeWidth: 5, highlight: false, visible: frameVisible });
+  board.create('segment', [board.bikeP, board.bikeH], { strokeColor: '#4f46e5', strokeWidth: 5, highlight: false, visible: frameVisible });
+  board.create('segment', [board.bikeS, board.bikeH], { strokeColor: '#4f46e5', strokeWidth: 5, highlight: false, visible: frameVisible });
+  board.create('segment', [board.bikeH, board.Of], { strokeColor: '#64748b', strokeWidth: 4.5, highlight: false, visible: frameVisible });
+  board.create('segment', [board.bikeSeatL, board.bikeSeatR], { strokeColor: '#1e293b', strokeWidth: 6, highlight: false, visible: frameVisible });
+  board.create('segment', [board.bikeH, board.bikeStem], { strokeColor: '#1e293b', strokeWidth: 4, highlight: false, visible: frameVisible });
+  board.create('segment', [board.bikeStem, board.bikeBar], { strokeColor: '#1e293b', strokeWidth: 5, highlight: false, visible: frameVisible });
+
   // Create native sliders inside SVG
-  board.sliderR = createCustomSlider(board, [-1.2, -1.45], [0.3, -1.45], 0.8, params.R !== undefined ? params.R : 1.0, 1.2, 'Bán kính R', 0.1, '#6366f1');
-  
+  board.sliderR = createCustomSlider(board, [-1.2, -1.45], [0.3, -1.45], 0.8, params.R !== undefined ? params.R : 1.0, 1.2, 'Bán kính R', 0.01, '#6366f1');
   board.sliderAngle = createCustomSlider(board, [1.0, -1.45], [3.5, -1.45], 0, params.angle !== undefined ? params.angle : 90, 360, 'Góc', 5, '#fb923c');
-  
+  board.sliderRollAngle = createCustomSlider(board, [1.0, -1.45], [3.5, -1.45], 0, params.rollAngle !== undefined ? params.rollAngle : 90, 720, 'Góc quay', 5, '#fb923c');
+
   var specialDegVals = ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'];
   board.sliderSpecDeg = createCustomSlider(board, [1.0, -1.45], [3.5, -1.45], 0, params.specialDeg !== undefined ? params.specialDeg : 4, 16, 'Góc đặc biệt', 1, '#fb923c', specialDegVals);
   
@@ -885,6 +1330,7 @@ function initSimulation(board, params) {
 
   board.sliderR.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'R', value: board.sliderR.Value() }, '*'); });
   board.sliderAngle.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angle', value: board.sliderAngle.Value() }, '*'); });
+  board.sliderRollAngle.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'rollAngle', value: board.sliderRollAngle.Value() }, '*'); });
   board.sliderSpecDeg.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialDeg', value: board.sliderSpecDeg.Value() }, '*'); });
   board.sliderSpecRad.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialRad', value: board.sliderSpecRad.Value() }, '*'); });
 
@@ -902,6 +1348,7 @@ function updateSimulation(board, params) {
   board.sliderAngle.setAttribute({ visible: mode === 'Kéo tự do' });
   board.sliderSpecDeg.setAttribute({ visible: mode === 'Góc độ đặc biệt' });
   board.sliderSpecRad.setAttribute({ visible: mode === 'Góc radian đặc biệt' });
+  board.sliderRollAngle.setAttribute({ visible: (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') });
 
   if (board.sliderR && !board.sliderR.isDragging && Math.abs(board.sliderR.Value() - R) > 1e-4) board.sliderR.setValue(R);
 
@@ -918,16 +1365,71 @@ function updateSimulation(board, params) {
     idx = params.specialRad !== undefined ? Math.round(params.specialRad) : 4;
     deg = specialDegVals[idx] || 0;
     if (board.sliderSpecRad && !board.sliderSpecRad.isDragging && Math.abs(board.sliderSpecRad.Value() - idx) > 1e-4) board.sliderSpecRad.setValue(idx);
+  } else {
+    deg = params.rollAngle !== undefined ? params.rollAngle : 90;
+    if (board.sliderRollAngle && !board.sliderRollAngle.isDragging && Math.abs(board.sliderRollAngle.Value() - deg) > 1e-4) board.sliderRollAngle.setValue(deg);
   }
 
   var rad = deg * Math.PI / 180;
-  var px = R * Math.cos(rad);
-  var py = R * Math.sin(rad);
-  if (board.M && !board.M.isDragging) {
-    board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+  var l = R * rad;
+
+  // Update dynamic bounding box with strict aspect-ratio enforcement, avoiding redundant setBoundingBox calls
+  var w = board.canvasWidth;
+  var h = board.canvasHeight;
+  var ratio = w / h;
+
+  var modeChanged = (board.lastMode !== mode);
+  var sizeChanged = (board.lastWidth !== w || board.lastHeight !== h);
+
+  if (modeChanged || sizeChanged) {
+    board.lastMode = mode;
+    board.lastWidth = w;
+    board.lastHeight = h;
+
+    if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+      var targetW = 14.0;
+      var targetH = 3.9;
+      if (targetW / targetH > ratio) {
+        targetH = targetW / ratio;
+      } else {
+        targetW = targetH * ratio;
+      }
+      var xMin = 5.2 - targetW / 2;
+      var xMax = 5.2 + targetW / 2;
+      var yMin = -0.45 - targetH / 2;
+      var yMax = -0.45 + targetH / 2;
+      board.setBoundingBox([xMin, yMax, xMax, yMin], true);
+    } else {
+      var targetW = 6.0;
+      var targetH = 3.9;
+      if (targetW / targetH > ratio) {
+        targetH = targetW / ratio;
+      } else {
+        targetW = targetH * ratio;
+      }
+      var xMin = 1.2 - targetW / 2;
+      var xMax = 1.2 + targetW / 2;
+      var yMin = -0.45 - targetH / 2;
+      var yMax = -0.45 + targetH / 2;
+      board.setBoundingBox([xMin, yMax, xMax, yMin], true);
+    }
   }
 
-  var l = R * rad;
+  if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+    var xO = -1.0 + (R * rad) / 1.2;
+    var yO = -1.3 + R / 1.2;
+    var px = xO - (R / 1.2) * Math.sin(rad);
+    var py = yO - (R / 1.2) * Math.cos(rad);
+    if (board.M) {
+      board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+    }
+  } else {
+    var px = R * Math.cos(rad);
+    var py = R * Math.sin(rad);
+    if (board.M && !board.M.isDragging) {
+      board.M.setPosition(JXG.COORDS_BY_USER, [px, py]);
+    }
+  }
 
   // Radian Text
   var radText = '';
@@ -941,13 +1443,44 @@ function updateSimulation(board, params) {
     else radText = frac.toFixed(2) + 'π';
   }
 
-  showReadouts([
-    { label: 'Bán kính R:', value: R.toFixed(1), labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
-    { label: 'Số đo góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
-    { label: 'Công thức l:', value: 'R × α (rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f8fafc; font-style: italic;' },
-    { label: 'Tính toán:', value: R.toFixed(1) + ' × ' + rad.toFixed(3) + ' rad', labelStyle: 'color: #cbd5e1;', valueStyle: 'font-family: monospace; color: #cbd5e1;' },
-    { label: 'Độ dài cung l:', value: l.toFixed(3), labelStyle: 'color: #34d399; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #34d399; font-weight: bold; font-size: 0.85rem; background: rgba(52, 211, 153, 0.15); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
-  ]);
+  if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+    var turnsVal = deg / 360;
+    var turnsStr = turnsVal.toFixed(1);
+    if (Math.abs(turnsVal - Math.round(turnsVal)) < 0.01) {
+      turnsStr = Math.round(turnsVal).toString();
+    }
+    
+    // Check if exactly 1 or 2 turns to adapt formula names
+    var calcLabel = 'Quãng đường s:';
+    var formulaVal = 's = R × α';
+    var calculationVal = R.toFixed(2) + ' × ' + rad.toFixed(2) + ' rad';
+    if (deg === 360) {
+      calcLabel = 'Chu vi bánh xe C:';
+      formulaVal = 'C = 2πR';
+      calculationVal = '2 × π × ' + R.toFixed(2);
+    } else if (deg === 720) {
+      calcLabel = 'Quãng đường (2 vòng):';
+      formulaVal = 's = 2 × 2πR';
+      calculationVal = '2 × 2 × π × ' + R.toFixed(2);
+    }
+
+    showReadouts([
+      { label: 'Bán kính bánh xe R:', value: R.toFixed(2) + ' m', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
+      { label: 'Góc quay α:', value: parseFloat(deg.toFixed(2)) + '° (' + radText + ' rad)', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
+      { label: 'Số vòng quay:', value: turnsStr + ' vòng', labelStyle: 'color: #c084fc;', valueStyle: 'color: #e9d5ff; font-weight: bold;' },
+      { label: 'Công thức:', value: formulaVal, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f8fafc; font-style: italic;' },
+      { label: 'Tính toán:', value: calculationVal, labelStyle: 'color: #cbd5e1;', valueStyle: 'font-family: monospace; color: #cbd5e1;' },
+      { label: calcLabel, value: l.toFixed(2) + ' m', labelStyle: 'color: #34d399; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #34d399; font-weight: bold; font-size: 0.95rem; background: rgba(52, 211, 153, 0.15); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
+    ]);
+  } else {
+    showReadouts([
+      { label: 'Bán kính R:', value: R.toFixed(2) + ' m', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
+      { label: 'Số đo góc α:', value: parseFloat(deg.toFixed(2)) + '° (' + radText + ' rad)', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
+      { label: 'Công thức l:', value: 'l = R × α', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f8fafc; font-style: italic;' },
+      { label: 'Tính toán:', value: R.toFixed(2) + ' × ' + rad.toFixed(2) + ' rad', labelStyle: 'color: #cbd5e1;', valueStyle: 'font-family: monospace; color: #cbd5e1;' },
+      { label: 'Độ dài cung l:', value: l.toFixed(2) + ' m', labelStyle: 'color: #34d399; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #34d399; font-weight: bold; font-size: 0.85rem; background: rgba(52, 211, 153, 0.15); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
+    ]);
+  }
 
   board.unsuspendUpdate();
 }
@@ -955,15 +1488,16 @@ function updateSimulation(board, params) {
         visualizationType: 'jsxgraph',
         config: {
           boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.5, 1.3, 4.0, -1.6],
+          boundingBox: [-1.8, 1.6, 4.4, -2.4],
           showAxis: false,
           showGrid: false,
           theme: 'light',
         },
         controls: [
-          { type: 'slider', name: 'R', label: 'Bán kính R', min: 0.8, max: 1.2, step: 0.1, defaultValue: 1.0 },
-          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt', 'Góc radian đặc biệt'] },
+          { type: 'slider', name: 'R', label: 'Bán kính R', min: 0.8, max: 1.2, step: 0.01, defaultValue: 1.0 },
+          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt', 'Góc radian đặc biệt', 'Bánh xe lăn trên đường', 'Xe đạp chạy trên đường'] },
           { type: 'slider', name: 'angle', label: 'Góc tự do (độ)', min: 0, max: 360, step: 5, defaultValue: 90, showIf: { control: 'mode', value: 'Kéo tự do' } },
+          { type: 'slider', name: 'rollAngle', label: 'Góc quay (độ)', min: 0, max: 720, step: 5, defaultValue: 90, showIf: { control: 'mode', value: ['Bánh xe lăn trên đường', 'Xe đạp chạy trên đường'] } },
           { type: 'slider', name: 'specialDeg', label: 'Góc độ đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
           { type: 'slider', name: 'specialRad', label: 'Góc radian đặc biệt', min: 0, max: 16, step: 1, defaultValue: 4, showIf: { control: 'mode', value: 'Góc radian đặc biệt' }, displayValues: ['0', 'π/6', 'π/4', 'π/3', 'π/2', '2π/3', '3π/4', '5π/6', 'π', '7π/6', '5π/4', '4π/3', '3π/2', '5π/3', '7π/4', '11π/6', '2π'] },
         ],
@@ -977,8 +1511,7 @@ function updateSimulation(board, params) {
         tags: ['lượng giác', 'độ dài cung', 'bán kính', 'radian'],
         difficulty: 'basic',
         isPublished: true,
-      },
-      // Demo 2.4: Bảng dấu & Giá trị Lượng giác (Toán 11)
+      },// Demo 2.4: Bảng dấu & Giá trị Lượng giác (Toán 11)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
@@ -1049,14 +1582,14 @@ function initSimulation(board, params) {
   });
   registerDragSnapping(board, board.P, 'angle');
 
-  // Special axis boundary points
+  // Special axis boundary points with wider offsets to prevent overlapping with axes
   board.create('point', [1, 0], {
     name: math("A(1;0)"),
     size: 2,
     fillColor: '#94a3b8',
     strokeColor: '#64748b',
     fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [8, -12] }
+    label: { display: 'html', fontSize: 12, offset: [15, -15] }
   });
   board.create('point', [-1, 0], {
     name: math("A'(-1;0)"),
@@ -1064,7 +1597,7 @@ function initSimulation(board, params) {
     fillColor: '#94a3b8',
     strokeColor: '#64748b',
     fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [-65, -12] }
+    label: { display: 'html', fontSize: 12, offset: [-75, -15] }
   });
   board.create('point', [0, 1], {
     name: math('B(0;1)'),
@@ -1072,7 +1605,7 @@ function initSimulation(board, params) {
     fillColor: '#94a3b8',
     strokeColor: '#64748b',
     fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [8, 12] }
+    label: { display: 'html', fontSize: 12, offset: [12, 18] }
   });
   board.create('point', [0, -1], {
     name: math("B'(0;-1)"),
@@ -1080,12 +1613,38 @@ function initSimulation(board, params) {
     fillColor: '#94a3b8',
     strokeColor: '#64748b',
     fixed: true,
-    label: { display: 'html', fontSize: 12, offset: [8, -12] }
+    label: { display: 'html', fontSize: 12, offset: [12, -20] }
+  });
+
+  // Dynamic label for current Quadrant - positioned at the bottom-left to prevent overlap with top controls panel
+  board.quadText = board.create('text', [-1.9, -1.5, function() {
+    var mode = window.currentParams?.mode || 'Kéo tự do';
+    var deg = 45;
+    if (mode === 'Kéo tự do') {
+      deg = window.currentParams?.angle !== undefined ? window.currentParams.angle : 45;
+    } else if (mode === 'Góc độ đặc biệt') {
+      var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+      var idx = window.currentParams?.specialDeg !== undefined ? Math.round(window.currentParams.specialDeg) : 2;
+      deg = specialDegVals[idx] || 0;
+    } else if (mode === 'Góc radian đặc biệt') {
+      var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
+      var idx = window.currentParams?.specialRad !== undefined ? Math.round(window.currentParams.specialRad) : 2;
+      deg = specialDegVals[idx] || 0;
+    }
+    var normDeg = ((deg % 360) + 360) % 360;
+    if (normDeg > 0 && normDeg < 90) return 'Góc phần tư I';
+    if (normDeg > 90 && normDeg < 180) return 'Góc phần tư II';
+    if (normDeg > 180 && normDeg < 270) return 'Góc phần tư III';
+    if (normDeg > 270 && normDeg < 360) return 'Góc phần tư IV';
+    return 'Nằm trên trục';
+  }], {
+    display: 'html',
+    cssStyle: 'font-weight: 800; font-size: 13px; color: #4f46e5; background: rgba(255, 255, 255, 0.9); border: 1.5px solid #cbd5e1; padding: 4px 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: Inter, sans-serif;'
   });
 
   // Label Axis names
-  board.create('text', [1.8, 0.1, math('\\\\text{trục cos}')], { display: 'html', fontSize: 13, color: '#059669' });
-  board.create('text', [0.08, 1.8, math('\\\\text{trục sin}')], { display: 'html', fontSize: 13, color: '#e11d48' });
+  board.create('text', [1.8, 0.1, math('\\text{trục cos}')], { display: 'html', fontSize: 13, color: '#059669' });
+  board.create('text', [0.08, 1.8, math('\\text{trục sin}')], { display: 'html', fontSize: 13, color: '#e11d48' });
 
   // Radius line
   board.create('segment', [board.O, board.P], {
@@ -1223,13 +1782,13 @@ function updateSimulation(board, params) {
       : '<span style="color: #f87171; background: rgba(248, 113, 113, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">- (Âm)</span>';
   }
 
-  var sinValStr = py.toFixed(3) + ' &nbsp; ' + getSignHtml(py);
-  var cosValStr = px.toFixed(3) + ' &nbsp; ' + getSignHtml(px);
-  var tanValStr = showTan ? tanVal.toFixed(3) + ' &nbsp; ' + getSignHtml(tanVal) : getSignHtml(null);
-  var cotValStr = showCot ? cotVal.toFixed(3) + ' &nbsp; ' + getSignHtml(cotVal) : getSignHtml(null);
+  var sinValStr = py.toFixed(2) + ' &nbsp; ' + getSignHtml(py);
+  var cosValStr = px.toFixed(2) + ' &nbsp; ' + getSignHtml(px);
+  var tanValStr = showTan ? tanVal.toFixed(2) + ' &nbsp; ' + getSignHtml(tanVal) : getSignHtml(null);
+  var cotValStr = showCot ? cotVal.toFixed(2) + ' &nbsp; ' + getSignHtml(cotVal) : getSignHtml(null);
 
   showReadouts([
-    { label: 'Góc α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
+    { label: 'Góc α:', value: parseFloat(deg.toFixed(2)) + '° (' + radText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
     { label: 'Vị trí P:', value: quadLabel, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #e2e8f0; font-weight: bold;' },
     { label: 'cos α (hoành độ P):', value: cosValStr, labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 8px;', valueStyle: 'border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 8px; color: #34d399; font-weight: 800; font-size: 0.95rem; text-shadow: 0 0 6px rgba(52, 211, 153, 0.2);' },
     { label: 'sin α (tung độ P):', value: sinValStr, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f87171; font-weight: 800; font-size: 0.95rem; text-shadow: 0 0 6px rgba(248, 113, 113, 0.2);' },
@@ -1263,8 +1822,7 @@ function updateSimulation(board, params) {
         tags: ['lượng giác', 'bảng dấu', 'sin', 'cos', 'tan', 'cot'],
         difficulty: 'basic',
         isPublished: true,
-      },
-      // Demo 2.5: Góc liên quan đặc biệt (Toán 11)
+      },// Demo 2.5: Góc liên quan đặc biệt (Toán 11)
       {
         grade: 11,
         chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
@@ -1592,9 +2150,9 @@ function updateSimulation(board, params) {
   }
 
   showReadouts([
-    { label: 'Góc ban đầu α:', value: deg + '° (' + radText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
+    { label: 'Góc ban đầu α:', value: parseFloat(deg.toFixed(2)) + '° (' + radText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
     { label: 'Mối liên hệ:', value: relationLabel, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #e2e8f0; font-weight: bold; background: rgba(99, 102, 241, 0.15); padding: 2px 6px; border-radius: 4px;' },
-    { label: 'Góc liên kết β:', value: symDeg + '° (' + symRadText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c; font-weight: bold;' },
+    { label: 'Góc liên kết β:', value: parseFloat(symDeg.toFixed(2)) + '° (' + symRadText + ' rad)', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c; font-weight: bold;' },
     { label: 'Liên hệ Côsin:', value: fCos, labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 8px;', valueStyle: 'border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 8px; color: #34d399; font-weight: 800; font-size: 1.05rem; text-shadow: 0 0 8px rgba(52, 211, 153, 0.3);' },
     { label: 'Liên hệ Sin:', value: fSin, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f87171; font-weight: 800; font-size: 1.05rem; text-shadow: 0 0 8px rgba(248, 113, 113, 0.3);' },
     { label: 'Liên hệ Tang/Cot:', value: fTan + ' &nbsp;|&nbsp; ' + fCot, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c; font-weight: 800; font-size: 1.05rem; text-shadow: 0 0 8px rgba(249, 115, 22, 0.3);' }

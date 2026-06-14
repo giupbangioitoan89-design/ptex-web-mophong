@@ -25,45 +25,50 @@ export default function MathRenderer({ content, displayMode, className }: MathRe
   useEffect(() => {
     if (!ref.current || !content) return;
 
+    // Normalize double backslashes to single backslashes for KaTeX compatibility
+    const normalizedContent = content
+      .replace(/\\\\([a-zA-Z_,;!$#%&^`~|'":?*+=\-\[\]\(\)\{\}<>])/g, '\\$1')
+      .replace(/\\\\ /g, '\\ ');
+
     // If displayMode is explicitly set, render entire content as one formula
     if (displayMode !== undefined) {
       try {
-        katex.render(content, ref.current, {
+        katex.render(normalizedContent, ref.current, {
           displayMode,
           throwOnError: false,
           trust: true,
           strict: false,
         });
       } catch {
-        ref.current.textContent = content;
+        ref.current.textContent = normalizedContent;
       }
       return;
     }
 
     // Auto-detect: if content has $ delimiters, parse mixed text+math
-    if (content.includes('$')) {
-      ref.current.innerHTML = renderMixedContent(content);
+    if (normalizedContent.includes('$')) {
+      ref.current.innerHTML = renderMixedContent(normalizedContent);
       return;
     }
 
     // No $ delimiters: try to render as pure LaTeX
     // If it looks like LaTeX (has \, ^, _, {, }), render it
-    if (/[\\^_{}]/.test(content)) {
+    if (/[\\^_{}]/.test(normalizedContent)) {
       try {
-        katex.render(content, ref.current, {
+        katex.render(normalizedContent, ref.current, {
           displayMode: false,
           throwOnError: false,
           trust: true,
           strict: false,
         });
       } catch {
-        ref.current.textContent = content;
+        ref.current.textContent = normalizedContent;
       }
       return;
     }
 
     // Plain text — just display as-is
-    ref.current.textContent = content;
+    ref.current.textContent = normalizedContent;
   }, [content, displayMode]);
 
   return <span ref={ref} className={className} />;

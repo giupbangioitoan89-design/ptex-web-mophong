@@ -31,7 +31,7 @@ export interface IControl {
   options?: string[];
   showIf?: {
     control: string;
-    value: number | string | boolean;
+    value: number | string | boolean | (number | string | boolean)[];
   };
   displayValues?: string[];
 }

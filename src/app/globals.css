@@ -328,72 +328,87 @@ body::after {
   left: 0;
   right: 0;
   z-index: 10;
-  padding: 5px 10px 6px;
-  background: rgba(250, 251, 252, 0.72);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.85); /* Premium dark slate overlay */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px) saturate(1.3);
   -webkit-backdrop-filter: blur(12px) saturate(1.3);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
 }
 
 .glass-control-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  min-height: 22px;
+  gap: 10px;
+  min-height: 24px;
+  flex-wrap: wrap; /* Allows wrap on mobile to prevent text squeeze */
 }
 
 /* Slider: single row — label | range | play | value */
 .glass-slider-header {
-  display: contents; /* children flow into parent flex */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .glass-slider-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #475569;
+  color: #94a3b8; /* Slate-400 */
   white-space: nowrap;
-  flex-shrink: 0;
+  min-width: 95px; /* Aligns all labels beautifully */
 }
 
 .glass-slider-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .glass-play-btn {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  font-size: 0.68rem;
-  padding: 0 2px;
+  font-size: 0.65rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   color: #94a3b8;
-  transition: color 0.2s, transform 0.15s;
   display: inline-flex;
   align-items: center;
-  line-height: 1;
+  justify-content: center;
+  transition: all 0.2s;
 }
-.glass-play-btn:hover { color: #334155; }
-.glass-play-btn.active { color: var(--ctrl-color, #6366f1); transform: scale(1.1); }
+.glass-play-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.glass-play-btn.active {
+  background: var(--ctrl-color, #6366f1);
+  border-color: var(--ctrl-color, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 0 8px var(--ctrl-color, #6366f1);
+}
 
 .glass-slider-value {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--ctrl-color, #6366f1);
-  background: color-mix(in srgb, var(--ctrl-color, #6366f1) 10%, transparent);
-  padding: 1px 5px;
+  background: color-mix(in srgb, var(--ctrl-color, #6366f1) 12%, transparent);
+  padding: 2px 6px;
   border-radius: 4px;
-  min-width: 28px;
+  min-width: 36px;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
-/* Range slider — compact, matches light graph */
+/* Range slider — compact, matches dark graph */
 .glass-range {
   -webkit-appearance: none;
   appearance: none;
@@ -401,46 +416,46 @@ body::after {
   min-width: 0;
   height: 4px;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   outline: none;
   cursor: pointer;
   margin: 0;
 }
 .glass-range:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.25);
 }
 .glass-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--ctrl-color, #6366f1);
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  border: 1.5px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 .glass-range::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transform: scale(1.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 .glass-range:active::-webkit-slider-thumb {
   transform: scale(1.05);
 }
 .glass-range::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--ctrl-color, #6366f1);
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  border: 1.5px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 .glass-range::-moz-range-track {
   height: 4px;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Glass checkbox — compact */
@@ -448,16 +463,16 @@ body::after {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.7rem;
-  color: #475569;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #94a3b8;
   font-weight: 500;
   padding: 0;
 }
 .glass-checkbox input[type="checkbox"] {
   accent-color: var(--ctrl-color, #6366f1);
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   margin: 0;
 }
 
@@ -465,36 +480,39 @@ body::after {
 .glass-select-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   padding: 0;
 }
 .glass-select-row label {
-  font-size: 0.7rem;
-  color: #475569;
+  font-size: 0.75rem;
+  color: #94a3b8;
   font-weight: 600;
   white-space: nowrap;
+  min-width: 95px; /* Align select labels with slider labels! */
 }
 .glass-select {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  color: #1e293b;
-  padding: 1px 6px;
-  font-size: 0.7rem;
+  color: #f1f5f9;
+  padding: 2px 8px;
+  font-size: 0.72rem;
   outline: none;
   cursor: pointer;
-  height: 22px;
-  transition: border-color 0.2s;
+  height: 24px;
+  transition: all 0.2s;
 }
 .glass-select:hover {
-  border-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
 }
 .glass-select:focus {
   border-color: var(--ctrl-color, #6366f1);
+  box-shadow: 0 0 6px var(--ctrl-color, #6366f1);
 }
 .glass-select option {
-  background: #fff;
-  color: #1e293b;
+  background: #1e293b;
+  color: #f1f5f9;
 }
 
 /* Info panels — 2-column below controls */

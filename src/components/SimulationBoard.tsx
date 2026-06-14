@@ -148,6 +148,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     window.showReadouts = showReadouts;
 
     function math(latex) {
+      if (latex) {
+        latex = latex.split('\\\\\\\\').join('\\\\');
+      }
       try {
         return katex.renderToString(latex, { throwOnError: false });
       } catch (e) {
@@ -195,8 +198,22 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
      * ============================================================= */
     function registerDragSnapping(board, point, sliderName) {
       point.isDragging = false;
-      point.on('down', function() { point.isDragging = true; });
+      point.on('down', function() {
+        var params = window.currentParams || {};
+        var mode = params.mode || 'Kéo tự do';
+        if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+          point.isDragging = false;
+          return;
+        }
+        point.isDragging = true;
+      });
       point.on('drag', function() {
+        var params = window.currentParams || {};
+        var mode = params.mode || 'Kéo tự do';
+        if (mode === 'Bánh xe lăn trên đường' || mode === 'Xe đạp chạy trên đường') {
+          point.isDragging = false;
+          return;
+        }
         point.isDragging = true;
         var x = point.X();
         var y = point.Y();
@@ -259,6 +276,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         name: label,
         snapWidth: step,
         visible: false,
+        withTicks: false,
         size: 0,
         strokeColor: 'transparent',
         fillColor: 'transparent',
@@ -268,6 +286,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         point2: { visible: false, fixed: true },
         baseline: { visible: false, strokeColor: 'transparent', fixed: true },
         highline: { visible: false, strokeColor: 'transparent', fixed: true },
+        ticks: { visible: false, strokeColor: 'transparent' },
         label: { visible: false }
       });
       /* Track isDragging on the slider itself.
@@ -505,7 +524,11 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                 {simulation.controls.map((ctrl) => {
                   if (ctrl.showIf) {
                     const dependVal = controlValues[ctrl.showIf.control];
-                    if (dependVal !== ctrl.showIf.value) {
+                    if (Array.isArray(ctrl.showIf.value)) {
+                      if (!ctrl.showIf.value.includes(dependVal)) {
+                        return null;
+                      }
+                    } else if (dependVal !== ctrl.showIf.value) {
                       return null;
                     }
                   }
@@ -534,7 +557,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                                   ? ctrl.displayValues[controlValues[ctrl.name] as number]
                                   : typeof controlValues[ctrl.name] === 'number'
                                   ? (controlValues[ctrl.name] as number).toFixed(
-                                      ctrl.step && ctrl.step < 1 ? 1 : 0
+                                      ctrl.step && ctrl.step < 0.1 ? 2 : ctrl.step && ctrl.step < 1 ? 1 : 0
                                     )
                                   : String(controlValues[ctrl.name])}
                               </span>
