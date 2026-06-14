@@ -673,15 +673,8 @@ function updateSimulation(board, params) {
   board.lblBeta.setPosition(JXG.COORDS_BY_USER, [0.50 * Math.cos(midB), 0.50 * Math.sin(midB)]);
   board.lblGamma.setPosition(JXG.COORDS_BY_USER, [0.62 * Math.cos(midG), 0.62 * Math.sin(midG)]);
 
-  // gamma = sd(Ou, Ow) normalized to (-180, 180]
-  function normAngle(a) {
-    a = a % 360;
-    if (a > 180) a -= 360;
-    if (a <= -180) a += 360;
-    return a;
-  }
-  var gamma = normAngle(alpha + beta);
-  var k = Math.round((alpha + beta - gamma) / 360);
+  var gamma = alpha + beta;
+  var k = 0;
 
   function fmtDeg(d) { return (d >= 0 ? '+' : '') + d + '\\u00b0'; }
   function fmtRad(d) { return (d >= 0 ? '+' : '') + (d / 180).toFixed(2) + '\\u03c0'; }
