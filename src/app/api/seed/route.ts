@@ -732,9 +732,6 @@ function updateSimulation(board, params) {
   var radUW = (diffUW / 180).toFixed(2) + '\\u03c0';
 
   showReadouts([
-    { label: 'Tia Ou (U):', value: degU + '\\u00b0', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: 700;' },
-    { label: 'Tia Ov (V):', value: degV + '\\u00b0', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: 700;' },
-    { label: 'Tia Ow (W):', value: degW + '\\u00b0', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: 700;' },
     { label: '\\u03b1 G\\u00f3c (Ou, Ov):', value: diffUV + '\\u00b0 (' + radUV + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
     { label: '\\u03b2 G\\u00f3c (Ov, Ow):', value: diffVW + '\\u00b0 (' + radVW + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
     { label: '\\u03b3 G\\u00f3c (Ou, Ow):', value: diffUW + '\\u00b0 (' + radUW + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
