@@ -3155,7 +3155,7 @@ function initSimulation(board, params) {
   board.divider = board.create('line', [[-1.5, -5], [-1.5, 5]], { strokeColor: '#cbd5e1', strokeWidth: 1.5, straightFirst: true, straightLast: true, fixed: true });
 
   board.rangeBand = board.create('polygon', [
-    [[-1.5, -1.2], [7.2, -1.2], [7.2, 1.2], [-1.5, 1.2]]
+    [-1.5, -1.2], [7.2, -1.2], [7.2, 1.2], [-1.5, 1.2]
   ], {
     fillColor: '#6366f1', fillOpacity: 0.05, borders: { visible: false }, vertices: { visible: false }
   });
@@ -3196,8 +3196,11 @@ function initSimulation(board, params) {
   });
   board.P_ray = board.create('segment', [board.C, board.P], { strokeColor: '#fb923c', strokeWidth: 1.5 });
 
-  board.P_cos_seg = board.create('segment', [board.C, [function() { return board.P.X(); }, 0]], { strokeColor: '#10b981', strokeWidth: 3, visible: false });
-  board.P_sin_seg = board.create('segment', [board.C, [-3.0, function() { return board.P.Y(); }]], { strokeColor: '#ec4899', strokeWidth: 3, visible: false });
+  board.P_cos_proj = board.create('point', [function() { return board.P.X(); }, 0], { visible: false });
+  board.P_cos_seg = board.create('segment', [board.C, board.P_cos_proj], { strokeColor: '#10b981', strokeWidth: 3, visible: false });
+  
+  board.P_sin_proj = board.create('point', [-3.0, function() { return board.P.Y(); }], { visible: false });
+  board.P_sin_seg = board.create('segment', [board.C, board.P_sin_proj], { strokeColor: '#ec4899', strokeWidth: 3, visible: false });
 
   board.tanLine = board.create('line', [[-1.8, -5], [-1.8, 5]], { strokeColor: '#94a3b8', strokeWidth: 1, dash: 1, visible: false, straightFirst: true, straightLast: true });
   board.T = board.create('point', [-1.8, 0], {
@@ -3468,8 +3471,7 @@ function initSimulation(board, params) {
 
   board.seaFloor = board.create('segment', [[-5.5, -1.8], [-1.5, -1.8]], { strokeColor: '#64748b', strokeWidth: 2 });
   board.seaWater = board.create('polygon', [
-    [-5.5, -1.8], [-1.5, -1.8],
-    [[-1.5, function() { return board.yWater_val || -0.5; }], [-5.5, function() { return board.yWater_val || -0.5; }]]
+    [-5.5, -1.8], [-1.5, -1.8], [-1.5, function() { return board.yWater_val || -0.5; }], [-5.5, function() { return board.yWater_val || -0.5; }]
   ], { fillColor: '#38bdf8', fillOpacity: 0.6, borders: { visible: false }, vertices: { visible: false } });
 
   board.rock1 = board.create('polygon', [[-5.2, -1.8], [-4.8, -1.2], [-4.4, -1.8]], { fillColor: '#94a3b8', fillOpacity: 0.8, borders: { strokeColor: '#64748b', strokeWidth: 1 } });
@@ -3524,9 +3526,14 @@ function initSimulation(board, params) {
 
   board.timeLine = board.create('line', [[function() { return board.G.X(); }, -5], [function() { return board.G.X(); }, 5]], { strokeColor: 'rgba(99, 102, 241, 0.25)', strokeWidth: 1, dash: 2, straightFirst: true, straightLast: true });
 
-  board.springTracerLine = board.create('segment', [[-3.5, function() { return board.yMass_val || 0; }], board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
-  board.tideTracerLine = board.create('segment', [[-1.5, function() { return board.yWater_val || 0; }], board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
-  board.daylightTracerLine = board.create('segment', [[-1.5, function() { return board.yDaylight_val || 0; }], board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
+  board.springTracerOrigin = board.create('point', [-3.5, function() { return board.yMass_val || 0; }], { visible: false });
+  board.springTracerLine = board.create('segment', [board.springTracerOrigin, board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
+  
+  board.tideTracerOrigin = board.create('point', [-1.5, function() { return board.yWater_val || 0; }], { visible: false });
+  board.tideTracerLine = board.create('segment', [board.tideTracerOrigin, board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
+  
+  board.daylightTracerOrigin = board.create('point', [-1.5, function() { return board.yDaylight_val || 0; }], { visible: false });
+  board.daylightTracerLine = board.create('segment', [board.daylightTracerOrigin, board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
 
   board.graph = board.create('functiongraph', [
     function(x) {
