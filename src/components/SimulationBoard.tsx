@@ -25,7 +25,7 @@ function parseStyle(styleStr?: string): React.CSSProperties {
 function getControlThemeColor(name: string): string {
   const n = name.toLowerCase();
   // Chasles sim: alpha → green (Ou→Ov arc), beta → orange (Ov→Ow arc)
-  if (n === 'alpha' || n === 'angleu' || n === 'specialu') return '#10b981';
+  if (n === 'alpha' || n === 'angleu' || n === 'specialu' || n === 'degu') return '#10b981';
   if (n === 'beta' || n === 'anglev' || n === 'specialv') return '#f59e0b';
   if (n === 'anglew' || n === 'specialw') return '#6366f1';
   if (n === 'deg' || n === 'angle' || n === 'specialdeg' || n === 'specialrad') return '#818cf8';

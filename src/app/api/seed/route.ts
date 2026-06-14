@@ -563,9 +563,9 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 14, offset: [-15, -15] }
   });
 
-  // U fixed at 0 degrees (reference direction)
+  // U — position controlled by degU slider
   board.U = board.create('point', [1, 0], {
-    name: math('U'), size: 5, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
+    name: math('U'), size: 5, fillColor: '#10b981', strokeColor: '#059669',
     label: { display: 'html', fontSize: 14, offset: [10, 10] }
   });
 
@@ -620,18 +620,20 @@ function initSimulation(board, params) {
 
 function updateSimulation(board, params) {
   board.suspendUpdate();
-
-  // 2 sliders: alpha = sd(Ou, Ov), beta = sd(Ov, Ow)
+  // 3 params: degU = starting angle of Ou, alpha = sd(Ou,Ov), beta = sd(Ov,Ow)
+  var degU = params.degU !== undefined ? params.degU : 0;
   var alpha = params.alpha !== undefined ? params.alpha : 90;
   var beta = params.beta !== undefined ? params.beta : 60;
 
-  // U fixed at 0, V at alpha, W at alpha+beta
-  var degV = alpha;
-  var degW = alpha + beta;
+  // Positions: U at degU, V at degU+alpha, W at degU+alpha+beta
+  var degV = degU + alpha;
+  var degW = degU + alpha + beta;
 
+  var radU = degU * Math.PI / 180;
   var radV = degV * Math.PI / 180;
   var radW = degW * Math.PI / 180;
 
+  board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
   board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
   board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
 
@@ -642,7 +644,7 @@ function updateSimulation(board, params) {
     if (a <= -180) a += 360;
     return a;
   }
-  var gamma = normAngle(degW);
+  var gamma = normAngle(alpha + beta);
   var k = Math.round((alpha + beta - gamma) / 360);
 
   function fmtDeg(d) { return (d >= 0 ? '+' : '') + d + '\\u00b0'; }
@@ -669,6 +671,7 @@ function updateSimulation(board, params) {
           theme: 'light',
         },
         controls: [
+          { type: 'slider', name: 'degU', label: 'Tia Ou (°)', min: 0, max: 360, step: 5, defaultValue: 0 },
           { type: 'slider', name: 'alpha', label: 'sđ(Ou, Ov) = α', min: -180, max: 180, step: 5, defaultValue: 90 },
           { type: 'slider', name: 'beta', label: 'sđ(Ov, Ow) = β', min: -180, max: 180, step: 5, defaultValue: 60 },
         ],
