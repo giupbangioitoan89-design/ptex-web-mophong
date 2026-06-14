@@ -2478,24 +2478,67 @@ function initSimulation(board, params) {
   board.sliderA = createCustomSlider(board, [-1.5, -1.3], [1.5, -1.3], 0, params.a !== undefined ? params.a : 50, 360, 'Góc a', 5, '#fb923c');
   board.sliderB = createCustomSlider(board, [-1.5, -1.6], [1.5, -1.6], 0, params.b !== undefined ? params.b : 20, 360, 'Góc b', 5, '#10b981');
   
-  board.U = board.create('point', [
+  // ptA: invisible point on the unit circle at angle a (direction of angle a)
+  board.ptA = board.create('point', [
     function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.cos(a); },
     function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.sin(a); }
-  ], {
-    name: math('U(a)'), size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
-    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  ], { visible: false });
+
+  // Dashed segment showing the direction of angle a
+  board.create('segment', [board.O, board.ptA], { strokeColor: 'rgba(251, 146, 60, 0.4)', strokeWidth: 1.2, dash: 2 });
+
+  // Arc for angle a
+  board.arcStartA = board.create('point', [0.2, 0], { visible: false });
+  board.arcEndA = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.2 * Math.cos(a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.2 * Math.sin(a); }
+  ], { visible: false });
+  board.arcA = board.create('arc', [board.O, board.arcStartA, board.arcEndA], {
+    strokeColor: '#fb923c', strokeWidth: 1.5, fillOpacity: 0.12, fillColor: '#fb923c', withLabel: false
   });
   
-  board.V = board.create('point', [
-    function() { var b = board.sliderB.Value() * Math.PI / 180; return Math.cos(b); },
-    function() { var b = board.sliderB.Value() * Math.PI / 180; return Math.sin(b); }
-  ], {
-    name: math('V(b)'), size: 4, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
-    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  // Label for angle a
+  board.lblAngleA = board.create('text', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.28 * Math.cos(a / 2); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.28 * Math.sin(a / 2); },
+    math('a')
+  ], { fontSize: 13, color: '#fb923c', fixed: true, anchorX: 'middle', anchorY: 'middle' });
+
+  // Arc for angle b (offset from angle a to angle a+b)
+  board.arcStartB = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.35 * Math.cos(a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.35 * Math.sin(a); }
+  ], { visible: false });
+  board.arcEndB = board.create('point', [
+    function() {
+      var a = board.sliderA.Value() * Math.PI / 180;
+      var b = board.sliderB.Value() * Math.PI / 180;
+      return 0.35 * Math.cos(a + b);
+    },
+    function() {
+      var a = board.sliderA.Value() * Math.PI / 180;
+      var b = board.sliderB.Value() * Math.PI / 180;
+      return 0.35 * Math.sin(a + b);
+    }
+  ], { visible: false });
+  board.arcB = board.create('arc', [board.O, board.arcStartB, board.arcEndB], {
+    strokeColor: '#10b981', strokeWidth: 1.5, fillOpacity: 0.12, fillColor: '#10b981', withLabel: false
   });
-  
-  board.create('segment', [board.O, board.U], { strokeColor: 'rgba(251, 146, 60, 0.35)', strokeWidth: 1.2 });
-  board.create('segment', [board.O, board.V], { strokeColor: 'rgba(16, 185, 129, 0.35)', strokeWidth: 1.2 });
+
+  // Label for angle b
+  board.lblAngleB = board.create('text', [
+    function() {
+      var a = board.sliderA.Value() * Math.PI / 180;
+      var b = board.sliderB.Value() * Math.PI / 180;
+      return 0.43 * Math.cos(a + b / 2);
+    },
+    function() {
+      var a = board.sliderA.Value() * Math.PI / 180;
+      var b = board.sliderB.Value() * Math.PI / 180;
+      return 0.43 * Math.sin(a + b / 2);
+    },
+    math('b')
+  ], { fontSize: 13, color: '#10b981', fixed: true, anchorX: 'middle', anchorY: 'middle' });
 
   // P(a+b)
   board.P = board.create('point', [
@@ -2510,7 +2553,7 @@ function initSimulation(board, params) {
       return Math.sin(a + b);
     }
   ], {
-    name: math('P(a+b)'), size: 4, fillColor: '#c084fc', strokeColor: '#a855f7', fixed: true,
+    name: math('a+b'), size: 4, fillColor: '#c084fc', strokeColor: '#a855f7', fixed: true,
     label: { display: 'html', fontSize: 13, offset: [10, 10] }
   });
 
@@ -2527,9 +2570,12 @@ function initSimulation(board, params) {
       return Math.sin(a - b);
     }
   ], {
-    name: math('Q(a-b)'), size: 4, fillColor: '#0ea5e9', strokeColor: '#0284c7', fixed: true,
+    name: math('a-b'), size: 4, fillColor: '#0ea5e9', strokeColor: '#0284c7', fixed: true,
     label: { display: 'html', fontSize: 13, offset: [10, 10] }
   });
+  // Segments from origin to P and Q
+  board.create('segment', [board.O, board.P], { strokeColor: 'rgba(192, 132, 252, 0.4)', strokeWidth: 1.2 });
+  board.create('segment', [board.O, board.Q], { strokeColor: 'rgba(14, 165, 233, 0.4)', strokeWidth: 1.2 });
   
   // Connecting chord PQ
   board.chordPQ = board.create('segment', [board.P, board.Q], {
@@ -2537,25 +2583,26 @@ function initSimulation(board, params) {
     visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a cos b'; }
   });
 
-  // Midpoint M
+  // Midpoint M (no name label for M to keep circle clean)
   board.M = board.create('midpoint', [board.chordPQ], {
-    name: math('M'), size: 4, fillColor: '#3b82f6', strokeColor: '#1d4ed8',
-    label: { display: 'html', fontSize: 13, offset: [10, -10] },
+    name: '', size: 4, fillColor: '#3b82f6', strokeColor: '#1d4ed8',
     visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a cos b'; }
   });
 
   // Projections on X-axis (for cos a cos b, sin a sin b)
   board.Px = board.create('point', [function() { return board.P.X(); }, 0], {
-    name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    name: math('cos(a+b)'), size: 3, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    label: { display: 'html', fontSize: 11, offset: [-30, -18] },
     visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a sin b'; }
   });
   board.Qx = board.create('point', [function() { return board.Q.X(); }, 0], {
-    name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    name: math('cos(a-b)'), size: 3, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    label: { display: 'html', fontSize: 11, offset: [-30, -18] },
     visible: function() { return board.currentMode === 'cos a cos b' || board.currentMode === 'sin a sin b'; }
   });
   board.Mx = board.create('point', [function() { return board.M.X(); }, 0], {
-    name: math('M_x'), size: 3, fillColor: '#3b82f6', strokeColor: '#1d4ed8',
-    label: { display: 'html', fontSize: 12, offset: [5, -15] },
+    name: math('cos\\\\,a\\\\,cos\\\\,b'), size: 4, fillColor: '#3b82f6', strokeColor: '#1d4ed8',
+    label: { display: 'html', fontSize: 11, offset: [-35, 12] },
     visible: function() { return board.currentMode === 'cos a cos b'; }
   });
 
@@ -2566,16 +2613,18 @@ function initSimulation(board, params) {
 
   // Projections on Y-axis (for sin a cos b)
   board.Py = board.create('point', [0, function() { return board.P.Y(); }], {
-    name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    name: math('sin(a+b)'), size: 3, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    label: { display: 'html', fontSize: 11, offset: [-75, -5] },
     visible: function() { return board.currentMode === 'sin a cos b'; }
   });
   board.Qy = board.create('point', [0, function() { return board.Q.Y(); }], {
-    name: '', size: 2, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    name: math('sin(a-b)'), size: 3, fillColor: '#cbd5e1', strokeColor: '#94a3b8',
+    label: { display: 'html', fontSize: 11, offset: [-75, -5] },
     visible: function() { return board.currentMode === 'sin a cos b'; }
   });
   board.My = board.create('point', [0, function() { return board.M.Y(); }], {
-    name: math('M_y'), size: 3, fillColor: '#3b82f6', strokeColor: '#1d4ed8',
-    label: { display: 'html', fontSize: 12, offset: [-25, 5] },
+    name: math('sin\\\\,a\\\\,cos\\\\,b'), size: 4, fillColor: '#3b82f6', strokeColor: '#1d4ed8',
+    label: { display: 'html', fontSize: 11, offset: [8, 5] },
     visible: function() { return board.currentMode === 'sin a cos b'; }
   });
 
@@ -2599,6 +2648,14 @@ function initSimulation(board, params) {
     strokeColor: '#ef4444', strokeWidth: 2,
     visible: function() { return board.currentMode === 'sin a sin b'; }
   });
+  board.lblRedSeg = board.create('text', [
+    function() { return (board.Px.X() + board.Qx.X()) / 2; },
+    0.12,
+    math('2\\\\sin\\\\,a\\\\,sin\\\\,b')
+  ], {
+    fontSize: 11, color: '#ef4444', fixed: true, anchorX: 'middle',
+    visible: function() { return board.currentMode === 'sin a sin b'; }
+  });
   board.S_val = board.create('point', [
     function() {
       var a = board.sliderA.Value() * Math.PI / 180;
@@ -2608,7 +2665,7 @@ function initSimulation(board, params) {
     0
   ], {
     name: math('sin\\\\,a\\\\,sin\\\\,b'), size: 4, fillColor: '#10b981', strokeColor: '#059669',
-    label: { display: 'html', fontSize: 11, offset: [5, 12] },
+    label: { display: 'html', fontSize: 11, offset: [-35, 12] },
     visible: function() { return board.currentMode === 'sin a sin b'; }
   });
   board.segOSval = board.create('segment', [board.O, board.S_val], {
