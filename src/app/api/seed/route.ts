@@ -547,6 +547,11 @@ function updateSimulation(board, params) {
         simulationCode: `
 function initSimulation(board, params) {
   board.suspendUpdate();
+
+  // Axis labels
+  board.create('text', [1.6, 0.12, 'cos'], { fontSize: 11, color: '#94a3b8', fixed: true, anchorX: 'right' });
+  board.create('text', [0.18, 1.6, 'sin'], { fontSize: 11, color: '#94a3b8', fixed: true, anchorX: 'left' });
+
   // Unit circle
   board.circle = board.create('circle', [[0,0], 1], {
     strokeColor: '#94a3b8',
@@ -565,7 +570,7 @@ function initSimulation(board, params) {
     label: { display: 'html', fontSize: 14, offset: [-15, -15] }
   });
 
-  // Point U
+  // Point U (green)
   board.U = board.create('glider', [1, 0, board.circle], {
     name: math('U'),
     size: 5,
@@ -575,7 +580,7 @@ function initSimulation(board, params) {
   });
   registerDragSnapping(board, board.U, 'angleU');
 
-  // Point V
+  // Point V (orange)
   board.V = board.create('glider', [0, 1, board.circle], {
     name: math('V'),
     size: 5,
@@ -585,7 +590,7 @@ function initSimulation(board, params) {
   });
   registerDragSnapping(board, board.V, 'angleV');
 
-  // Point W
+  // Point W (indigo)
   board.W = board.create('glider', [0, -1, board.circle], {
     name: math('W'),
     size: 5,
@@ -600,7 +605,36 @@ function initSimulation(board, params) {
   board.OV = board.create('segment', [board.O, board.V], { strokeColor: '#f59e0b', strokeWidth: 1.5 });
   board.OW = board.create('segment', [board.O, board.W], { strokeColor: '#6366f1', strokeWidth: 1.5 });
 
-  // Arcs for directed angles
+  // Colored angle arcs with labels
+  board.angleUV = board.create('angle', [board.U, board.O, board.V], {
+    radius: 0.28,
+    name: function() { return '\\u03b1'; },
+    fillColor: 'rgba(16, 185, 129, 0.15)',
+    strokeColor: '#10b981',
+    strokeWidth: 2,
+    label: { fontSize: 13, color: '#10b981', offset: [0, 0] }
+  });
+
+  board.angleVW = board.create('angle', [board.V, board.O, board.W], {
+    radius: 0.38,
+    name: function() { return '\\u03b2'; },
+    fillColor: 'rgba(245, 158, 11, 0.12)',
+    strokeColor: '#f59e0b',
+    strokeWidth: 2,
+    label: { fontSize: 13, color: '#f59e0b', offset: [0, 0] }
+  });
+
+  board.angleUW = board.create('angle', [board.U, board.O, board.W], {
+    radius: 0.48,
+    name: function() { return '\\u03b3'; },
+    fillColor: 'rgba(99, 102, 241, 0.1)',
+    strokeColor: '#6366f1',
+    strokeWidth: 2,
+    dash: 2,
+    label: { fontSize: 13, color: '#6366f1', offset: [0, 0] }
+  });
+
+  // Outer arcs on circle
   board.arcUV = board.create('arc', [board.O, board.U, board.V], {
     strokeColor: '#10b981',
     strokeWidth: 3,
@@ -623,15 +657,15 @@ function initSimulation(board, params) {
     selection: 'minor'
   });
 
-  // Create native sliders inside SVG
-  board.sliderU = createCustomSlider(board, [-1.6, -1.35], [-0.7, -1.35], 0, params.angleU !== undefined ? params.angleU : 30, 360, 'U', 5, '#10b981');
-  board.sliderV = createCustomSlider(board, [-0.45, -1.35], [0.45, -1.35], 0, params.angleV !== undefined ? params.angleV : 120, 360, 'V', 5, '#fb923c');
-  board.sliderW = createCustomSlider(board, [0.7, -1.35], [1.6, -1.35], 0, params.angleW !== undefined ? params.angleW : 270, 360, 'W', 5, '#c084fc');
+  // Create native sliders inside SVG (hidden — web overlay handles UI)
+  board.sliderU = createCustomSlider(board, [-1.6, -1.55], [-0.7, -1.55], 0, params.angleU !== undefined ? params.angleU : 30, 360, 'U', 5, '#10b981');
+  board.sliderV = createCustomSlider(board, [-0.45, -1.55], [0.45, -1.55], 0, params.angleV !== undefined ? params.angleV : 120, 360, 'V', 5, '#fb923c');
+  board.sliderW = createCustomSlider(board, [0.7, -1.55], [1.6, -1.55], 0, params.angleW !== undefined ? params.angleW : 270, 360, 'W', 5, '#c084fc');
 
-  var specialDegVals = ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'];
-  board.sliderSpecU = createCustomSlider(board, [-1.6, -1.35], [-0.7, -1.35], 0, params.specialU !== undefined ? params.specialU : 1, 16, 'U', 1, '#10b981', specialDegVals);
-  board.sliderSpecV = createCustomSlider(board, [-0.45, -1.35], [0.45, -1.35], 0, params.specialV !== undefined ? params.specialV : 5, 16, 'V', 1, '#fb923c', specialDegVals);
-  board.sliderSpecW = createCustomSlider(board, [0.7, -1.35], [1.6, -1.35], 0, params.specialW !== undefined ? params.specialW : 12, 16, 'W', 1, '#c084fc', specialDegVals);
+  var specialDegVals = ['0\\u00b0', '30\\u00b0', '45\\u00b0', '60\\u00b0', '90\\u00b0', '120\\u00b0', '135\\u00b0', '150\\u00b0', '180\\u00b0', '210\\u00b0', '225\\u00b0', '240\\u00b0', '270\\u00b0', '300\\u00b0', '315\\u00b0', '330\\u00b0', '360\\u00b0'];
+  board.sliderSpecU = createCustomSlider(board, [-1.6, -1.55], [-0.7, -1.55], 0, params.specialU !== undefined ? params.specialU : 1, 16, 'U', 1, '#10b981', specialDegVals);
+  board.sliderSpecV = createCustomSlider(board, [-0.45, -1.55], [0.45, -1.55], 0, params.specialV !== undefined ? params.specialV : 5, 16, 'V', 1, '#fb923c', specialDegVals);
+  board.sliderSpecW = createCustomSlider(board, [0.7, -1.55], [1.6, -1.55], 0, params.specialW !== undefined ? params.specialW : 12, 16, 'W', 1, '#c084fc', specialDegVals);
 
   board.sliderU.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleU', value: board.sliderU.Value() }, '*'); });
   board.sliderV.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleV', value: board.sliderV.Value() }, '*'); });
@@ -647,18 +681,18 @@ function initSimulation(board, params) {
 
 function updateSimulation(board, params) {
   board.suspendUpdate();
-  var mode = params.mode || 'Kéo tự do';
+  var mode = params.mode || 'K\\u00e9o t\\u1ef1 do';
   var degU = 30, degV = 120, degW = 270;
   var idxU = 1, idxV = 5, idxW = 12;
   
-  board.sliderU.setAttribute({ visible: mode === 'Kéo tự do' });
-  board.sliderV.setAttribute({ visible: mode === 'Kéo tự do' });
-  board.sliderW.setAttribute({ visible: mode === 'Kéo tự do' });
-  board.sliderSpecU.setAttribute({ visible: mode !== 'Kéo tự do' });
-  board.sliderSpecV.setAttribute({ visible: mode !== 'Kéo tự do' });
-  board.sliderSpecW.setAttribute({ visible: mode !== 'Kéo tự do' });
+  board.sliderU.setAttribute({ visible: mode === 'K\\u00e9o t\\u1ef1 do' });
+  board.sliderV.setAttribute({ visible: mode === 'K\\u00e9o t\\u1ef1 do' });
+  board.sliderW.setAttribute({ visible: mode === 'K\\u00e9o t\\u1ef1 do' });
+  board.sliderSpecU.setAttribute({ visible: mode !== 'K\\u00e9o t\\u1ef1 do' });
+  board.sliderSpecV.setAttribute({ visible: mode !== 'K\\u00e9o t\\u1ef1 do' });
+  board.sliderSpecW.setAttribute({ visible: mode !== 'K\\u00e9o t\\u1ef1 do' });
 
-  if (mode === 'Kéo tự do') {
+  if (mode === 'K\\u00e9o t\\u1ef1 do') {
     degU = params.angleU !== undefined ? params.angleU : 30;
     degV = params.angleV !== undefined ? params.angleV : 120;
     degW = params.angleW !== undefined ? params.angleW : 270;
@@ -693,26 +727,26 @@ function updateSimulation(board, params) {
   var sum = diffUV + diffVW;
   var k = Math.floor((sum - diffUW) / 360);
 
-  var radUV = (diffUV / 180).toFixed(2) + 'π';
-  var radVW = (diffVW / 180).toFixed(2) + 'π';
-  var radUW = (diffUW / 180).toFixed(2) + 'π';
+  var radUV = (diffUV / 180).toFixed(2) + '\\u03c0';
+  var radVW = (diffVW / 180).toFixed(2) + '\\u03c0';
+  var radUW = (diffUW / 180).toFixed(2) + '\\u03c0';
 
   showReadouts([
-    { label: 'Tia Ou (U):', value: degU + '°', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: 700;' },
-    { label: 'Tia Ov (V):', value: degV + '°', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: 700;' },
-    { label: 'Tia Ow (W):', value: degW + '°', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: 700;' },
-    { label: 'Góc (Ou, Ov) [α]:', value: diffUV + '° (' + radUV + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
-    { label: 'Góc (Ov, Ow) [β]:', value: diffVW + '° (' + radVW + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
-    { label: 'Góc (Ou, Ow) [γ]:', value: diffUW + '° (' + radUW + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
-    { label: 'Hệ thức Chasles:', value: diffUV + '° + ' + diffVW + '° = ' + diffUW + '° + ' + (k * 360) + '°', labelStyle: 'color: #a5b4fc; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #c084fc; font-weight: bold; background: rgba(99, 102, 241, 0.18); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
+    { label: 'Tia Ou (U):', value: degU + '\\u00b0', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: 700;' },
+    { label: 'Tia Ov (V):', value: degV + '\\u00b0', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: 700;' },
+    { label: 'Tia Ow (W):', value: degW + '\\u00b0', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: 700;' },
+    { label: '\\u03b1 G\\u00f3c (Ou, Ov):', value: diffUV + '\\u00b0 (' + radUV + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
+    { label: '\\u03b2 G\\u00f3c (Ov, Ow):', value: diffVW + '\\u00b0 (' + radVW + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
+    { label: '\\u03b3 G\\u00f3c (Ou, Ow):', value: diffUW + '\\u00b0 (' + radUW + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
+    { label: 'H\\u1ec7 th\\u1ee9c Chasles:', value: diffUV + '\\u00b0 + ' + diffVW + '\\u00b0 = ' + diffUW + '\\u00b0 + ' + (k * 360) + '\\u00b0', labelStyle: 'color: #a5b4fc; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #c084fc; font-weight: bold; background: rgba(99, 102, 241, 0.18); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
   ]);
   board.unsuspendUpdate();
 }
 `,
         visualizationType: 'jsxgraph',
         config: {
-          boardSize: { width: 600, height: 500 },
-          boundingBox: [-1.8, 1.5, 1.8, -1.5],
+          boardSize: { width: 600, height: 540 },
+          boundingBox: [-1.8, 1.85, 1.8, -1.75],
           showAxis: true,
           showGrid: true,
           theme: 'light',
