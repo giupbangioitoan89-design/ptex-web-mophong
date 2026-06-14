@@ -24,15 +24,14 @@ function parseStyle(styleStr?: string): React.CSSProperties {
 
 function getControlThemeColor(name: string): string {
   const n = name.toLowerCase();
-  // Match exact control names to their graph element colors
-  if (n === 'angleu' || n === 'specialu') return '#10b981'; // Green — matches point U
-  if (n === 'anglev' || n === 'specialv') return '#f59e0b'; // Orange — matches point V
-  if (n === 'anglew' || n === 'specialw') return '#6366f1'; // Indigo — matches point W
-  if (n === 'deg' || n === 'angle' || n === 'specialdeg' || n === 'specialrad') return '#818cf8'; // Sim 1 primary
+  // Chasles sim: alpha → green (Ou→Ov arc), beta → orange (Ov→Ow arc)
+  if (n === 'alpha' || n === 'angleu' || n === 'specialu') return '#10b981';
+  if (n === 'beta' || n === 'anglev' || n === 'specialv') return '#f59e0b';
+  if (n === 'anglew' || n === 'specialw') return '#6366f1';
+  if (n === 'deg' || n === 'angle' || n === 'specialdeg' || n === 'specialrad') return '#818cf8';
   if (n === 'r' || n === 'a') return '#818cf8';
   if (n === 'b') return '#fb923c';
   if (n === 'c' || n === 'd') return '#c084fc';
-  // Select/checkbox controls — neutral
   if (n === 'mode' || n === 'relation') return '#94a3b8';
   return '#6366f1';
 }

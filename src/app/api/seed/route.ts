@@ -548,57 +548,38 @@ function updateSimulation(board, params) {
 function initSimulation(board, params) {
   board.suspendUpdate();
 
-  // Axis labels — positioned inside bounding box
+  // Axis labels
   board.create('text', [1.5, 0.1, 'cos'], { fontSize: 11, color: '#94a3b8', fixed: true, anchorX: 'right', highlight: false });
   board.create('text', [0.12, 1.5, 'sin'], { fontSize: 11, color: '#94a3b8', fixed: true, anchorX: 'left', highlight: false });
 
   // Unit circle
   board.circle = board.create('circle', [[0,0], 1], {
-    strokeColor: '#94a3b8',
-    strokeWidth: 2,
-    highlight: false,
-    fixed: true
+    strokeColor: '#94a3b8', strokeWidth: 2, highlight: false, fixed: true
   });
 
   // Origin O
   board.O = board.create('point', [0, 0], {
-    name: math('O'),
-    size: 3,
-    fillColor: '#64748b',
-    strokeColor: '#475569',
-    fixed: true,
+    name: math('O'), size: 3, fillColor: '#64748b', strokeColor: '#475569', fixed: true,
     label: { display: 'html', fontSize: 14, offset: [-15, -15] }
   });
 
-  // Point U (green)
-  board.U = board.create('glider', [1, 0, board.circle], {
-    name: math('U'),
-    size: 5,
-    fillColor: '#10b981',
-    strokeColor: '#059669',
+  // U fixed at 0 degrees (reference direction)
+  board.U = board.create('point', [1, 0], {
+    name: math('U'), size: 5, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
     label: { display: 'html', fontSize: 14, offset: [10, 10] }
   });
-  registerDragSnapping(board, board.U, 'angleU');
 
-  // Point V (orange)
-  board.V = board.create('glider', [0, 1, board.circle], {
-    name: math('V'),
-    size: 5,
-    fillColor: '#f59e0b',
-    strokeColor: '#d97706',
+  // V position derived from alpha
+  board.V = board.create('point', [0, 1], {
+    name: math('V'), size: 5, fillColor: '#f59e0b', strokeColor: '#d97706', fixed: true,
     label: { display: 'html', fontSize: 14, offset: [-15, 15] }
   });
-  registerDragSnapping(board, board.V, 'angleV');
 
-  // Point W (indigo)
-  board.W = board.create('glider', [0, -1, board.circle], {
-    name: math('W'),
-    size: 5,
-    fillColor: '#6366f1',
-    strokeColor: '#4f46e5',
+  // W position derived from alpha + beta
+  board.W = board.create('point', [0, -1], {
+    name: math('W'), size: 5, fillColor: '#6366f1', strokeColor: '#4f46e5', fixed: true,
     label: { display: 'html', fontSize: 14, offset: [10, -10] }
   });
-  registerDragSnapping(board, board.W, 'angleW');
 
   // Rays
   board.OU = board.create('segment', [board.O, board.U], { strokeColor: '#10b981', strokeWidth: 1.5 });
@@ -607,73 +588,31 @@ function initSimulation(board, params) {
 
   // Colored angle arcs with labels
   board.angleUV = board.create('angle', [board.U, board.O, board.V], {
-    radius: 0.28,
-    name: function() { return '\\u03b1'; },
-    fillColor: 'rgba(16, 185, 129, 0.15)',
-    strokeColor: '#10b981',
-    strokeWidth: 2,
+    radius: 0.28, name: function() { return '\\u03b1'; },
+    fillColor: 'rgba(16, 185, 129, 0.15)', strokeColor: '#10b981', strokeWidth: 2,
     label: { fontSize: 13, color: '#10b981', offset: [0, 0] }
   });
-
   board.angleVW = board.create('angle', [board.V, board.O, board.W], {
-    radius: 0.38,
-    name: function() { return '\\u03b2'; },
-    fillColor: 'rgba(245, 158, 11, 0.12)',
-    strokeColor: '#f59e0b',
-    strokeWidth: 2,
+    radius: 0.38, name: function() { return '\\u03b2'; },
+    fillColor: 'rgba(245, 158, 11, 0.12)', strokeColor: '#f59e0b', strokeWidth: 2,
     label: { fontSize: 13, color: '#f59e0b', offset: [0, 0] }
   });
-
   board.angleUW = board.create('angle', [board.U, board.O, board.W], {
-    radius: 0.48,
-    name: function() { return '\\u03b3'; },
-    fillColor: 'rgba(99, 102, 241, 0.1)',
-    strokeColor: '#6366f1',
-    strokeWidth: 2,
-    dash: 2,
+    radius: 0.48, name: function() { return '\\u03b3'; },
+    fillColor: 'rgba(99, 102, 241, 0.1)', strokeColor: '#6366f1', strokeWidth: 2, dash: 2,
     label: { fontSize: 13, color: '#6366f1', offset: [0, 0] }
   });
 
-  // Outer arcs on circle
+  // Outer arcs
   board.arcUV = board.create('arc', [board.O, board.U, board.V], {
-    strokeColor: '#10b981',
-    strokeWidth: 3,
-    withLabel: false,
-    selection: 'minor'
+    strokeColor: '#10b981', strokeWidth: 3, withLabel: false, selection: 'minor'
   });
-
   board.arcVW = board.create('arc', [board.O, board.V, board.W], {
-    strokeColor: '#f59e0b',
-    strokeWidth: 3,
-    withLabel: false,
-    selection: 'minor'
+    strokeColor: '#f59e0b', strokeWidth: 3, withLabel: false, selection: 'minor'
   });
-
   board.arcUW = board.create('arc', [board.O, board.U, board.W], {
-    strokeColor: '#6366f1',
-    strokeWidth: 2,
-    dash: 1,
-    withLabel: false,
-    selection: 'minor'
+    strokeColor: '#6366f1', strokeWidth: 2, dash: 1, withLabel: false, selection: 'minor'
   });
-
-  // Create native sliders inside SVG (hidden — web overlay handles UI)
-  board.sliderU = createCustomSlider(board, [-1.6, -1.55], [-0.7, -1.55], 0, params.angleU !== undefined ? params.angleU : 30, 360, 'U', 5, '#10b981');
-  board.sliderV = createCustomSlider(board, [-0.45, -1.55], [0.45, -1.55], 0, params.angleV !== undefined ? params.angleV : 120, 360, 'V', 5, '#fb923c');
-  board.sliderW = createCustomSlider(board, [0.7, -1.55], [1.6, -1.55], 0, params.angleW !== undefined ? params.angleW : 270, 360, 'W', 5, '#c084fc');
-
-  var specialDegVals = ['0\\u00b0', '30\\u00b0', '45\\u00b0', '60\\u00b0', '90\\u00b0', '120\\u00b0', '135\\u00b0', '150\\u00b0', '180\\u00b0', '210\\u00b0', '225\\u00b0', '240\\u00b0', '270\\u00b0', '300\\u00b0', '315\\u00b0', '330\\u00b0', '360\\u00b0'];
-  board.sliderSpecU = createCustomSlider(board, [-1.6, -1.55], [-0.7, -1.55], 0, params.specialU !== undefined ? params.specialU : 1, 16, 'U', 1, '#10b981', specialDegVals);
-  board.sliderSpecV = createCustomSlider(board, [-0.45, -1.55], [0.45, -1.55], 0, params.specialV !== undefined ? params.specialV : 5, 16, 'V', 1, '#fb923c', specialDegVals);
-  board.sliderSpecW = createCustomSlider(board, [0.7, -1.55], [1.6, -1.55], 0, params.specialW !== undefined ? params.specialW : 12, 16, 'W', 1, '#c084fc', specialDegVals);
-
-  board.sliderU.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleU', value: board.sliderU.Value() }, '*'); });
-  board.sliderV.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleV', value: board.sliderV.Value() }, '*'); });
-  board.sliderW.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'angleW', value: board.sliderW.Value() }, '*'); });
-
-  board.sliderSpecU.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialU', value: board.sliderSpecU.Value() }, '*'); });
-  board.sliderSpecV.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialV', value: board.sliderSpecV.Value() }, '*'); });
-  board.sliderSpecW.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'specialW', value: board.sliderSpecW.Value() }, '*'); });
 
   board.unsuspendUpdate();
   updateSimulation(board, params);
@@ -681,70 +620,41 @@ function initSimulation(board, params) {
 
 function updateSimulation(board, params) {
   board.suspendUpdate();
-  var mode = params.mode || 'K\\u00e9o t\\u1ef1 do';
-  var degU = 30, degV = 120, degW = 270;
-  var idxU = 1, idxV = 5, idxW = 12;
-  
-  board.sliderU.setAttribute({ visible: mode === 'K\\u00e9o t\\u1ef1 do' });
-  board.sliderV.setAttribute({ visible: mode === 'K\\u00e9o t\\u1ef1 do' });
-  board.sliderW.setAttribute({ visible: mode === 'K\\u00e9o t\\u1ef1 do' });
-  board.sliderSpecU.setAttribute({ visible: mode !== 'K\\u00e9o t\\u1ef1 do' });
-  board.sliderSpecV.setAttribute({ visible: mode !== 'K\\u00e9o t\\u1ef1 do' });
-  board.sliderSpecW.setAttribute({ visible: mode !== 'K\\u00e9o t\\u1ef1 do' });
 
-  if (mode === 'K\\u00e9o t\\u1ef1 do') {
-    degU = params.angleU !== undefined ? params.angleU : 30;
-    degV = params.angleV !== undefined ? params.angleV : 120;
-    degW = params.angleW !== undefined ? params.angleW : 270;
-    if (board.sliderU && !board.sliderU.isDragging && Math.abs(board.sliderU.Value() - degU) > 1e-4) board.sliderU.setValue(degU);
-    if (board.sliderV && !board.sliderV.isDragging && Math.abs(board.sliderV.Value() - degV) > 1e-4) board.sliderV.setValue(degV);
-    if (board.sliderW && !board.sliderW.isDragging && Math.abs(board.sliderW.Value() - degW) > 1e-4) board.sliderW.setValue(degW);
-  } else {
-    var specialDegVals = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330, 360];
-    idxU = params.specialU !== undefined ? Math.round(params.specialU) : 1;
-    idxV = params.specialV !== undefined ? Math.round(params.specialV) : 5;
-    idxW = params.specialW !== undefined ? Math.round(params.specialW) : 12;
-    degU = specialDegVals[idxU] || 0;
-    degV = specialDegVals[idxV] || 0;
-    degW = specialDegVals[idxW] || 0;
-    if (board.sliderSpecU && !board.sliderSpecU.isDragging && Math.abs(board.sliderSpecU.Value() - idxU) > 1e-4) board.sliderSpecU.setValue(idxU);
-    if (board.sliderSpecV && !board.sliderSpecV.isDragging && Math.abs(board.sliderSpecV.Value() - idxV) > 1e-4) board.sliderSpecV.setValue(idxV);
-    if (board.sliderSpecW && !board.sliderSpecW.isDragging && Math.abs(board.sliderSpecW.Value() - idxW) > 1e-4) board.sliderSpecW.setValue(idxW);
-  }
+  // 2 sliders: alpha = sd(Ou, Ov), beta = sd(Ov, Ow)
+  var alpha = params.alpha !== undefined ? params.alpha : 90;
+  var beta = params.beta !== undefined ? params.beta : 60;
 
-  var radU = degU * Math.PI / 180;
+  // U fixed at 0, V at alpha, W at alpha+beta
+  var degV = alpha;
+  var degW = alpha + beta;
+
   var radV = degV * Math.PI / 180;
   var radW = degW * Math.PI / 180;
 
-  if (board.U && !board.U.isDragging) board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
-  if (board.V && !board.V.isDragging) board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
-  if (board.W && !board.W.isDragging) board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
-  // Directed angle: sđ(Ou,Ov) = degV - degU, normalized to (-180, 180]
-  // Like vectors: (Ou,Ov) > 0 counterclockwise, (Ov,Ou) = -(Ou,Ov) < 0
+  board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
+  board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
+
+  // gamma = sd(Ou, Ow) normalized to (-180, 180]
   function normAngle(a) {
     a = a % 360;
     if (a > 180) a -= 360;
     if (a <= -180) a += 360;
     return a;
   }
+  var gamma = normAngle(degW);
+  var k = Math.round((alpha + beta - gamma) / 360);
+
   function fmtDeg(d) { return (d >= 0 ? '+' : '') + d + '\\u00b0'; }
   function fmtRad(d) { return (d >= 0 ? '+' : '') + (d / 180).toFixed(2) + '\\u03c0'; }
 
-  var aUV = normAngle(degV - degU);  // sđ(Ou, Ov)
-  var aVW = normAngle(degW - degV);  // sđ(Ov, Ow)
-  var aUW = normAngle(degW - degU);  // sđ(Ou, Ow)
-
-  var sum = aUV + aVW;
-  var k = Math.round((sum - aUW) / 360);
-
-  // Chasles equation with proper sign display
-  var chaslesLeft = fmtDeg(aUV) + ' + (' + fmtDeg(aVW) + ')';
-  var chaslesRight = fmtDeg(aUW) + (k !== 0 ? ' + ' + (k * 360) + '\\u00b0' : '');
+  var chaslesLeft = '(' + fmtDeg(alpha) + ') + (' + fmtDeg(beta) + ')';
+  var chaslesRight = '(' + fmtDeg(gamma) + ')' + (k !== 0 ? ' + ' + k + '\\u00d7360\\u00b0' : '');
 
   showReadouts([
-    { label: '\\u03b1 = s\\u0111(Ou, Ov):', value: fmtDeg(aUV) + '  (' + fmtRad(aUV) + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
-    { label: '\\u03b2 = s\\u0111(Ov, Ow):', value: fmtDeg(aVW) + '  (' + fmtRad(aVW) + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
-    { label: '\\u03b3 = s\\u0111(Ou, Ow):', value: fmtDeg(aUW) + '  (' + fmtRad(aUW) + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
+    { label: '\\u03b1 = s\\u0111(Ou, Ov):', value: fmtDeg(alpha) + '  (' + fmtRad(alpha) + ')', labelStyle: 'color: #34d399;', valueStyle: 'color: #6ee7b7; font-weight: bold;' },
+    { label: '\\u03b2 = s\\u0111(Ov, Ow):', value: fmtDeg(beta) + '  (' + fmtRad(beta) + ')', labelStyle: 'color: #fb923c;', valueStyle: 'color: #fdba74; font-weight: bold;' },
+    { label: '\\u03b3 = s\\u0111(Ou, Ow):', value: fmtDeg(gamma) + '  (' + fmtRad(gamma) + ')', labelStyle: 'color: #818cf8;', valueStyle: 'color: #a5b4fc; font-weight: bold;' },
     { label: '\\u03b1 + \\u03b2 = \\u03b3 + k\\u00b7360\\u00b0:', value: chaslesLeft + ' = ' + chaslesRight, labelStyle: 'color: #a5b4fc; font-weight: bold; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;', valueStyle: 'color: #c084fc; font-weight: bold; background: rgba(99, 102, 241, 0.18); padding: 3px 8px; border-radius: 4px; border-top: 1px dashed rgba(255, 255, 255, 0.15); padding-top: 6px;' }
   ]);
   board.unsuspendUpdate();
@@ -759,20 +669,15 @@ function updateSimulation(board, params) {
           theme: 'light',
         },
         controls: [
-          { type: 'select', name: 'mode', label: 'Chế độ điều chỉnh', defaultValue: 'Kéo tự do', options: ['Kéo tự do', 'Góc độ đặc biệt'] },
-          { type: 'slider', name: 'angleU', label: 'Tia Ou (°)', min: 0, max: 360, step: 5, defaultValue: 30, showIf: { control: 'mode', value: 'Kéo tự do' } },
-          { type: 'slider', name: 'angleV', label: 'Tia Ov (°)', min: 0, max: 360, step: 5, defaultValue: 120, showIf: { control: 'mode', value: 'Kéo tự do' } },
-          { type: 'slider', name: 'angleW', label: 'Tia Ow (°)', min: 0, max: 360, step: 5, defaultValue: 270, showIf: { control: 'mode', value: 'Kéo tự do' } },
-          { type: 'slider', name: 'specialU', label: 'Tia Ou', min: 0, max: 16, step: 1, defaultValue: 1, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
-          { type: 'slider', name: 'specialV', label: 'Tia Ov', min: 0, max: 16, step: 1, defaultValue: 5, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
-          { type: 'slider', name: 'specialW', label: 'Tia Ow', min: 0, max: 16, step: 1, defaultValue: 12, showIf: { control: 'mode', value: 'Góc độ đặc biệt' }, displayValues: ['0°', '30°', '45°', '60°', '90°', '120°', '135°', '150°', '180°', '210°', '225°', '240°', '270°', '300°', '315°', '330°', '360°'] },
+          { type: 'slider', name: 'alpha', label: 'sđ(Ou, Ov) = α', min: -180, max: 180, step: 5, defaultValue: 90 },
+          { type: 'slider', name: 'beta', label: 'sđ(Ov, Ow) = β', min: -180, max: 180, step: 5, defaultValue: 60 },
         ],
         mathContent: '(Ou, Ov) + (Ov, Ow) \\\\equiv (Ou, Ow) \\\\pmod{2\\\\pi}',
         explanation: 'Hệ thức Chasles khẳng định rằng với ba tia Ou, Ov, Ow bất kỳ trên mặt phẳng định hướng, tổng số đo của hai góc lượng giác (Ou, Ov) và (Ov, Ow) luôn bằng số đo của góc lượng giác (Ou, Ow) cộng với một bội nguyên của 360 độ (hoặc 2π radian).',
         keyInsights: [
-          'Hệ thức đúng với mọi góc lượng giác, bất kể thứ tự các tia',
-          'Chênh lệch k * 360° thể hiện số vòng quay bù trừ',
-          'Kéo các điểm U, V, W hoặc điều chỉnh thanh trượt để tự động thay đổi k',
+          'Kéo thanh α để thay đổi góc (Ou, Ov) — điểm V di chuyển',
+          'Kéo thanh β để thay đổi góc (Ov, Ow) — điểm W tự nhảy theo',
+          'Góc γ = sđ(Ou, Ow) tự động tính, hệ thức Chasles luôn đúng',
         ],
         tags: ['lượng giác', 'hệ thức chasles', 'góc lượng giác'],
         difficulty: 'intermediate',
