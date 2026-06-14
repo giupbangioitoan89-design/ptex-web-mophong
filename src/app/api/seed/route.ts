@@ -2188,6 +2188,518 @@ function updateSimulation(board, params) {
         difficulty: 'intermediate',
         isPublished: true,
       },
+      // Demo 2.6: Công thức cộng lượng giác (Toán 11 - Bài 2)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'cong-thuc-luong-giac',
+        title: 'Công thức cộng lượng giác',
+        description: 'Trực quan hóa công thức cộng lượng giác cho sin(a±b), cos(a±b), tan(a±b). Kéo thanh trượt thay đổi góc a, b để so sánh hai vế của công thức.',
+        order: 1,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+  
+  board.circle = board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8', strokeWidth: 2, highlight: false, fixed: true
+  });
+  
+  board.O = board.create('point', [0, 0], {
+    name: math('O'), size: 3, fillColor: '#64748b', strokeColor: '#475569', fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+  
+  board.sliderA = createCustomSlider(board, [-1.5, -1.3], [1.5, -1.3], 0, params.a !== undefined ? params.a : 60, 360, 'Góc a', 5, '#fb923c');
+  board.sliderB = createCustomSlider(board, [-1.5, -1.6], [1.5, -1.6], 0, params.b !== undefined ? params.b : 45, 360, 'Góc b', 5, '#10b981');
+  
+  board.U = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.cos(a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.sin(a); }
+  ], {
+    name: math('U(a)'), size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.V = board.create('point', [
+    function() { var b = board.sliderB.Value() * Math.PI / 180; return Math.cos(b); },
+    function() { var b = board.sliderB.Value() * Math.PI / 180; return Math.sin(b); }
+  ], {
+    name: math('V(b)'), size: 4, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.W = board.create('point', [
+    function() {
+      var mode = window.currentParams?.mode || 'cos(a-b)';
+      var a = board.sliderA.Value() * Math.PI / 180;
+      var b = board.sliderB.Value() * Math.PI / 180;
+      var target = mode.includes('+') ? (a + b) : (a - b);
+      return Math.cos(target);
+    },
+    function() {
+      var mode = window.currentParams?.mode || 'cos(a-b)';
+      var a = board.sliderA.Value() * Math.PI / 180;
+      var b = board.sliderB.Value() * Math.PI / 180;
+      var target = mode.includes('+') ? (a + b) : (a - b);
+      return Math.sin(target);
+    }
+  ], {
+    name: function() {
+      var mode = window.currentParams?.mode || 'cos(a-b)';
+      return math(mode.includes('+') ? 'W(a+b)' : 'W(a-b)');
+    }, size: 5, fillColor: '#c084fc', strokeColor: '#a855f7', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.create('segment', [board.O, board.U], { strokeColor: '#fb923c', strokeWidth: 1.5 });
+  board.create('segment', [board.O, board.V], { strokeColor: '#10b981', strokeWidth: 1.5 });
+  board.create('segment', [board.O, board.W], { strokeColor: '#c084fc', strokeWidth: 2, dash: 2 });
+  
+  board.sliderA.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'a', value: board.sliderA.Value() }, '*'); });
+  board.sliderB.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'b', value: board.sliderB.Value() }, '*'); });
+  
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  var mode = params.mode || 'cos(a-b)';
+  var aDeg = params.a !== undefined ? params.a : 60;
+  var bDeg = params.b !== undefined ? params.b : 45;
+  
+  if (board.sliderA && !board.sliderA.isDragging && Math.abs(board.sliderA.Value() - aDeg) > 1e-4) board.sliderA.setValue(aDeg);
+  if (board.sliderB && !board.sliderB.isDragging && Math.abs(board.sliderB.Value() - bDeg) > 1e-4) board.sliderB.setValue(bDeg);
+  
+  var a = aDeg * Math.PI / 180;
+  var b = bDeg * Math.PI / 180;
+  
+  var valLHS = 0;
+  var valRHS = 0;
+  var formulaLHS = '';
+  var formulaRHS = '';
+  
+  if (mode === 'cos(a-b)') {
+    valLHS = Math.cos(a - b);
+    valRHS = Math.cos(a)*Math.cos(b) + Math.sin(a)*Math.sin(b);
+    formulaLHS = 'cos(a - b)';
+    formulaRHS = 'cos a cos b + sin a sin b';
+  } else if (mode === 'cos(a+b)') {
+    valLHS = Math.cos(a + b);
+    valRHS = Math.cos(a)*Math.cos(b) - Math.sin(a)*Math.sin(b);
+    formulaLHS = 'cos(a + b)';
+    formulaRHS = 'cos a cos b - sin a sin b';
+  } else if (mode === 'sin(a-b)') {
+    valLHS = Math.sin(a - b);
+    valRHS = Math.sin(a)*Math.cos(b) - Math.cos(a)*Math.sin(b);
+    formulaLHS = 'sin(a - b)';
+    formulaRHS = 'sin a cos b - cos a sin b';
+  } else if (mode === 'sin(a+b)') {
+    valLHS = Math.sin(a + b);
+    valRHS = Math.sin(a)*Math.cos(b) + Math.cos(a)*Math.sin(b);
+    formulaLHS = 'sin(a + b)';
+    formulaRHS = 'sin a cos b + cos a sin b';
+  }
+  
+  showReadouts([
+    { label: 'Góc a:', value: parseFloat(aDeg.toFixed(2)) + '°', labelStyle: 'color: #fdba74;', valueStyle: 'color: #fb923c; font-weight: bold;' },
+    { label: 'Góc b:', value: parseFloat(bDeg.toFixed(2)) + '°', labelStyle: 'color: #86efac;', valueStyle: 'color: #10b981; font-weight: bold;' },
+    { label: 'Công thức:', value: formulaLHS + ' = ' + formulaRHS, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #e2e8f0; font-style: italic;' },
+    { label: 'Vế trái (LHS):', value: valLHS.toFixed(2), labelStyle: 'color: #c084fc;', valueStyle: 'color: #a855f7; font-weight: bold;' },
+    { label: 'Vế phải (RHS):', value: valRHS.toFixed(2), labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px;', valueStyle: 'color: #34d399; font-weight: bold; background: rgba(52, 211, 153, 0.15); padding: 2px 6px; border-radius: 4px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px;' }
+  ]);
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-1.8, 1.75, 1.8, -1.75],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'select', name: 'mode', label: 'Công thức cộng', defaultValue: 'cos(a-b)', options: ['cos(a-b)', 'cos(a+b)', 'sin(a-b)', 'sin(a+b)'] },
+          { type: 'slider', name: 'a', label: 'Góc a (độ)', min: 0, max: 360, step: 5, defaultValue: 60 },
+          { type: 'slider', name: 'b', label: 'Góc b (độ)', min: 0, max: 360, step: 5, defaultValue: 45 },
+        ],
+        mathContent: '\\cos(a \\pm b) = \\cos a \\cos b \\mp \\sin a \\sin b \\quad \\text{và} \\quad \\sin(a \\pm b) = \\sin a \\cos b \\pm \\cos a \\sin b',
+        explanation: 'Công thức cộng lượng giác cho phép biến đổi các hàm lượng giác của tổng/hiệu thành tích và tổng của các góc thành phần. Đây là nền tảng để suy ra tất cả các nhóm công thức lượng giác khác.',
+        keyInsights: [
+          '📖 Thơ học công thức cộng dễ thuộc:',
+          'Cos thì cos cos sin sin, coi chừng trái dấu: cos(a±b) = cos a cos b ∓ sin a sin b',
+          'Sin thì sin cos cos sin, cùng dấu vững tin: sin(a±b) = sin a cos b ± cos a sin b',
+          'Tan thì tan nọ tan kia, thương sầu cộng lại chia một trừ tích tan'
+        ],
+        tags: ['lượng giác', 'công thức lượng giác', 'công thức cộng', 'toán 11'],
+        difficulty: 'intermediate',
+        isPublished: true,
+      },
+      // Demo 2.7: Công thức nhân đôi và hạ bậc (Toán 11 - Bài 2)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'cong-thuc-luong-giac',
+        title: 'Công thức nhân đôi và hạ bậc',
+        description: 'Khám phá mối quan hệ hình học giữa giá trị lượng giác của góc a và góc nhân đôi 2a. Thực hành tính toán và quan sát công thức hạ bậc tương ứng.',
+        order: 2,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+  
+  board.circle = board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8', strokeWidth: 2, highlight: false, fixed: true
+  });
+  
+  board.O = board.create('point', [0, 0], {
+    name: math('O'), size: 3, fillColor: '#64748b', strokeColor: '#475569', fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+  
+  board.sliderA = createCustomSlider(board, [-1.5, -1.45], [1.5, -1.45], 0, params.a !== undefined ? params.a : 30, 360, 'Góc a', 5, '#fb923c');
+  
+  board.M = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.cos(a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.sin(a); }
+  ], {
+    name: math('M(a)'), size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.N = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.cos(2 * a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.sin(2 * a); }
+  ], {
+    name: math('N(2a)'), size: 5, fillColor: '#c084fc', strokeColor: '#a855f7', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.create('segment', [board.O, board.M], { strokeColor: '#fb923c', strokeWidth: 1.5 });
+  board.create('segment', [board.O, board.N], { strokeColor: '#c084fc', strokeWidth: 2 });
+  
+  board.arcStart = board.create('point', [0.25, 0], { visible: false });
+  board.arcEndM = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.25 * Math.cos(a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.25 * Math.sin(a); }
+  ], { visible: false });
+  board.arcEndN = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.35 * Math.cos(2 * a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return 0.35 * Math.sin(2 * a); }
+  ], { visible: false });
+  
+  board.create('arc', [board.O, board.arcStart, board.arcEndM], { strokeColor: '#fb923c', strokeWidth: 1.5, withLabel: false });
+  board.create('arc', [board.O, board.arcStart, board.arcEndN], { strokeColor: '#c084fc', strokeWidth: 2, withLabel: false });
+  
+  board.sliderA.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'a', value: board.sliderA.Value() }, '*'); });
+  
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  var aDeg = params.a !== undefined ? params.a : 30;
+  if (board.sliderA && !board.sliderA.isDragging && Math.abs(board.sliderA.Value() - aDeg) > 1e-4) board.sliderA.setValue(aDeg);
+  
+  var a = aDeg * Math.PI / 180;
+  var sinA = Math.sin(a);
+  var cosA = Math.cos(a);
+  var sin2A = Math.sin(2 * a);
+  var cos2A = Math.cos(2 * a);
+  
+  showReadouts([
+    { label: 'Góc a:', value: parseFloat(aDeg.toFixed(2)) + '°', labelStyle: 'color: #fdba74;', valueStyle: 'color: #fb923c; font-weight: bold;' },
+    { label: 'Góc nhân đôi 2a:', value: parseFloat((2 * aDeg).toFixed(2)) + '°', labelStyle: 'color: #e9d5ff;', valueStyle: 'color: #c084fc; font-weight: bold;' },
+    { label: 'sin 2a = 2 sin a cos a:', value: sin2A.toFixed(2) + ' &nbsp;|&nbsp; 2 × ' + sinA.toFixed(2) + ' × ' + cosA.toFixed(2) + ' = ' + (2 * sinA * cosA).toFixed(2), labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px;', valueStyle: 'color: #34d399; font-weight: bold; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px;' },
+    { label: 'cos 2a = cos²a - sin²a:', value: cos2A.toFixed(2) + ' &nbsp;|&nbsp; ' + (cosA*cosA).toFixed(2) + ' - ' + (sinA*sinA).toFixed(2) + ' = ' + (cosA*cosA - sinA*sinA).toFixed(2), labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #34d399; font-weight: bold;' },
+    { label: 'Hạ bậc sin²a = (1-cos 2a)/2:', value: (sinA*sinA).toFixed(2) + ' &nbsp;|&nbsp; (1 - ' + cos2A.toFixed(2) + ')/2 = ' + ((1 - cos2A)/2).toFixed(2), labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c;' },
+    { label: 'Hạ bậc cos²a = (1+cos 2a)/2:', value: (cosA*cosA).toFixed(2) + ' &nbsp;|&nbsp; (1 + ' + cos2A.toFixed(2) + ')/2 = ' + ((1 + cos2A)/2).toFixed(2), labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c;' }
+  ]);
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-1.8, 1.75, 1.8, -1.75],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'slider', name: 'a', label: 'Góc a (độ)', min: 0, max: 360, step: 5, defaultValue: 30 },
+        ],
+        mathContent: '\\sin 2a = 2\\sin a\\cos a \\quad \\text{và} \\quad \\cos 2a = \\cos^2 a - \\sin^2 a = 2\\cos^2 a - 1 = 1 - 2\\sin^2 a',
+        explanation: 'Công thức nhân đôi là trường hợp đặc biệt của công thức cộng khi hai góc bằng nhau (a = b). Từ công thức nhân đôi, ta cũng có thể suy ngược ra công thức hạ bậc để giảm lũy thừa của sin và cos.',
+        keyInsights: [
+          '📖 Thơ học công thức nhân đôi dễ thuộc:',
+          'Sin gấp đôi bằng hai lần sin cos: sin 2a = 2 sin a cos a',
+          'Cos gấp đôi bằng cos bình trừ sin bình: cos 2a = cos²a - sin²a = 2cos²a - 1 = 1 - 2sin²a',
+          'Từ cos 2a suy ra công thức hạ bậc rất quan trọng khi giải toán tích phân và lượng giác.'
+        ],
+        tags: ['lượng giác', 'công thức lượng giác', 'nhân đôi', 'hạ bậc', 'toán 11'],
+        difficulty: 'basic',
+        isPublished: true,
+      },
+      // Demo 2.8: Biến đổi tích thành tổng (Toán 11 - Bài 2)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'cong-thuc-luong-giac',
+        title: 'Biến đổi tích thành tổng',
+        description: 'Trực quan hóa công thức biến đổi tích thành tổng của các cặp giá trị lượng giác. Kéo thanh trượt để thay đổi hai góc a, b và kiểm chứng kết quả.',
+        order: 3,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+  
+  board.circle = board.create('circle', [[0,0], 1], {
+    strokeColor: '#94a3b8', strokeWidth: 2, highlight: false, fixed: true
+  });
+  
+  board.O = board.create('point', [0, 0], {
+    name: math('O'), size: 3, fillColor: '#64748b', strokeColor: '#475569', fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+  
+  board.sliderA = createCustomSlider(board, [-1.5, -1.3], [1.5, -1.3], 0, params.a !== undefined ? params.a : 50, 360, 'Góc a', 5, '#fb923c');
+  board.sliderB = createCustomSlider(board, [-1.5, -1.6], [1.5, -1.6], 0, params.b !== undefined ? params.b : 20, 360, 'Góc b', 5, '#10b981');
+  
+  board.U = board.create('point', [
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.cos(a); },
+    function() { var a = board.sliderA.Value() * Math.PI / 180; return Math.sin(a); }
+  ], {
+    name: math('U(a)'), size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.V = board.create('point', [
+    function() { var b = board.sliderB.Value() * Math.PI / 180; return Math.cos(b); },
+    function() { var b = board.sliderB.Value() * Math.PI / 180; return Math.sin(b); }
+  ], {
+    name: math('V(b)'), size: 4, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.create('segment', [board.O, board.U], { strokeColor: '#fb923c', strokeWidth: 1.5 });
+  board.create('segment', [board.O, board.V], { strokeColor: '#10b981', strokeWidth: 1.5 });
+  
+  board.sliderA.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'a', value: board.sliderA.Value() }, '*'); });
+  board.sliderB.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'b', value: board.sliderB.Value() }, '*'); });
+  
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  var mode = params.mode || 'cos a cos b';
+  var aDeg = params.a !== undefined ? params.a : 50;
+  var bDeg = params.b !== undefined ? params.b : 20;
+  
+  if (board.sliderA && !board.sliderA.isDragging && Math.abs(board.sliderA.Value() - aDeg) > 1e-4) board.sliderA.setValue(aDeg);
+  if (board.sliderB && !board.sliderB.isDragging && Math.abs(board.sliderB.Value() - bDeg) > 1e-4) board.sliderB.setValue(bDeg);
+  
+  var a = aDeg * Math.PI / 180;
+  var b = bDeg * Math.PI / 180;
+  
+  var valLHS = 0;
+  var valRHS = 0;
+  var formulaLHS = '';
+  var formulaRHS = '';
+  
+  if (mode === 'cos a cos b') {
+    valLHS = Math.cos(a) * Math.cos(b);
+    valRHS = 0.5 * (Math.cos(a - b) + Math.cos(a + b));
+    formulaLHS = 'cos a × cos b';
+    formulaRHS = '0.5 × [cos(a - b) + cos(a + b)]';
+  } else if (mode === 'sin a sin b') {
+    valLHS = Math.sin(a) * Math.sin(b);
+    valRHS = 0.5 * (Math.cos(a - b) - Math.cos(a + b));
+    formulaLHS = 'sin a × sin b';
+    formulaRHS = '0.5 × [cos(a - b) - cos(a + b)]';
+  } else if (mode === 'sin a cos b') {
+    valLHS = Math.sin(a) * Math.cos(b);
+    valRHS = 0.5 * (Math.sin(a + b) + Math.sin(a - b));
+    formulaLHS = 'sin a × cos b';
+    formulaRHS = '0.5 × [sin(a + b) + sin(a - b)]';
+  }
+  
+  showReadouts([
+    { label: 'Góc a:', value: parseFloat(aDeg.toFixed(2)) + '°', labelStyle: 'color: #fdba74;', valueStyle: 'color: #fb923c; font-weight: bold;' },
+    { label: 'Góc b:', value: parseFloat(bDeg.toFixed(2)) + '°', labelStyle: 'color: #86efac;', valueStyle: 'color: #10b981; font-weight: bold;' },
+    { label: 'Nhóm công thức:', value: formulaLHS + ' = ' + formulaRHS, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f8fafc; font-style: italic;' },
+    { label: 'Vế tích (LHS):', value: valLHS.toFixed(2), labelStyle: 'color: #fb923c;', valueStyle: 'color: #f97316; font-weight: bold;' },
+    { label: 'Vế tổng (RHS):', value: valRHS.toFixed(2), labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px;', valueStyle: 'color: #34d399; font-weight: bold; background: rgba(52, 211, 153, 0.15); padding: 2px 6px; border-radius: 4px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px;' }
+  ]);
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-1.8, 1.75, 1.8, -1.75],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'select', name: 'mode', label: 'Tích thành tổng', defaultValue: 'cos a cos b', options: ['cos a cos b', 'sin a sin b', 'sin a cos b'] },
+          { type: 'slider', name: 'a', label: 'Góc a (độ)', min: 0, max: 360, step: 5, defaultValue: 50 },
+          { type: 'slider', name: 'b', label: 'Góc b (độ)', min: 0, max: 360, step: 5, defaultValue: 20 },
+        ],
+        mathContent: '\\cos a\\cos b = \\frac{1}{2}[\\cos(a-b) + \\cos(a+b)] \\quad \\text{và} \\quad \\sin a\\sin b = \\frac{1}{2}[\\cos(a-b) - \\cos(a+b)]',
+        explanation: 'Công thức biến đổi tích thành tổng giúp phân tách tích của hai hàm số lượng giác thành tổng/hiệu. Điều này đặc biệt có ích trong tích phân và các bài toán biến đổi dao động.',
+        keyInsights: [
+          '📖 Thơ học tích thành tổng dễ thuộc:',
+          'Cos cos bằng nửa cos tổng cộng cos hiệu: cos a cos b = 1/2 [cos(a+b) + cos(a-b)]',
+          'Sin sin bằng nửa cos hiệu trừ cos tổng: sin a sin b = 1/2 [cos(a-b) - cos(a+b)]',
+          'Sin cos bằng nửa sin tổng cộng sin hiệu: sin a cos b = 1/2 [sin(a+b) + sin(a-b)]'
+        ],
+        tags: ['lượng giác', 'công thức lượng giác', 'tích thành tổng', 'toán 11'],
+        difficulty: 'intermediate',
+        isPublished: true,
+      },
+      // Demo 2.9: Biến đổi tổng thành tích (Toán 11 - Bài 2)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'cong-thuc-luong-giac',
+        title: 'Biến đổi tổng thành tích',
+        description: 'Trực quan hình học chứng minh công thức biến đổi tổng/hiệu lượng giác thành tích thông qua phép cộng vectơ và trung điểm dây cung.',
+        order: 4,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+  
+  board.circle = board.create('circle', [[0,0], 1], {
+    strokeColor: '#cbd5e1', strokeWidth: 1.5, highlight: false, fixed: true
+  });
+  
+  board.O = board.create('point', [0, 0], {
+    name: math('O'), size: 3, fillColor: '#64748b', strokeColor: '#475569', fixed: true,
+    label: { display: 'html', fontSize: 14, offset: [-15, -15] }
+  });
+  
+  board.sliderU = createCustomSlider(board, [-1.8, -1.3], [1.8, -1.3], 0, params.u !== undefined ? params.u : 70, 360, 'Góc u', 5, '#fb923c');
+  board.sliderV = createCustomSlider(board, [-1.8, -1.6], [1.8, -1.6], 0, params.v !== undefined ? params.v : 10, 360, 'Góc v', 5, '#10b981');
+  
+  board.U = board.create('point', [
+    function() { var u = board.sliderU.Value() * Math.PI / 180; return Math.cos(u); },
+    function() { var u = board.sliderU.Value() * Math.PI / 180; return Math.sin(u); }
+  ], {
+    name: math('U(u)'), size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.V = board.create('point', [
+    function() { var v = board.sliderV.Value() * Math.PI / 180; return Math.cos(v); },
+    function() { var v = board.sliderV.Value() * Math.PI / 180; return Math.sin(v); }
+  ], {
+    name: math('V(v)'), size: 4, fillColor: '#10b981', strokeColor: '#059669', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  
+  board.chord = board.create('segment', [board.U, board.V], { strokeColor: '#94a3b8', strokeWidth: 1.5, dash: 2 });
+  
+  board.M = board.create('midpoint', [board.chord], {
+    name: math('M'), size: 4, fillColor: '#38bdf8', strokeColor: '#0284c7',
+    label: { display: 'html', fontSize: 13, offset: [10, -10] }
+  });
+  
+  board.S = board.create('point', [
+    function() { return board.U.X() + board.V.X(); },
+    function() { return board.U.Y() + board.V.Y(); }
+  ], {
+    name: math('S(u+v)'), size: 5, fillColor: '#ef4444', strokeColor: '#b91c1c', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [12, 12] }
+  });
+  
+  board.create('segment', [board.U, board.S], { strokeColor: '#ef4444', strokeWidth: 1.2, dash: 1 });
+  board.create('segment', [board.V, board.S], { strokeColor: '#ef4444', strokeWidth: 1.2, dash: 1 });
+  board.create('segment', [board.O, board.S], { strokeColor: '#ef4444', strokeWidth: 2.5 });
+  board.create('segment', [board.O, board.M], { strokeColor: '#0ea5e9', strokeWidth: 2, dash: 2 });
+  
+  board.sliderU.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'u', value: board.sliderU.Value() }, '*'); });
+  board.sliderV.on('drag', function() { window.parent.postMessage({ type: 'UPDATE_CONTROL_VALUE', name: 'v', value: board.sliderV.Value() }, '*'); });
+  
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  var mode = params.mode || 'cos u + cos v';
+  var uDeg = params.u !== undefined ? params.u : 70;
+  var vDeg = params.v !== undefined ? params.v : 10;
+  
+  if (board.sliderU && !board.sliderU.isDragging && Math.abs(board.sliderU.Value() - uDeg) > 1e-4) board.sliderU.setValue(uDeg);
+  if (board.sliderV && !board.sliderV.isDragging && Math.abs(board.sliderV.Value() - vDeg) > 1e-4) board.sliderV.setValue(vDeg);
+  
+  var u = uDeg * Math.PI / 180;
+  var v = vDeg * Math.PI / 180;
+  
+  var valLHS = 0;
+  var valRHS = 0;
+  var formulaLHS = '';
+  var formulaRHS = '';
+  
+  if (mode === 'cos u + cos v') {
+    valLHS = Math.cos(u) + Math.cos(v);
+    valRHS = 2 * Math.cos((u + v)/2) * Math.cos((u - v)/2);
+    formulaLHS = 'cos u + cos v';
+    formulaRHS = '2 cos((u+v)/2) cos((u-v)/2)';
+  } else if (mode === 'cos u - cos v') {
+    valLHS = Math.cos(u) - Math.cos(v);
+    valRHS = -2 * Math.sin((u + v)/2) * Math.sin((u - v)/2);
+    formulaLHS = 'cos u - cos v';
+    formulaRHS = '-2 sin((u+v)/2) sin((u-v)/2)';
+  } else if (mode === 'sin u + sin v') {
+    valLHS = Math.sin(u) + Math.sin(v);
+    valRHS = 2 * Math.sin((u + v)/2) * Math.cos((u - v)/2);
+    formulaLHS = 'sin u + sin v';
+    formulaRHS = '2 sin((u+v)/2) cos((u-v)/2)';
+  } else if (mode === 'sin u - sin v') {
+    valLHS = Math.sin(u) - Math.sin(v);
+    valRHS = 2 * Math.cos((u + v)/2) * Math.sin((u - v)/2);
+    formulaLHS = 'sin u - sin v';
+    formulaRHS = '2 cos((u+v)/2) sin((u-v)/2)';
+  }
+  
+  var avgDeg = (uDeg + vDeg) / 2;
+  var diffDeg = (uDeg - vDeg) / 2;
+  
+  showReadouts([
+    { label: 'Góc u:', value: parseFloat(uDeg.toFixed(2)) + '°', labelStyle: 'color: #fdba74;', valueStyle: 'color: #fb923c; font-weight: bold;' },
+    { label: 'Góc v:', value: parseFloat(vDeg.toFixed(2)) + '°', labelStyle: 'color: #86efac;', valueStyle: 'color: #10b981; font-weight: bold;' },
+    { label: 'Góc trung bình (u+v)/2:', value: parseFloat(avgDeg.toFixed(2)) + '°', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #38bdf8;' },
+    { label: 'Góc bán hiệu (u-v)/2:', value: parseFloat(diffDeg.toFixed(2)) + '°', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #38bdf8;' },
+    { label: 'Công thức:', value: formulaLHS + ' = ' + formulaRHS, labelStyle: 'color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px;', valueStyle: 'color: #f8fafc; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px; font-style: italic;' },
+    { label: 'Vế tổng (LHS):', value: valLHS.toFixed(2), labelStyle: 'color: #ef4444;', valueStyle: 'color: #f87171; font-weight: bold;' },
+    { label: 'Vế tích (RHS):', value: valRHS.toFixed(2), labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #34d399; font-weight: bold; background: rgba(52, 211, 153, 0.15); padding: 2px 6px; border-radius: 4px;' }
+  ]);
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 500 },
+          boundingBox: [-2.1, 1.85, 2.1, -1.85],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'select', name: 'mode', label: 'Tổng thành tích', defaultValue: 'cos u + cos v', options: ['cos u + cos v', 'cos u - cos v', 'sin u + sin v', 'sin u - sin v'] },
+          { type: 'slider', name: 'u', label: 'Góc u (độ)', min: 0, max: 360, step: 5, defaultValue: 70 },
+          { type: 'slider', name: 'v', label: 'Góc v (độ)', min: 0, max: 360, step: 5, defaultValue: 10 },
+        ],
+        mathContent: '\\cos u + \\cos v = 2\\cos\\frac{u+v}{2}\\cos\\frac{u-v}{2} \\quad \\text{và} \\quad \\sin u + \\sin v = 2\\sin\\frac{u+v}{2}\\cos\\frac{u-v}{2}',
+        explanation: 'Phép cộng lượng giác tương đương với phép tổng hợp dao động hoặc tổng vectơ. Bằng hình học, ta thấy vectơ tổng O->S luôn có cùng hướng với góc trung bình (u+v)/2 và có chiều dài gấp 2*cos((u-v)/2) lần bán kính.',
+        keyInsights: [
+          '📖 Thơ học tổng thành tích dễ thuộc:',
+          'Cos cộng cos bằng hai cos cos: cos u + cos v = 2 cos((u+v)/2) cos((u-v)/2)',
+          'Cos trừ cos bằng trừ hai sin sin: cos u - cos v = -2 sin((u+v)/2) sin((u-v)/2)',
+          'Sin cộng sin bằng hai sin cos',
+          'Sin trừ sin bằng hai cos sin'
+        ],
+        tags: ['lượng giác', 'công thức lượng giác', 'tổng thành tích', 'toán 11'],
+        difficulty: 'intermediate',
+        isPublished: true,
+      },
       // Demo 3: Khảo sát hàm số bậc 3 (Toán 12)
       {
         grade: 12,
