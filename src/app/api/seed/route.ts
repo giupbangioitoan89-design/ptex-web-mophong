@@ -719,13 +719,19 @@ function updateSimulation(board, params) {
   if (board.U && !board.U.isDragging) board.U.setPosition(JXG.COORDS_BY_USER, [Math.cos(radU), Math.sin(radU)]);
   if (board.V && !board.V.isDragging) board.V.setPosition(JXG.COORDS_BY_USER, [Math.cos(radV), Math.sin(radV)]);
   if (board.W && !board.W.isDragging) board.W.setPosition(JXG.COORDS_BY_USER, [Math.cos(radW), Math.sin(radW)]);
-
-  var diffUV = ((degV - degU) % 360 + 360) % 360;
-  var diffVW = ((degW - degV) % 360 + 360) % 360;
-  var diffUW = ((degW - degU) % 360 + 360) % 360;
+  // Directed angles — normalized to (-180, 180]
+  function normAngle(a) {
+    a = a % 360;
+    if (a > 180) a -= 360;
+    if (a <= -180) a += 360;
+    return a;
+  }
+  var diffUV = normAngle(degV - degU);
+  var diffVW = normAngle(degW - degV);
+  var diffUW = normAngle(degW - degU);
 
   var sum = diffUV + diffVW;
-  var k = Math.floor((sum - diffUW) / 360);
+  var k = Math.round((sum - diffUW) / 360);
 
   var radUV = (diffUV / 180).toFixed(2) + '\\u03c0';
   var radVW = (diffVW / 180).toFixed(2) + '\\u03c0';
