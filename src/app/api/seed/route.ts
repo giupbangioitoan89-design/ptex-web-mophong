@@ -3129,6 +3129,540 @@ function updateSimulation(board, params) {
         difficulty: 'intermediate',
         isPublished: true,
       },
+      // Demo 2.10: Khảo sát Hàm số lượng giác (Toán 11 - Bài 4)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'ham-so-luong-giac',
+        title: 'Khảo sát Hàm số lượng giác',
+        description: 'Trực quan hóa đường tròn lượng giác bên cạnh đồ thị hệ trục tọa độ để giải thích tập xác định, tập giá trị, chu kỳ, tính chẵn lẻ và đồ thị của các hàm lượng giác.',
+        order: 1,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+
+  board.C = board.create('point', [-3.0, 0], {
+    name: 'C', size: 3, fillColor: '#64748b', strokeColor: '#475569', fixed: true, visible: false
+  });
+
+  board.unitCircle = board.create('circle', [board.C, 1.2], {
+    strokeColor: '#94a3b8', strokeWidth: 1.5, dash: 2, highlight: false, fixed: true
+  });
+
+  board.circleXAxis = board.create('segment', [[-4.5, 0], [-1.5, 0]], { strokeColor: '#cbd5e1', strokeWidth: 1 });
+  board.circleYAxis = board.create('segment', [[-3.0, -1.5], [-3.0, 1.5]], { strokeColor: '#cbd5e1', strokeWidth: 1 });
+
+  board.divider = board.create('line', [[-1.5, -5], [-1.5, 5]], { strokeColor: '#cbd5e1', strokeWidth: 1.5, straightFirst: true, straightLast: true, fixed: true });
+
+  board.rangeBand = board.create('polygon', [
+    [[-1.5, -1.2], [7.2, -1.2], [7.2, 1.2], [-1.5, 1.2]]
+  ], {
+    fillColor: '#6366f1', fillOpacity: 0.05, borders: { visible: false }, vertices: { visible: false }
+  });
+
+  board.periodSegment = board.create('segment', [[0, 0], [2 * Math.PI, 0]], {
+    strokeColor: '#10b981', strokeWidth: 4, strokeOpacity: 0.6,
+    label: { text: 'Chu kỳ T', position: 'bot', offset: [0, -10], color: '#059669', fontSize: 11 }
+  });
+
+  board.graph = board.create('functiongraph', [
+    function(x) {
+      var mode = board.currentMode || 'y = sin x';
+      if (mode === 'y = sin x') return 1.2 * Math.sin(x);
+      if (mode === 'y = cos x') return 1.2 * Math.cos(x);
+      if (mode === 'y = tan x') {
+        var val = Math.tan(x);
+        return Math.abs(val) > 10 ? NaN : 1.2 * val;
+      }
+      if (mode === 'y = cot x') {
+        var val = 1.0 / Math.tan(x);
+        return Math.abs(val) > 10 ? NaN : 1.2 * val;
+      }
+      return 0;
+    }
+  ], { strokeColor: '#6366f1', strokeWidth: 3, highlight: false });
+
+  board.asympTan1 = board.create('line', [[Math.PI/2, -5], [Math.PI/2, 5]], { strokeColor: '#ef4444', strokeWidth: 1.5, dash: 2, straightFirst: false, straightLast: false, visible: false });
+  board.asympTan2 = board.create('line', [[3*Math.PI/2, -5], [3*Math.PI/2, 5]], { strokeColor: '#ef4444', strokeWidth: 1.5, dash: 2, straightFirst: false, straightLast: false, visible: false });
+  board.asympTan3 = board.create('line', [[-Math.PI/2, -5], [-Math.PI/2, 5]], { strokeColor: '#ef4444', strokeWidth: 1.5, dash: 2, straightFirst: false, straightLast: false, visible: false });
+
+  board.asympCot1 = board.create('line', [[0, -5], [0, 5]], { strokeColor: '#ef4444', strokeWidth: 1.5, dash: 2, straightFirst: false, straightLast: false, visible: false });
+  board.asympCot2 = board.create('line', [[Math.PI, -5], [Math.PI, 5]], { strokeColor: '#ef4444', strokeWidth: 1.5, dash: 2, straightFirst: false, straightLast: false, visible: false });
+  board.asympCot3 = board.create('line', [[2*Math.PI, -5], [2*Math.PI, 5]], { strokeColor: '#ef4444', strokeWidth: 1.5, dash: 2, straightFirst: false, straightLast: false, visible: false });
+
+  board.P = board.create('point', [0, 0], {
+    name: 'P', size: 4, fillColor: '#fb923c', strokeColor: '#ea580c', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+  board.P_ray = board.create('segment', [board.C, board.P], { strokeColor: '#fb923c', strokeWidth: 1.5 });
+
+  board.P_cos_seg = board.create('segment', [board.C, [function() { return board.P.X(); }, 0]], { strokeColor: '#10b981', strokeWidth: 3, visible: false });
+  board.P_sin_seg = board.create('segment', [board.C, [-3.0, function() { return board.P.Y(); }]], { strokeColor: '#ec4899', strokeWidth: 3, visible: false });
+
+  board.tanLine = board.create('line', [[-1.8, -5], [-1.8, 5]], { strokeColor: '#94a3b8', strokeWidth: 1, dash: 1, visible: false, straightFirst: true, straightLast: true });
+  board.T = board.create('point', [-1.8, 0], {
+    name: 'T', size: 4, fillColor: '#3b82f6', strokeColor: '#1d4ed8', fixed: true, visible: false,
+    label: { display: 'html', fontSize: 12, offset: [10, 0] }
+  });
+  board.tan_seg = board.create('segment', [[-1.8, 0], board.T], { strokeColor: '#3b82f6', strokeWidth: 3, visible: false });
+
+  board.cotLine = board.create('line', [[-5, 1.2], [5, 1.2]], { strokeColor: '#94a3b8', strokeWidth: 1, dash: 1, visible: false, straightFirst: true, straightLast: true });
+  board.K = board.create('point', [-3.0, 1.2], {
+    name: 'K', size: 4, fillColor: '#ec4899', strokeColor: '#be185d', fixed: true, visible: false,
+    label: { display: 'html', fontSize: 12, offset: [0, 10] }
+  });
+  board.cot_seg = board.create('segment', [[-3.0, 1.2], board.K], { strokeColor: '#ec4899', strokeWidth: 3, visible: false });
+
+  board.P_trace_origin = board.create('point', [
+    function() {
+      var mode = board.currentMode || 'y = sin x';
+      if (mode === 'y = sin x') return -3.0;
+      if (mode === 'y = cos x') return -3.0;
+      if (mode === 'y = tan x') return -1.8;
+      if (mode === 'y = cot x') return -3.0;
+      return -3.0;
+    },
+    function() {
+      var mode = board.currentMode || 'y = sin x';
+      var x = board.x_val || 0;
+      if (mode === 'y = sin x') return 1.2 * Math.sin(x);
+      if (mode === 'y = cos x') return 1.2 * Math.cos(x);
+      if (mode === 'y = tan x') {
+        var val = Math.tan(x);
+        return Math.abs(val) > 5 ? NaN : 1.2 * val;
+      }
+      if (mode === 'y = cot x') {
+        var val = 1.0 / Math.tan(x);
+        return Math.abs(val) > 5 ? NaN : 1.2 * val;
+      }
+      return 0;
+    }
+  ], { visible: false, fixed: true });
+
+  board.G = board.create('point', [
+    function() { return board.x_val || 0; },
+    function() {
+      var mode = board.currentMode || 'y = sin x';
+      var x = board.x_val || 0;
+      if (mode === 'y = sin x') return 1.2 * Math.sin(x);
+      if (mode === 'y = cos x') return 1.2 * Math.cos(x);
+      if (mode === 'y = tan x') {
+        var val = Math.tan(x);
+        return Math.abs(val) > 5 ? NaN : 1.2 * val;
+      }
+      if (mode === 'y = cot x') {
+        var val = 1.0 / Math.tan(x);
+        return Math.abs(val) > 5 ? NaN : 1.2 * val;
+      }
+      return 0;
+    }
+  ], {
+    name: 'G(x; y)', size: 5, fillColor: '#ef4444', strokeColor: '#b91c1c', fixed: true,
+    label: { display: 'html', fontSize: 13, offset: [10, 10] }
+  });
+
+  board.G_sym = board.create('point', [
+    function() { return -(board.x_val || 0); },
+    function() {
+      var mode = board.currentMode || 'y = sin x';
+      var x = -(board.x_val || 0);
+      if (mode === 'y = sin x') return 1.2 * Math.sin(x);
+      if (mode === 'y = cos x') return 1.2 * Math.cos(x);
+      if (mode === 'y = tan x') {
+        var val = Math.tan(x);
+        return Math.abs(val) > 5 ? NaN : 1.2 * val;
+      }
+      if (mode === 'y = cot x') {
+        var val = 1.0 / Math.tan(x);
+        return Math.abs(val) > 5 ? NaN : 1.2 * val;
+      }
+      return 0;
+    }
+  ], {
+    name: "G'(-x; y')", size: 4, fillColor: '#8b5cf6', strokeColor: '#6d28d9', fixed: true,
+    label: { display: 'html', fontSize: 12, offset: [-50, -10] }
+  });
+
+  board.parityLine = board.create('segment', [board.G, board.G_sym], {
+    strokeColor: '#8b5cf6', strokeWidth: 1, dash: 2
+  });
+
+  board.tracerLine = board.create('segment', [board.P_trace_origin, board.G], {
+    strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3
+  });
+
+  board.create('text', [6.8, 0.2, 'x (rad)'], { fontSize: 11, color: '#475569', fixed: true });
+  board.create('text', [0.2, 2.8, 'y'], { fontSize: 11, color: '#475569', fixed: true });
+
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  var mode = params.mode || 'y = sin x';
+  board.currentMode = mode;
+  var aDeg = params.a !== undefined ? params.a : 45;
+  var x = aDeg * Math.PI / 180;
+  board.x_val = x;
+
+  board.P.setPosition(JXG.COORDS_BY_USER, [-3.0 + 1.2 * Math.cos(x), 1.2 * Math.sin(x)]);
+
+  var isSin = (mode === 'y = sin x');
+  var isCos = (mode === 'y = cos x');
+  var isTan = (mode === 'y = tan x');
+  var isCot = (mode === 'y = cot x');
+
+  board.asympTan1.setAttribute({ visible: isTan });
+  board.asympTan2.setAttribute({ visible: isTan });
+  board.asympTan3.setAttribute({ visible: isTan });
+  
+  board.asympCot1.setAttribute({ visible: isCot });
+  board.asympCot2.setAttribute({ visible: isCot });
+  board.asympCot3.setAttribute({ visible: isCot });
+
+  board.P_cos_seg.setAttribute({ visible: isCos });
+  board.P_sin_seg.setAttribute({ visible: isSin });
+
+  board.tanLine.setAttribute({ visible: isTan });
+  board.tan_seg.setAttribute({ visible: isTan });
+  board.T.setAttribute({ visible: isTan });
+  if (isTan) {
+    var tanVal = Math.tan(x);
+    if (Math.abs(tanVal) > 5) {
+      board.T.setAttribute({ visible: false });
+      board.tan_seg.setAttribute({ visible: false });
+    } else {
+      board.T.setPosition(JXG.COORDS_BY_USER, [-1.8, 1.2 * tanVal]);
+    }
+  }
+
+  board.cotLine.setAttribute({ visible: isCot });
+  board.cot_seg.setAttribute({ visible: isCot });
+  board.K.setAttribute({ visible: isCot });
+  if (isCot) {
+    var cotVal = 1.0 / Math.tan(x);
+    if (Math.abs(cotVal) > 5) {
+      board.K.setAttribute({ visible: false });
+      board.cot_seg.setAttribute({ visible: false });
+    } else {
+      board.K.setPosition(JXG.COORDS_BY_USER, [-3.0 + 1.2 * cotVal, 1.2]);
+    }
+  }
+
+  board.rangeBand.setAttribute({ visible: (isSin || isCos) });
+
+  if (isSin || isCos) {
+    board.periodSegment.point2.setPosition(JXG.COORDS_BY_USER, [2 * Math.PI, 0]);
+    board.periodSegment.setAttribute({ visible: true });
+    board.periodSegment.label.setText('Chu kỳ T = 2π');
+  } else {
+    board.periodSegment.point2.setPosition(JXG.COORDS_BY_USER, [Math.PI, 0]);
+    board.periodSegment.setAttribute({ visible: true });
+    board.periodSegment.label.setText('Chu kỳ T = π');
+  }
+
+  board.update();
+
+  var yVal = 0;
+  var domainText = 'D = ℝ';
+  var rangeText = '[-1, 1]';
+  var parityText = '';
+  var periodText = '';
+
+  if (isSin) {
+    yVal = Math.sin(x);
+    domainText = 'Tập xác định: D = ℝ';
+    rangeText = 'Tập giá trị: [-1; 1]';
+    parityText = 'Tính lẻ: sin(-x) = -sin(x) (đối xứng qua O)';
+    periodText = 'Chu kỳ tuần hoàn: T = 2π';
+  } else if (isCos) {
+    yVal = Math.cos(x);
+    domainText = 'Tập xác định: D = ℝ';
+    rangeText = 'Tập giá trị: [-1; 1]';
+    parityText = 'Tính chẵn: cos(-x) = cos(x) (đối xứng qua Oy)';
+    periodText = 'Chu kỳ tuần hoàn: T = 2π';
+  } else if (isTan) {
+    yVal = Math.tan(x);
+    domainText = 'Tập xác định: D = ℝ \\ {π/2 + kπ}';
+    rangeText = 'Tập giá trị: ℝ';
+    parityText = 'Tính lẻ: tan(-x) = -tan(x) (đối xứng qua O)';
+    periodText = 'Chu kỳ tuần hoàn: T = π';
+  } else if (isCot) {
+    yVal = 1.0 / Math.tan(x);
+    domainText = 'Tập xác định: D = ℝ \\ {kπ}';
+    rangeText = 'Tập giá trị: ℝ';
+    parityText = 'Tính lẻ: cot(-x) = -cot(x) (đối xứng qua O)';
+    periodText = 'Chu kỳ tuần hoàn: T = π';
+  }
+
+  showReadouts([
+    { label: 'Góc x:', value: aDeg + '° (' + (x / Math.PI).toFixed(2) + 'π rad)', labelStyle: 'color: #fb923c;', valueStyle: 'color: #ea580c; font-weight: bold;' },
+    { label: 'Giá trị y:', value: isNaN(yVal) || Math.abs(yVal) > 100 ? 'Không xác định' : yVal.toFixed(4), labelStyle: 'color: #3b82f6;', valueStyle: 'color: #1d4ed8; font-weight: bold;' },
+    { label: 'Tập xác định:', value: domainText, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f8fafc;' },
+    { label: 'Tập giá trị:', value: rangeText, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #f8fafc;' },
+    { label: 'Tính chẵn lẻ:', value: parityText, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #a78bfa; font-weight: 500;' },
+    { label: 'Chu kỳ:', value: periodText, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #34d399; font-weight: bold;' }
+  ]);
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 400 },
+          boundingBox: [-5.5, 2.8, 7.5, -2.8],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'select', name: 'mode', label: 'Hàm số y =', defaultValue: 'y = sin x', options: ['y = sin x', 'y = cos x', 'y = tan x', 'y = cot x'] },
+          { type: 'slider', name: 'a', label: 'Góc x (độ)', min: -360, max: 360, step: 5, defaultValue: 45 },
+        ],
+        mathContent: '\\begin{aligned} y &= \\sin x \\\\ y &= \\cos x \\\\ y &= \\tan x \\\\ y &= \\cot x \\end{aligned}',
+        explanation: 'Khảo sát sự biến thiên và đồ thị của các hàm số lượng giác. Bằng cách quay góc x trên đường tròn lượng giác, ta có được đồ thị hàm số tương ứng trên hệ trục Oxy.',
+        keyInsights: [
+          '📖 Tính chất cơ bản của các hàm số:',
+          'Hàm số y = sin x: tập xác định D = ℝ, tập giá trị [-1; 1], chu kỳ T = 2π, là hàm số lẻ.',
+          'Hàm số y = cos x: tập xác định D = ℝ, tập giá trị [-1; 1], chu kỳ T = 2π, là hàm số chẵn.',
+          'Hàm số y = tan x: tập xác định D = ℝ \\ {π/2 + kπ}, tập giá trị ℝ, chu kỳ T = π, là hàm số lẻ.',
+          'Hàm số y = cot x: tập xác định D = ℝ \\ {kπ}, tập giá trị ℝ, chu kỳ T = π, là hàm số lẻ.'
+        ],
+        tags: ['hàm số lượng giác', 'khảo sát', 'đồ thị', 'chu kỳ', 'chẵn lẻ'],
+        difficulty: 'intermediate',
+        isPublished: true,
+      },
+      // Demo 2.11: Ứng dụng thực tế của Hàm số lượng giác (Toán 11 - Bài 4)
+      {
+        grade: 11,
+        chapterSlug: 'ham-so-luong-giac-pt-luong-giac',
+        lessonSlug: 'ham-so-luong-giac',
+        title: 'Ứng dụng thực tế của Hàm số lượng giác',
+        description: 'Mô phỏng trực quan 3 ứng dụng thực tế của hàm số tuần hoàn: Dao động lò xo, mực nước thủy triều, và thời gian chiếu sáng của Mặt Trời.',
+        order: 2,
+        simulationCode: `
+function initSimulation(board, params) {
+  board.suspendUpdate();
+
+  board.divider = board.create('line', [[-1.5, -5], [-1.5, 5]], { strokeColor: '#cbd5e1', strokeWidth: 1.5, straightFirst: true, straightLast: true, fixed: true });
+
+  var springX = function(s) {
+    var xCenter = -3.5;
+    if (s < 0.08) return xCenter;
+    if (s > 0.92) return xCenter;
+    var amp = 0.25 * Math.sin(Math.PI * (s - 0.08) / 0.84);
+    var numCoils = 12;
+    return xCenter + amp * Math.sin(s * numCoils * 2 * Math.PI);
+  };
+  var springY = function(s) {
+    var yMass = board.yMass_val || 0;
+    var yAnchor = 2.2;
+    return yAnchor - s * (yAnchor - yMass);
+  };
+  board.spring = board.create('curve', [springX, springY, 0, 1], { strokeColor: '#64748b', strokeWidth: 2 });
+
+  board.massBlock = board.create('polygon', [
+    [function() { return -3.8; }, function() { return (board.yMass_val || 0) + 0.25; }],
+    [function() { return -3.2; }, function() { return (board.yMass_val || 0) + 0.25; }],
+    [function() { return -3.2; }, function() { return (board.yMass_val || 0) - 0.25; }],
+    [function() { return -3.8; }, function() { return (board.yMass_val || 0) - 0.25; }]
+  ], { fillColor: '#ef4444', fillOpacity: 0.8, borders: { strokeColor: '#be185d', strokeWidth: 1.5 } });
+
+  board.seaFloor = board.create('segment', [[-5.5, -1.8], [-1.5, -1.8]], { strokeColor: '#64748b', strokeWidth: 2 });
+  board.seaWater = board.create('polygon', [
+    [-5.5, -1.8], [-1.5, -1.8],
+    [[-1.5, function() { return board.yWater_val || -0.5; }], [-5.5, function() { return board.yWater_val || -0.5; }]]
+  ], { fillColor: '#38bdf8', fillOpacity: 0.6, borders: { visible: false }, vertices: { visible: false } });
+
+  board.rock1 = board.create('polygon', [[-5.2, -1.8], [-4.8, -1.2], [-4.4, -1.8]], { fillColor: '#94a3b8', fillOpacity: 0.8, borders: { strokeColor: '#64748b', strokeWidth: 1 } });
+  board.rock2 = board.create('polygon', [[-2.4, -1.8], [-2.0, -0.9], [-1.6, -1.8]], { fillColor: '#94a3b8', fillOpacity: 0.8, borders: { strokeColor: '#64748b', strokeWidth: 1 } });
+
+  board.ship = board.create('polygon', [
+    [function() { return -4.1; }, function() { return board.yWater_val || 0; }],
+    [function() { return -2.9; }, function() { return board.yWater_val || 0; }],
+    [function() { return -2.6; }, function() { return (board.yWater_val || 0) + 0.25; }],
+    [function() { return -4.4; }, function() { return (board.yWater_val || 0) + 0.25; }]
+  ], { fillColor: '#fb923c', fillOpacity: 0.9, borders: { strokeColor: '#ea580c', strokeWidth: 1.5 } });
+
+  board.cabin = board.create('polygon', [
+    [function() { return -3.8; }, function() { return (board.yWater_val || 0) + 0.25; }],
+    [function() { return -3.2; }, function() { return (board.yWater_val || 0) + 0.25; }],
+    [function() { return -3.2; }, function() { return (board.yWater_val || 0) + 0.45; }],
+    [function() { return -3.8; }, function() { return (board.yWater_val || 0) + 0.45; }]
+  ], { fillColor: '#cbd5e1', fillOpacity: 0.8, borders: { strokeColor: '#64748b', strokeWidth: 1.0 } });
+
+  board.sunPoint = board.create('point', [-3.5, 0], { name: 'Mặt Trời', size: 12, fillColor: '#eab308', strokeColor: '#ca8a04', fixed: true, label: { fontSize: 11, offset: [-20, 15] } });
+  board.orbitEllipse = board.create('ellipse', [[-3.5, 0], [-2.0, 0], [-3.5, 0.9]], { strokeColor: '#94a3b8', strokeWidth: 1, dash: 2, fixed: true });
+  
+  board.earthPoint = board.create('point', [
+    function() { return -3.5 + 1.5 * Math.cos(board.theta_val || 0); },
+    function() { return 0.9 * Math.sin(board.theta_val || 0); }
+  ], { name: 'Trái Đất', size: 6, fillColor: '#3b82f6', strokeColor: '#1d4ed8', fixed: true, label: { fontSize: 11, offset: [8, 8] } });
+
+  board.earthAxis = board.create('segment', [
+    [function() { return board.earthPoint.X() - 0.25 * Math.sin(23.5 * Math.PI / 180); }, function() { return board.earthPoint.Y() - 0.25 * Math.cos(23.5 * Math.PI / 180); }],
+    [function() { return board.earthPoint.X() + 0.25 * Math.sin(23.5 * Math.PI / 180); }, function() { return board.earthPoint.Y() + 0.25 * Math.cos(23.5 * Math.PI / 180); }]
+  ], { strokeColor: '#ef4444', strokeWidth: 2 });
+
+  board.create('text', [6.8, 0.2, 't'], { fontSize: 11, color: '#475569', fixed: true });
+  board.create('text', [0.2, 2.4, 'y'], { fontSize: 11, color: '#475569', fixed: true });
+
+  board.G = board.create('point', [
+    function() {
+      var mode = board.currentMode || 'Dao động lò xo';
+      if (mode === 'Dao động lò xo') return 0.6 * (board.t_spring || 0);
+      if (mode === 'Mực nước thủy triều') return 0.25 * (board.t_tide || 0);
+      if (mode === 'Giờ chiếu sáng mặt trời') return 6.0 * (board.d_daylight || 0) / 365.0;
+      return 0;
+    },
+    function() {
+      var mode = board.currentMode || 'Dao động lò xo';
+      if (mode === 'Dao động lò xo') return board.yMass_val || 0;
+      if (mode === 'Mực nước thủy triều') return board.yWater_val || 0;
+      if (mode === 'Giờ chiếu sáng mặt trời') return board.yDaylight_val || 0;
+      return 0;
+    }
+  ], { name: 'G', size: 5, fillColor: '#ef4444', strokeColor: '#b91c1c', fixed: true, label: { fontSize: 11, offset: [10, 10] } });
+
+  board.timeLine = board.create('line', [[function() { return board.G.X(); }, -5], [function() { return board.G.X(); }, 5]], { strokeColor: 'rgba(99, 102, 241, 0.25)', strokeWidth: 1, dash: 2, straightFirst: true, straightLast: true });
+
+  board.springTracerLine = board.create('segment', [[-3.5, function() { return board.yMass_val || 0; }], board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
+  board.tideTracerLine = board.create('segment', [[-1.5, function() { return board.yWater_val || 0; }], board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
+  board.daylightTracerLine = board.create('segment', [[-1.5, function() { return board.yDaylight_val || 0; }], board.G], { strokeColor: 'rgba(239, 68, 68, 0.45)', strokeWidth: 1.5, dash: 3 });
+
+  board.graph = board.create('functiongraph', [
+    function(x) {
+      var mode = board.currentMode || 'Dao động lò xo';
+      if (mode === 'Dao động lò xo') {
+        var A = board.A_spring || 1.0;
+        var w = board.w_spring || 3.0;
+        return A * Math.sin(w * (x / 0.6));
+      }
+      if (mode === 'Mực nước thủy triều') {
+        var d = board.d_tide || 10.0;
+        var A = board.A_tide || 2.0;
+        var t = x / 0.25;
+        var h = d + A * Math.cos((2 * Math.PI / 12) * t);
+        return (h - 10.0) / 4.0 - 0.5;
+      }
+      if (mode === 'Giờ chiếu sáng mặt trời') {
+        var A = board.A_daylight || 4.0;
+        var d = x * 365.0 / 6.0;
+        var L = 12.0 + A * Math.sin((2 * Math.PI / 365) * (d - 80));
+        return (L - 12.0) / 6.0;
+      }
+      return 0;
+    }
+  ], { strokeColor: '#6366f1', strokeWidth: 3, highlight: false });
+
+  board.unsuspendUpdate();
+  updateSimulation(board, params);
+}
+
+function updateSimulation(board, params) {
+  var mode = params.mode || 'Dao động lò xo';
+  board.currentMode = mode;
+
+  board.t_spring = params.t_spring !== undefined ? params.t_spring : 2.0;
+  board.A_spring = params.A_spring !== undefined ? params.A_spring : 1.0;
+  board.w_spring = params.w_spring !== undefined ? params.w_spring : 3.0;
+
+  board.t_tide = params.t_tide !== undefined ? params.t_tide : 6.0;
+  board.A_tide = params.A_tide !== undefined ? params.A_tide : 2.0;
+  board.d_tide = params.d_tide !== undefined ? params.d_tide : 10.0;
+
+  board.d_daylight = params.d_daylight !== undefined ? params.d_daylight : 172;
+  board.A_daylight = params.A_daylight !== undefined ? params.A_daylight : 4.0;
+
+  board.yMass_val = board.A_spring * Math.sin(board.w_spring * board.t_spring);
+
+  var h_tide = board.d_tide + board.A_tide * Math.cos((2 * Math.PI / 12) * board.t_tide);
+  board.yWater_val = (h_tide - 10.0) / 4.0 - 0.5;
+
+  var L_daylight = 12.0 + board.A_daylight * Math.sin((2 * Math.PI / 365) * (board.d_daylight - 80));
+  board.yDaylight_val = (L_daylight - 12.0) / 6.0;
+
+  board.theta_val = (2 * Math.PI / 365) * (board.d_daylight - 80);
+
+  var isSpring = (mode === 'Dao động lò xo');
+  var isTide = (mode === 'Mực nước thủy triều');
+  var isDaylight = (mode === 'Giờ chiếu sáng mặt trời');
+
+  board.spring.setAttribute({ visible: isSpring });
+  board.massBlock.setAttribute({ visible: isSpring });
+  board.springTracerLine.setAttribute({ visible: isSpring });
+
+  board.seaFloor.setAttribute({ visible: isTide });
+  board.seaWater.setAttribute({ visible: isTide });
+  board.ship.setAttribute({ visible: isTide });
+  board.cabin.setAttribute({ visible: isTide });
+  board.rock1.setAttribute({ visible: isTide });
+  board.rock2.setAttribute({ visible: isTide });
+  board.tideTracerLine.setAttribute({ visible: isTide });
+
+  board.sunPoint.setAttribute({ visible: isDaylight });
+  board.orbitEllipse.setAttribute({ visible: isDaylight });
+  board.earthPoint.setAttribute({ visible: isDaylight });
+  board.earthAxis.setAttribute({ visible: isDaylight });
+  board.daylightTracerLine.setAttribute({ visible: isDaylight });
+
+  board.update();
+
+  if (isSpring) {
+    showReadouts([
+      { label: 'Chế độ:', value: 'Dao động lò xo', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
+      { label: 'Thời gian t:', value: board.t_spring.toFixed(1) + ' s', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #38bdf8;' },
+      { label: 'Biên độ A:', value: board.A_spring.toFixed(1) + ' m', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c;' },
+      { label: 'Tần số góc ω:', value: board.w_spring.toFixed(1) + ' rad/s', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #a78bfa;' },
+      { label: 'Li độ y(t):', value: board.yMass_val.toFixed(3) + ' m', labelStyle: 'color: #ef4444;', valueStyle: 'color: #f87171; font-weight: bold; background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 4px;' }
+    ]);
+  } else if (isTide) {
+    showReadouts([
+      { label: 'Chế độ:', value: 'Mực nước thủy triều', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
+      { label: 'Thời điểm t:', value: board.t_tide.toFixed(1) + ' giờ', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #38bdf8;' },
+      { label: 'Biên độ A:', value: board.A_tide.toFixed(1) + ' m', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c;' },
+      { label: 'Độ sâu trung bình d:', value: board.d_tide.toFixed(1) + ' m', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #a78bfa;' },
+      { label: 'Mực nước h(t):', value: h_tide.toFixed(2) + ' m', labelStyle: 'color: #22c55e;', valueStyle: 'color: #4ade80; font-weight: bold; background: rgba(34, 197, 94, 0.15); padding: 2px 6px; border-radius: 4px;' }
+    ]);
+  } else if (isDaylight) {
+    showReadouts([
+      { label: 'Chế độ:', value: 'Giờ chiếu sáng Mặt Trời', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #818cf8; font-weight: bold;' },
+      { label: 'Ngày trong năm d:', value: 'Ngày thứ ' + board.d_daylight, labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #38bdf8;' },
+      { label: 'Biên độ chênh lệch A:', value: board.A_daylight.toFixed(1) + ' giờ', labelStyle: 'color: #cbd5e1;', valueStyle: 'color: #fb923c;' },
+      { label: 'Số giờ sáng L(d):', value: L_daylight.toFixed(2) + ' giờ', labelStyle: 'color: #eab308;', valueStyle: 'color: #facc15; font-weight: bold; background: rgba(234, 179, 8, 0.15); padding: 2px 6px; border-radius: 4px;' }
+    ]);
+  }
+}
+`,
+        visualizationType: 'jsxgraph',
+        config: {
+          boardSize: { width: 600, height: 400 },
+          boundingBox: [-5.5, 2.5, 7.5, -2.5],
+          showAxis: true,
+          showGrid: true,
+          theme: 'light',
+        },
+        controls: [
+          { type: 'select', name: 'mode', label: 'Hiện tượng', defaultValue: 'Dao động lò xo', options: ['Dao động lò xo', 'Mực nước thủy triều', 'Giờ chiếu sáng mặt trời'] },
+          { type: 'slider', name: 't_spring', label: 'Thời gian t (s)', min: 0, max: 10, step: 0.1, defaultValue: 2, showIf: { control: 'mode', value: 'Dao động lò xo' } },
+          { type: 'slider', name: 'A_spring', label: 'Biên độ A (m)', min: 0.2, max: 1.5, step: 0.1, defaultValue: 1.0, showIf: { control: 'mode', value: 'Dao động lò xo' } },
+          { type: 'slider', name: 'w_spring', label: 'Tần số góc ω (rad/s)', min: 1.0, max: 5.0, step: 0.1, defaultValue: 3.0, showIf: { control: 'mode', value: 'Dao động lò xo' } },
+          { type: 'slider', name: 't_tide', label: 'Thời điểm t (giờ)', min: 0, max: 24, step: 0.5, defaultValue: 6.0, showIf: { control: 'mode', value: 'Mực nước thủy triều' } },
+          { type: 'slider', name: 'A_tide', label: 'Biên độ A (m)', min: 0.5, max: 3.5, step: 0.1, defaultValue: 2.0, showIf: { control: 'mode', value: 'Mực nước thủy triều' } },
+          { type: 'slider', name: 'd_tide', label: 'Độ sâu d (m)', min: 6, max: 14, step: 0.5, defaultValue: 10.0, showIf: { control: 'mode', value: 'Mực nước thủy triều' } },
+          { type: 'slider', name: 'd_daylight', label: 'Ngày thứ d', min: 1, max: 365, step: 5, defaultValue: 172, showIf: { control: 'mode', value: 'Giờ chiếu sáng mặt trời' } },
+          { type: 'slider', name: 'A_daylight', label: 'Biên độ chênh lệch A (h)', min: 0, max: 6, step: 0.1, defaultValue: 4.0, showIf: { control: 'mode', value: 'Giờ chiếu sáng mặt trời' } },
+        ],
+        mathContent: '\\begin{aligned} y(t) &= A\\sin(\\omega t) \\\\ h(t) &= d + A\\cos\\left(\\frac{2\\pi}{12} t\\right) \\\\ L(d) &= 12 + A\\sin\\left(\\frac{2\\pi}{365} (d-80)\\right) \\end{aligned}',
+        explanation: 'Trực quan hóa các hiện tượng tuần hoàn trong đời sống bằng các hàm số lượng giác sin và cos.',
+        keyInsights: [
+          '📖 Các ứng dụng thực tế phổ biến:',
+          'Dao động lò xo: Chuyển động lên xuống của vật nặng móc vào lò xo tuân theo quy luật y(t) = A*sin(wt).',
+          'Mực nước thủy triều: Chiều cao nước tại cảng biến thiên tuần hoàn theo thời gian trong ngày với chu kỳ 12 giờ.',
+          'Thời gian chiếu sáng: Số giờ có ánh sáng mặt trời L(d) thay đổi tuần hoàn theo ngày d trong năm với chu kỳ 365 ngày.'
+        ],
+        tags: ['lượng giác', 'ứng dụng', 'lò xo', 'thủy triều', 'chu kỳ', 'toán 11'],
+        difficulty: 'intermediate',
+        isPublished: true,
+      },
       // Demo 3: Khảo sát hàm số bậc 3 (Toán 12)
       {
         grade: 12,
