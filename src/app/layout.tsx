@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   keywords: ["toán học", "mô phỏng", "trực quan", "lớp 10", "lớp 11", "lớp 12", "kết nối tri thức"],
   authors: [{ name: "PTex - Ths. Võ Thanh Phong" }],
   icons: {
-    icon: "/icon.svg",
+    icon: "/favicon.png",
   },
   openGraph: {
     title: "PTex Mô Phỏng Toán",
