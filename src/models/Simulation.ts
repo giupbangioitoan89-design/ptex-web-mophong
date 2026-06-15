@@ -34,6 +34,16 @@ export interface ISimulationDoc extends Document {
     showAxis: boolean;
     showGrid: boolean;
     theme: 'light' | 'dark';
+    split?: {
+      enabled: boolean;
+      leftOverlay?: boolean;
+      leftBBox: [number, number, number, number];
+      leftAxis: boolean;
+      leftGrid: boolean;
+      rightBBox: [number, number, number, number];
+      rightAxis: boolean;
+      rightGrid: boolean;
+    };
   };
   controls: IControlDoc[];
   // Educational
@@ -88,6 +98,16 @@ const SimulationSchema = new Schema<ISimulationDoc>(
       showAxis: { type: Boolean, default: true },
       showGrid: { type: Boolean, default: true },
       theme: { type: String, default: 'light', enum: ['light', 'dark'] },
+      split: {
+        enabled: { type: Boolean, default: false },
+        leftOverlay: { type: Boolean, default: false },
+        leftBBox: { type: [Number] },
+        leftAxis: { type: Boolean },
+        leftGrid: { type: Boolean },
+        rightBBox: { type: [Number] },
+        rightAxis: { type: Boolean },
+        rightGrid: { type: Boolean },
+      },
     },
 
     controls: { type: [ControlSchema], default: [] },

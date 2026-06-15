@@ -9,8 +9,8 @@ import type { IChapter, ISimulation } from '@/types';
 
 import { CURRICULUM } from '@/data/curriculum';
 
-// ✅ ISR: cache 10 min (simulation code changes rarely)
-export const revalidate = 600;
+// ✅ Disable ISR cache for immediate database updates during development/preview
+export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ grade: string; chapterSlug: string; lessonSlug: string }>;

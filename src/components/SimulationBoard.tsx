@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import type { ISimulation } from '@/types';
 import { DisplayMath, MathText } from '@/components/MathRenderer';
 
@@ -110,42 +110,56 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     
     // Check if it's a discrete selection slider (has displayValues)
     const isDiscrete = !!(ctrl.displayValues && ctrl.displayValues.length > 0);
-    const intervalTime = isDiscrete ? 600 : 30; // 600ms for discrete concepts, 30ms for continuous motion
-    
-    const tick = () => {
-      setControlValues(prev => {
-        // Force type-safety cast to number to prevent string concatenation bugs
-        const current = Number(prev[playingControl] ?? ctrl.defaultValue);
-        
-        let next;
-        if (isDiscrete) {
-          // Discrete step
+
+    if (isDiscrete) {
+      // For discrete concepts (like specific angles/states), use a fixed 600ms interval for readability
+      const tick = () => {
+        setControlValues(prev => {
+          const current = Number(prev[playingControl] ?? ctrl.defaultValue);
           const step = Number(ctrl.step ?? 1);
-          next = current + step;
+          let next = current + step;
           if (next > max) {
             next = min;
           }
-        } else {
-          // Continuous smooth animation
-          // A full sweep from min to max should take about 12-15 seconds (400 frames)
+          return { ...prev, [playingControl]: next };
+        });
+      };
+      
+      tick();
+      const interval = setInterval(tick, 600);
+      return () => clearInterval(interval);
+    } else {
+      // For continuous motion, use requestAnimationFrame for maximum smoothness synced to the screen's refresh rate
+      let animationFrameId: number;
+      let lastTime = performance.now();
+
+      const loop = (time: number) => {
+        let delta = time - lastTime;
+        lastTime = time;
+        
+        // Clamp delta to maximum 100ms to prevent giant jumps when tab wakes up from background
+        if (delta > 100) delta = 100;
+
+        setControlValues(prev => {
+          const current = Number(prev[playingControl] ?? ctrl.defaultValue);
           const range = max - min;
-          const autoStep = range / 400;
-          next = current + autoStep;
+          // A full sweep from min to max should take about 12 seconds (12000ms)
+          const step = (range / 12000) * delta;
+          let next = current + step;
           if (next > max) {
             next = min;
           }
-        }
-        return { ...prev, [playingControl]: next };
-      });
-    };
+          return { ...prev, [playingControl]: next };
+        });
 
-    // Run first frame immediately to prevent UI freeze delay
-    tick();
-    
-    const interval = setInterval(tick, intervalTime);
+        animationFrameId = requestAnimationFrame(loop);
+      };
 
-    return () => clearInterval(interval);
-  }, [playingControl, simulation.controls]);
+      animationFrameId = requestAnimationFrame(loop);
+      return () => cancelAnimationFrame(animationFrameId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playingControl]);
 
   const buildIframeContent = useCallback(() => {
     const { config, visualizationType } = simulation;
@@ -156,6 +170,18 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
 <html>
 <head>
   <meta charset="utf-8">
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      window.parent.postMessage({
+        type: 'IFRAME_ERROR',
+        message: message,
+        source: source,
+        lineno: lineno,
+        colno: colno,
+        error: error ? error.stack : ''
+      }, '*');
+    };
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.11.1/distrib/jsxgraph.css">
   <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.11.1/distrib/jsxgraphcore.js"><\/script>
@@ -163,8 +189,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"><\/script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #fafbfc; overflow: hidden; }
-    #board { width: 100%; height: 100vh; touch-action: none; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #fafbfc; }
+    #board { width: 100%; height: 100%; touch-action: none; }
     .sim-formula { font-family: 'Inter', sans-serif; font-weight: 600; color: #4f46e5; }
     .sim-readout {
       font-family: 'Inter', sans-serif;
@@ -180,10 +206,35 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     /* Beautiful KaTeX overrides inside JSXGraph labels */
     .jxgbox .katex { font-size: 1.1rem !important; }
     .jxgbox .katex-display { margin: 0.5em 0; }
+    /* Disable pointer events on SVG text inside JSXGraph to prevent internal labels from blocking point dragging */
+    .jxgbox text {
+      pointer-events: none !important;
+    }
+    /* Split layout — side-by-side (default) */
+    .split-container { display: flex; width: 100%; height: 100%; gap: 8px; padding: 8px; background: #fafbfc; }
+    .split-left { flex: 4; height: 100%; border-radius: 10px; border: 1.5px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: #ffffff; }
+    .split-right { flex: 6; height: 100%; border-radius: 10px; border: 1.5px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: #ffffff; }
+    /* Split layout — overlay mode (small circle in top-left corner) */
+    .split-overlay { position: relative; width: 100%; height: 100%; background: #fafbfc; }
+    .split-overlay .split-left {
+      position: absolute !important; bottom: 4px !important; left: 4px !important; width: 100px !important; height: 100px !important;
+      z-index: 10 !important; border-radius: 8px; border: 1.5px solid rgba(99,102,241,0.25);
+      background: rgba(255,255,255,0.95); box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .split-overlay .split-left:hover {
+      opacity: 0.15;
+      transform: scale(0.98);
+    }
+    .split-overlay .split-right { position: relative; width: 100%; height: 100%; z-index: 1; }
   </style>
 </head>
 <body>
-  <div id="board" class="jxgbox"></div>
+  ${config.split?.enabled
+    ? config.split?.leftOverlay
+      ? '<div class="split-overlay"><div id="board-right" class="jxgbox split-right"></div><div id="board-left" class="jxgbox split-left"></div></div>'
+      : '<div class="split-container"><div id="board-left" class="jxgbox split-left"></div><div id="board-right" class="jxgbox split-right"></div></div>'
+    : '<div id="board" class="jxgbox"></div>'}
   <script>
     function showReadouts(rows) {
       window.parent.postMessage({ type: 'SHOW_READOUTS', rows: rows }, '*');
@@ -227,6 +278,13 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         for (var id in board.objects) {
           if (board.objects.hasOwnProperty(id) && board.objects[id]) {
             board.objects[id].isDragging = false;
+          }
+        }
+      }
+      if (typeof window !== 'undefined' && window.boardRight && window.boardRight.objects) {
+        for (var id in window.boardRight.objects) {
+          if (window.boardRight.objects.hasOwnProperty(id) && window.boardRight.objects[id]) {
+            window.boardRight.objects[id].isDragging = false;
           }
         }
       }
@@ -354,6 +412,9 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         try {
           updateSimulation(board, params);
           board.update();
+          if (board.right) {
+            board.right.update();
+          }
         } catch (e) {
           console.error('Update error:', e);
         }
@@ -361,23 +422,54 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       }
 
       if (board) JXG.JSXGraph.freeBoard(board);
-      board = JXG.JSXGraph.initBoard('board', {
-        boundingbox: [${bbox.join(',')}],
-        axis: ${config.showAxis},
-        grid: ${config.showGrid},
-        showCopyright: false,
-        showNavigation: false,
-        pan: { enabled: false },
-        zoom: { enabled: false, wheel: false },
-        keepAspectRatio: true,
-        keepaspectratio: true,
-        resize: { enabled: true, throttle: 200 }
-      });
+      if (window.boardRight) JXG.JSXGraph.freeBoard(window.boardRight);
 
-      /* Board 'up' event — clear isDragging on ALL objects.
-         This is the ONLY place we clear isDragging. No board.on('update')
-         override — that was the bug in previous versions. */
+      var splitEnabled = ${!!config.split?.enabled};
+      if (splitEnabled) {
+        board = JXG.JSXGraph.initBoard('board-left', {
+          boundingbox: [${(config.split?.leftBBox || [-1.5, 1.5, 1.5, -1.5]).join(',')}],
+          axis: ${!!config.split?.leftAxis},
+          grid: ${!!config.split?.leftGrid},
+          showCopyright: false,
+          showNavigation: false,
+          pan: { enabled: false },
+          zoom: { enabled: false, wheel: false },
+          keepAspectRatio: true,
+          keepaspectratio: true,
+          resize: { enabled: true, throttle: 200 }
+        });
+        window.boardRight = JXG.JSXGraph.initBoard('board-right', {
+          boundingbox: [${(config.split?.rightBBox || [-0.5, 2.5, 7.5, -2.5]).join(',')}],
+          axis: ${!!config.split?.rightAxis},
+          grid: ${!!config.split?.rightGrid},
+          showCopyright: false,
+          showNavigation: false,
+          pan: { enabled: false },
+          zoom: { enabled: false, wheel: false },
+          keepAspectRatio: false,
+          keepaspectratio: false,
+          resize: { enabled: true, throttle: 200 }
+        });
+        board.right = window.boardRight;
+      } else {
+        board = JXG.JSXGraph.initBoard('board', {
+          boundingbox: [${bbox.join(',')}],
+          axis: ${config.showAxis},
+          grid: ${config.showGrid},
+          showCopyright: false,
+          showNavigation: false,
+          pan: { enabled: false },
+          zoom: { enabled: false, wheel: false },
+          keepAspectRatio: true,
+          keepaspectratio: true,
+          resize: { enabled: true, throttle: 200 }
+        });
+      }
+
       board.on('up', _clearAllDragging);
+      if (splitEnabled) {
+        window.boardRight.on('up', _clearAllDragging);
+      }
 
       try {
         ${simulation.simulationCode}
@@ -488,6 +580,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
         setControlValues(prev => ({ ...prev, [name]: value }));
       } else if (e.data?.type === 'SHOW_READOUTS') {
         setReadoutRows(e.data.rows || []);
+      } else if (e.data?.type === 'IFRAME_ERROR') {
+        console.error('[Iframe Error]', e.data.message, 'at', e.data.source, 'line', e.data.lineno, 'col', e.data.colno, '\nStack:', e.data.error);
       }
     };
     window.addEventListener('message', handler);
@@ -518,7 +612,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
     const url = URL.createObjectURL(blob);
     if (iframeRef.current) iframeRef.current.src = url;
     return () => URL.revokeObjectURL(url);
-  }, [buildIframeContent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [simulation._id, simulation.title]);
   const handleControlChange = (name: string, value: number | string | boolean) => {
     setControlValues(prev => ({ ...prev, [name]: value }));
     // Reset play state if mode changes to avoid ghost autoplay
@@ -526,6 +621,51 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       setPlayingControl(null);
     }
   };
+
+  const infoSection = useMemo(() => {
+    return (
+      <div className="sim-layout-info">
+        {/* Math Formula Display */}
+        {simulation.mathContent && (
+          <div className="math-display">
+            <DisplayMath>{simulation.mathContent}</DisplayMath>
+          </div>
+        )}
+
+        {/* Info Panels */}
+        <div className="sim-info-grid">
+          {/* Key Insights */}
+          {simulation.keyInsights.length > 0 && (
+            <div className="insight-box">
+              <h4>💡 Điểm chính</h4>
+              <ul>
+                {simulation.keyInsights.map((insight, i) => renderInsightItem(insight, i))}
+              </ul>
+            </div>
+          )}
+
+          {/* Explanation */}
+          {simulation.explanation && (
+            <div className="insight-box explanation">
+              <h4>📝 Giải thích</h4>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+                <MathText>{simulation.explanation}</MathText>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tags */}
+        {simulation.tags && simulation.tags.length > 0 && (
+          <div className="tag-list">
+            {simulation.tags.map((tag) => (
+              <span key={tag} className="tag-pill">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }, [simulation]);
 
   return (
     <div className="sim-wrapper">
@@ -549,19 +689,8 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                 <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>Đang tải mô phỏng...</p>
               </div>
             )}
-            <iframe
-              ref={iframeRef}
-              style={{
-                width: '100%',
-                flex: 1,
-                minHeight: '360px',
-                border: 'none',
-              }}
-              sandbox="allow-scripts allow-same-origin"
-              title={simulation.title}
-            />
 
-            {/* Frosted glass overlay control bar at bottom of graph */}
+            {/* Control bar ABOVE the iframe — no longer overlays the content */}
             {simulation.controls.length > 0 && (
               <div className="glass-control-bar">
                 {simulation.controls.map((ctrl) => {
@@ -597,9 +726,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                             {ctrl.displayValues && ctrl.displayValues.length > 0 && typeof controlValues[ctrl.name] === 'number'
                               ? ctrl.displayValues[controlValues[ctrl.name] as number]
                               : typeof controlValues[ctrl.name] === 'number'
-                              ? (controlValues[ctrl.name] as number).toFixed(
-                                  ctrl.step && ctrl.step < 0.1 ? 2 : ctrl.step && ctrl.step < 1 ? 1 : 0
-                                )
+                              ? (controlValues[ctrl.name] as number).toFixed(2)
                               : String(controlValues[ctrl.name])}
                           </span>
                           <input
@@ -642,6 +769,19 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
                 })}
               </div>
             )}
+
+            {/* Iframe sits below controls — full view, nothing overlaid */}
+            <iframe
+              ref={iframeRef}
+              style={{
+                width: '100%',
+                flex: 1,
+                minHeight: '300px',
+                border: 'none',
+              }}
+              sandbox="allow-scripts allow-same-origin"
+              title={simulation.title}
+            />
           </div>
         </div>
 
@@ -670,46 +810,7 @@ export default function SimulationBoard({ simulation }: SimulationBoardProps) {
       </div>
 
       {/* ===== Lower Section: Full-Width Math, Insights & Explanation ===== */}
-      <div className="sim-layout-info">
-        {/* Math Formula Display */}
-        {simulation.mathContent && (
-          <div className="math-display">
-            <DisplayMath>{simulation.mathContent}</DisplayMath>
-          </div>
-        )}
-
-        {/* Info Panels */}
-        <div className="sim-info-grid">
-          {/* Key Insights */}
-          {simulation.keyInsights.length > 0 && (
-            <div className="insight-box">
-              <h4>💡 Điểm chính</h4>
-              <ul>
-                {simulation.keyInsights.map((insight, i) => renderInsightItem(insight, i))}
-              </ul>
-            </div>
-          )}
-
-          {/* Explanation */}
-          {simulation.explanation && (
-            <div className="insight-box explanation">
-              <h4>📝 Giải thích</h4>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                <MathText>{simulation.explanation}</MathText>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Tags */}
-        {simulation.tags && simulation.tags.length > 0 && (
-          <div className="tag-list">
-            {simulation.tags.map((tag) => (
-              <span key={tag} className="tag-pill">{tag}</span>
-            ))}
-          </div>
-        )}
-      </div>
+      {infoSection}
     </div>
   );
 }

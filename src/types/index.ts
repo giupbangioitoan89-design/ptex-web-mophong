@@ -42,6 +42,16 @@ export interface ISimulationConfig {
   showAxis: boolean;
   showGrid: boolean;
   theme: 'light' | 'dark';
+  split?: {
+    enabled: boolean;
+    leftOverlay?: boolean;
+    leftBBox: [number, number, number, number];
+    leftAxis: boolean;
+    leftGrid: boolean;
+    rightBBox: [number, number, number, number];
+    rightAxis: boolean;
+    rightGrid: boolean;
+  };
 }
 
 export type VisualizationType = 'jsxgraph' | 'plotly' | 'canvas' | 'custom';
